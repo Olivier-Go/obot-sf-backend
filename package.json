@@ -1,0 +1,20 @@
+{
+  "name": "ccxws-node-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "nodemon src/index.js"
+  },
+  "dependencies": {
+    "ccxws": "^0.47.0",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "mapsort": "^1.0.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  },
+  "keywords": []
+}
