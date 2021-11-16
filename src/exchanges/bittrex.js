@@ -7,19 +7,19 @@ const bittrexClient = new BittrexClient({
   apiSecret: process.env.BITTREX_API_SECRET,
 });
 
-const market = {
-  id: "FLUX-USDT",
-  base: "FLUX",
-  quote: "USDT"
-};
-
 export const ws = {
   state: 'Disconnected',
+  market: {
+    id: process.env.BITTREX_MARKET_ID,
+    base: process.env.BITTREX_MARKET_BASE,
+    quote: process.env.BITTREX_MARKET_QUOTE,
+  },
   buyOrders: [],
   sellOrders: [],
+  filteredBuyOrders: [],
+  filteredSellOrders: [],
 
-  run: (orderSize) => {
-    console.log(orderSize);
+  run: () => {
     bittrexClient.on("error", err => ws.state = err);
     bittrexClient.on("connecting", data => ws.state = 'Connecting');
     bittrexClient.on("connected", data => ws.state = 'Connected');
@@ -27,20 +27,19 @@ export const ws = {
     bittrexClient.on("l2update", (l2update, market) => {
       ws.buyOrders = updateOrdersArr(ws.buyOrders, l2update.bids);
       ws.sellOrders = updateOrdersArr(ws.sellOrders, l2update.asks, false);
+      ws.filteredBuyOrders = drawOrdersArr(ws.buyOrders);
+      ws.filteredSellOrders = drawOrdersArr(ws.sellOrders);
     });
-    bittrexClient.subscribeLevel2Updates(market);
-
-    ws.printResults();
+    bittrexClient.subscribeLevel2Updates(ws.market);
   },
 
-  printResults: () => {
-    console.log(`========BITTREX==========`);
-    console.log(`Etat : ${ws.state}`);
-    console.log(`Market : ${market.id}`);
-    console.log("******BUY ORDERS********");
-    console.log(drawOrdersArr(ws.buyOrders));
-    console.log("******SELL ORDERS*******");
-    console.log(drawOrdersArr(ws.sellOrders));
-    console.log(`========================`);
+  printOrderBook: () => {
+    console.log(`-----------------------------------------------------------`);
+    console.log(`  BITTREX  |  State : ${ws.state}  |  Market : ${ws.market.id}`);
+    console.log(`-----------------------------------------------------------`);
+    console.log(`                      BUY ORDERS                         `);
+    console.table(ws.filteredBuyOrders);
+    console.log(`                      SELL ORDERS                         `);
+    console.table(ws.filteredSellOrders);
   }
 };

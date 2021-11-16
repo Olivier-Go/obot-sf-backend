@@ -1,5 +1,6 @@
 export const updateOrdersArr = (arr, changes, buy = true) => {
   let result = [...arr];
+
   changes.forEach(change => {
     const existingOrder = result.find(({ price }) => price === change.price);
     if (existingOrder) {
@@ -9,19 +10,66 @@ export const updateOrdersArr = (arr, changes, buy = true) => {
       result.push({ ...change, received: new Date().getTime() });
     }
   });
+
   result = result.filter(({ size }) => size > 0);
-  return buy ? result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price)) : result.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+  result = buy ? result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price)) : result.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+
+  return result;
 };
 
 export const drawOrdersArr = (arr) => {
   let result = [];
   const currentMs = new Date().getTime();
-  for (let i = 0; i < 5; i++) {
+
+  for (let i = 0; i < 3; i++) {
     const order = arr[i];
-    if (order) {
+    if (order && order.price && order.size) {
       const secsAgo = (currentMs - order.received) / 1000;
-      result[i] = `${order.price} for ${order.size} (${secsAgo.toFixed(1)}s ago )`;
+      result[i] = { 
+        price: Number(order.price), 
+        size: Number(order.size),
+        datetime: Number(order.received),
+        received: `${secsAgo.toFixed(1)}s ago` }
     }
   }
+
   return result;
+};
+
+export const updateBuySellDiff = (sellOrders, buyOrders, orderSize) => {
+  let diff = {};
+  let bestSellOrder = {};
+  let bestBuyOrder = {};
+
+  sellOrders.forEach((order, index) => {
+    if (index === 0 && order.size > orderSize) {
+      bestSellOrder = { ...order };
+    }
+  });
+
+  buyOrders.forEach((order, index) => {
+    if (index === 0 && order.size > orderSize) {
+      bestBuyOrder = { ...order };
+    }
+  });
+
+  const price = (bestBuyOrder.price - bestSellOrder.price).toFixed(4);
+  const size = bestSellOrder.size > bestBuyOrder.size ? bestBuyOrder.size : bestSellOrder.size;
+  const datetime = bestSellOrder.datetime > bestBuyOrder.datetime ? bestBuyOrder.datetime : bestSellOrder.datetime;
+  const received = bestSellOrder.received > bestBuyOrder.received ? bestBuyOrder.received : bestSellOrder.received;
+
+  if (!isNaN(price) && size > 0) {
+    diff = {
+      price,
+      size,
+      datetime,
+      received
+    };
+  }
+
+  return {
+    'diff': [diff],
+    'bestSellOrder': [bestSellOrder],
+    'bestBuyOrder': [bestBuyOrder],
+  }
 };

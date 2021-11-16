@@ -7,16 +7,17 @@ const kucoinClient = new KucoinClient({
   apiSecret: process.env.KUCOIN_API_SECRET,
 });
 
-const market = {
-  id: "FLUX-USDT",
-  base: "FLUX",
-  quote: "USDT"
-};
-
 export const ws = {
   state: 'Disconnected',
+  market: {
+    id: process.env.KUCOIN_MARKET_ID,
+    base: process.env.KUCOIN_MARKET_BASE,
+    quote: process.env.KUCOIN_MARKET_QUOTE,
+  },
   buyOrders: [],
   sellOrders: [],
+  filteredBuyOrders: [],
+  filteredSellOrders: [],
 
   run: () => {
     kucoinClient.on("error", err => ws.state = err);
@@ -26,21 +27,19 @@ export const ws = {
     kucoinClient.on("l2update", ({ asks, bids }, market) => {
       ws.buyOrders = updateOrdersArr(ws.buyOrders, bids);
       ws.sellOrders = updateOrdersArr(ws.sellOrders, asks, false);
+      ws.filteredBuyOrders = drawOrdersArr(ws.buyOrders);
+      ws.filteredSellOrders = drawOrdersArr(ws.sellOrders);
     });
-
-    kucoinClient.subscribeLevel2Updates(market);
-
-    ws.printResults();
+    kucoinClient.subscribeLevel2Updates(ws.market);
   },
 
-  printResults: () => {
-    console.log(`========KUCOIN==========`);
-    console.log(`Etat : ${ws.state}`);
-    console.log(`Market : ${market.id}`);
-    console.log("******BUY ORDERS********");
-    console.log(drawOrdersArr(ws.buyOrders));
-    console.log("******SELL ORDERS*******");
-    console.log(drawOrdersArr(ws.sellOrders));
-    console.log(`========================`);
+  printOrderBook: () => {
+    console.log(`-----------------------------------------------------------`);
+    console.log(`  KUCOIN  |  State : ${ws.state}  |  Market : ${ws.market.id}`);
+    console.log(`-----------------------------------------------------------`);
+    console.log(`                      BUY ORDERS                         `);
+    console.table(ws.filteredBuyOrders);
+    console.log(`                      SELL ORDERS                         `);
+    console.table(ws.filteredSellOrders);
   }
 };
