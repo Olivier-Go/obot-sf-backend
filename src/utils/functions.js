@@ -1,3 +1,8 @@
+export const isEmptyObj = (obj) => {
+  return Object.keys(obj).length === 0;
+}
+
+
 export const updateOrdersArr = (arr, changes, buy = true) => {
   let result = [...arr];
 
@@ -17,11 +22,12 @@ export const updateOrdersArr = (arr, changes, buy = true) => {
   return result;
 };
 
-export const drawOrdersArr = (arr) => {
+
+export const drawOrdersArr = (arr, dept = 3) => {
   let result = [];
   const currentMs = new Date().getTime();
 
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < dept; i++) {
     const order = arr[i];
     if (order && order.price && order.size) {
       const secsAgo = (currentMs - order.received) / 1000;
@@ -35,6 +41,7 @@ export const drawOrdersArr = (arr) => {
 
   return result;
 };
+
 
 export const updateBuySellDiff = (sellOrders, buyOrders, orderSize) => {
   let diff = {};
@@ -72,4 +79,21 @@ export const updateBuySellDiff = (sellOrders, buyOrders, orderSize) => {
     'bestSellOrder': [bestSellOrder],
     'bestBuyOrder': [bestBuyOrder],
   }
+};
+
+
+export const updateBuySellOp = (buySellOp, buySellDiff, orderDiff) => {
+  if (!isEmptyObj(buySellDiff)) {
+    buySellDiff.diff.forEach(tick => {
+      if (tick.price >= orderDiff) {
+        buySellOp = {
+            'count': buySellOp.count + 1,
+            'history': [...buySellOp.history, tick],
+        };
+        return buySellOp;
+      }
+    });
+  }
+    
+  return buySellOp;
 };
