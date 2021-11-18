@@ -1,9 +1,18 @@
 import './utils/env.js';
-import { updateBuySellDiff, drawOrdersArr, isEmptyObj, updateBuySellOp } from './utils/functions.js';
+import { 
+  updateBuySellDiff, 
+  drawOrdersArr, 
+  isEmptyObj, 
+  timeAgo,
+  twoDigit,
+  updateBuySellOp
+} from './utils/functions.js';
 import { ws as kucoinWs } from "./exchanges/kucoin.js";
 import { ws as bittrexWs } from "./exchanges/bittrex.js";
 
 const app = {
+  startTime: 0,
+  memHeapUsed: 0,
   threshold: process.env.APP_THRESHOLD,
   orderSize: process.env.ORDER_SIZE,
   orderDiff: process.env.ORDER_DIFF,
@@ -19,6 +28,7 @@ const app = {
   },
 
   init: () => {
+    app.startTime = Date.now();
     kucoinWs.run();
     bittrexWs.run();
   },
@@ -26,6 +36,16 @@ const app = {
   printBanner: () => {
     console.log(`-----------------------------------------------------------`);
     console.log(` Threshold : ${app.threshold}  |  OrderSize : ${app.orderSize}  |  OrderDiff : ${app.orderDiff}`);
+
+    const today = new Date();
+    const date = `${today.getDate()}/${today.getMonth()+1}/${today.getFullYear()}`;
+    const time = `${twoDigit(today.getHours())}:${twoDigit(today.getMinutes())}:${twoDigit(today.getSeconds())}`;
+    const since = new Date(timeAgo(app.startTime) * 1000).toISOString().substr(11, 8);
+    app.used = Math.round(process.memoryUsage().heapUsed / 1024 / 1024 * 100) / 100;
+
+    console.log(` ${date} ${time} - Started : ${since} -  Mem : ${app.used} MB `);
+
+    console.log(`-----------------------------------------------------------`);
   },
 
   printBuySellDiff: () => {

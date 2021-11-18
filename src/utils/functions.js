@@ -1,6 +1,15 @@
 export const isEmptyObj = (obj) => {
   return Object.keys(obj).length === 0;
-}
+};
+
+export const timeAgo = (timestamp) => {
+  const currentMs = Date.now();
+  return (currentMs - timestamp) / 1000;
+};
+
+export const twoDigit = (number) => {
+  return number.toLocaleString('fr-FR', { minimumIntegerDigits: 2, useGrouping: false });
+};
 
 
 export const updateOrdersArr = (arr, changes, buy = true) => {
@@ -10,9 +19,9 @@ export const updateOrdersArr = (arr, changes, buy = true) => {
     const existingOrder = result.find(({ price }) => price === change.price);
     if (existingOrder) {
       existingOrder.size = change.size;
-      existingOrder.received = new Date().getTime();
+      existingOrder.received = Date.now();
     } else {
-      result.push({ ...change, received: new Date().getTime() });
+      result.push({ ...change, received: Date.now() });
     }
   });
 
@@ -25,17 +34,16 @@ export const updateOrdersArr = (arr, changes, buy = true) => {
 
 export const drawOrdersArr = (arr, dept = 3) => {
   let result = [];
-  const currentMs = new Date().getTime();
 
   for (let i = 0; i < dept; i++) {
     const order = arr[i];
     if (order && order.price && order.size) {
-      const secsAgo = (currentMs - order.received) / 1000;
       result[i] = { 
         price: Number(order.price), 
         size: Number(order.size),
         datetime: Number(order.received),
-        received: `${secsAgo.toFixed(1)}s ago` }
+        received: `${timeAgo(order.received).toFixed(1)}s ago` 
+      }
     }
   }
 
@@ -86,9 +94,16 @@ export const updateBuySellOp = (buySellOp, buySellDiff, orderDiff) => {
   if (!isEmptyObj(buySellDiff)) {
     buySellDiff.diff.forEach(tick => {
       if (tick.price >= orderDiff) {
+        let count = buySellOp.count + 1;
+        let history = [tick, ...buySellOp.history];
+
+        if (count > 10) {
+          history = history.slice(0, -1);
+        }
+
         buySellOp = {
-            'count': buySellOp.count + 1,
-            'history': [...buySellOp.history, tick],
+          count,
+          history,
         };
         return buySellOp;
       }
