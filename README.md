@@ -1,13 +1,3 @@
-# ccxws-node-server
+# ccxt-quant-bot
 
-```sh
-# install dependencies
-yarn
-```
-
-Rename `.env.dist` to `.env`.
-
-```sh
-# launch server
-yarn start
-```
+- [README ccxws-node-server](node/README.md)
