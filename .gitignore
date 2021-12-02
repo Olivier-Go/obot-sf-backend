@@ -7,3 +7,5 @@ dist/
 Thumbs.db
 
 yarn-error.log
+
+.idea/

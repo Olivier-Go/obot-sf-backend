@@ -24,6 +24,13 @@ export const ws = {
     bittrexClient.on("connecting", data => ws.state = 'Connecting');
     bittrexClient.on("connected", data => ws.state = 'Connected');
     bittrexClient.on("disconnected", data => ws.state = 'Disconnected');
+    bittrexClient.on("closed", () => {
+      ws.state = 'Closed';
+      ws.buyOrders = [];
+      ws.sellOrders = [];
+      ws.filteredBuyOrders = [];
+      ws.filteredSellOrders = [];
+    });
     bittrexClient.on("l2update", (l2update, market) => {
       ws.buyOrders = updateOrdersArr(ws.buyOrders, l2update.bids);
       ws.sellOrders = updateOrdersArr(ws.sellOrders, l2update.asks, false);
@@ -31,6 +38,10 @@ export const ws = {
       ws.filteredSellOrders = drawOrdersArr(ws.sellOrders);
     });
     bittrexClient.subscribeLevel2Updates(ws.market);
+  },
+
+  reset: () => {
+    bittrexClient.reconnect();
   },
 
   printOrderBook: () => {

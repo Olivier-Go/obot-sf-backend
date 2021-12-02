@@ -26,7 +26,10 @@ export const updateOrdersArr = (arr, changes, buy = true) => {
   });
 
   result = result.filter(({ size }) => size > 0);
-  result = buy ? result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price)) : result.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+  result = buy ?
+      result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price))
+      :
+      result.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
 
   return result;
 };
@@ -73,7 +76,7 @@ export const updateBuySellDiff = (sellOrders, buyOrders, orderSize) => {
   const datetime = bestSellOrder.datetime > bestBuyOrder.datetime ? bestBuyOrder.datetime : bestSellOrder.datetime;
   const received = bestSellOrder.received > bestBuyOrder.received ? bestBuyOrder.received : bestSellOrder.received;
 
-  if (!isNaN(price) && size > 0) {
+  if (!isNaN(price) && size > orderSize) {
     diff = {
       price,
       size,
@@ -94,9 +97,15 @@ export const updateBuySellOp = (buySellOp, buySellDiff, orderDiff) => {
   if (!isEmptyObj(buySellDiff)) {
     buySellDiff.diff.forEach(tick => {
       if (tick.price >= orderDiff) {
+        // Ne pas compter les opérations pour le même datetime
+        if (buySellOp.history.length && (buySellOp.history[0].received === buySellDiff.diff[0].received)) {
+          return buySellOp;
+        }
+
         let count = buySellOp.count + 1;
         let history = [tick, ...buySellOp.history];
 
+        // Memory Heap : suppression de l'historique en mémoire
         if (count > 10) {
           history = history.slice(0, -1);
         }
@@ -111,4 +120,71 @@ export const updateBuySellOp = (buySellOp, buySellDiff, orderDiff) => {
   }
     
   return buySellOp;
+};
+
+export const updateSellBuyDiff = (buyOrders, sellOrders, orderSize) => {
+  let diff = {};
+  let bestBuyOrder = {};
+  let bestSellOrder = {};
+
+  buyOrders.forEach((order, index) => {
+    if (index === 0 && order.size > orderSize) {
+      bestBuyOrder = { ...order };
+    }
+  });
+
+  sellOrders.forEach((order, index) => {
+    if (index === 0 && order.size > orderSize) {
+      bestSellOrder = { ...order };
+    }
+  });
+
+  const price = (bestSellOrder.price - bestBuyOrder.price).toFixed(4);
+  const size = bestSellOrder.size > bestBuyOrder.size ? bestBuyOrder.size : bestSellOrder.size;
+  const datetime = bestSellOrder.datetime > bestBuyOrder.datetime ? bestBuyOrder.datetime : bestSellOrder.datetime;
+  const received = bestSellOrder.received > bestBuyOrder.received ? bestBuyOrder.received : bestSellOrder.received;
+
+  if (!isNaN(price) && size > orderSize) {
+    diff = {
+      price,
+      size,
+      datetime,
+      received
+    };
+  }
+
+  return {
+    'diff': [diff],
+    'bestBuyOrder': [bestBuyOrder],
+    'bestSellOrder': [bestSellOrder],
+  }
+};
+
+export const updateSellBuyOp = (sellBuyOp, sellByDiff, orderDiff) => {
+  if (!isEmptyObj(sellByDiff)) {
+    sellByDiff.diff.forEach(tick => {
+      if (tick.price >= orderDiff) {
+        // Ne pas compter les opérations pour le même datetime
+        if (sellBuyOp.history.length && (sellBuyOp.history[0].received === sellByDiff.diff[0].received)) {
+          return sellBuyOp;
+        }
+
+        let count = sellBuyOp.count + 1;
+        let history = [tick, ...sellBuyOp.history];
+
+        // Memory Heap : suppression de l'historique en mémoire
+        if (count > 10) {
+          history = history.slice(0, -1);
+        }
+
+        sellBuyOp = {
+          count,
+          history,
+        };
+        return sellBuyOp;
+      }
+    });
+  }
+
+  return sellBuyOp;
 };

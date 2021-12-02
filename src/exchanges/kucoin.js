@@ -24,6 +24,13 @@ export const ws = {
     kucoinClient.on("connecting", data => ws.state = 'Connecting');
     kucoinClient.on("connected", data => ws.state = 'Connected');
     kucoinClient.on("disconnected", data => ws.state = 'Disconnected');
+    kucoinClient.on("closed", () => {
+      ws.state = 'Closed';
+      ws.buyOrders = [];
+      ws.sellOrders = [];
+      ws.filteredBuyOrders = [];
+      ws.filteredSellOrders = [];
+    });
     kucoinClient.on("l2update", ({ asks, bids }, market) => {
       ws.buyOrders = updateOrdersArr(ws.buyOrders, bids);
       ws.sellOrders = updateOrdersArr(ws.sellOrders, asks, false);
@@ -31,6 +38,10 @@ export const ws = {
       ws.filteredSellOrders = drawOrdersArr(ws.sellOrders);
     });
     kucoinClient.subscribeLevel2Updates(ws.market);
+  },
+
+  reset: () => {
+    kucoinClient.reconnect();
   },
 
   printOrderBook: () => {
