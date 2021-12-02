@@ -10,4 +10,4 @@ Rename `.env.dist` to `.env`.
 ```sh
 # launch server
 yarn start
-```d)
+```
