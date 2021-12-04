@@ -1,39 +1,42 @@
 <nav class="navbar {#fixed-top#} navbar-expand-lg navbar-dark bg-dark py-0">
     <div class="container-fluid">
-        <a class="navbar-brand py-0 text-primary" href="{{ path('home') }}"><i class="bi bi-robot" style="font-size: 2em;"></i></a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-            <div class="offcanvas-header justify-content-end pb-0">
-                <button type="button" class="btn btn-dark" data-bs-dismiss="offcanvas" aria-label="Close"><i class="bi bi-x-lg h5"></i></button>
-            </div>
-            <div class="offcanvas-body">
-                <div class="d-lg-flex flex-grow-1 align-items-center">
-                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">Link</a>
-                        </li>
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Dropdown
-                            </a>
-                            <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li><a class="dropdown-item" href="#">Action</a></li>
-                                <li><a class="dropdown-item" href="#">Another action</a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="#">Something else here</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <form class="d-flex">
-                        <div class="input-group input-group-sm">
-                            <input class="form-control" type="search" placeholder="Rechercher" aria-label="Rechercher" aria-describedby="search-form">
-                            <button class="btn btn-primary" type="submit" id="search-form"><i class="bi bi-search"></i></button>
-                        </div>
-                    </form>
+        <a class="navbar-brand py-0 text-primary" href="{{ path('home') }}" data-bs-toggle="tooltip" title="Retour à l'accueil"><i class="bi bi-robot" style="font-size: 1.85em;"></i></a>
+        {% if is_granted('ROLE_USER') %}
+            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+                <div class="offcanvas-header justify-content-end pb-0">
+                    <button type="button" class="btn btn-dark" data-bs-dismiss="offcanvas" aria-label="Close"><i class="bi bi-x-lg h5"></i></button>
+                </div>
+                <div class="offcanvas-body">
+                    <div class="d-lg-flex flex-grow-1 align-items-center">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Link</a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Dropdown
+                                </a>
+                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                    <li><a class="dropdown-item" href="#">Action</a></li>
+                                    <li><a class="dropdown-item" href="#">Another action</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
+                                </ul>
+                            </li>
+                        </ul>
+                        <form class="d-flex">
+                            <div class="input-group input-group-sm">
+                                <input class="form-control" type="search" placeholder="Rechercher" aria-label="Rechercher" aria-describedby="search-form">
+                                <button class="btn btn-primary" type="submit" id="search-form"><i class="bi bi-search"></i></button>
+                            </div>
+                        </form>
+                        <a class="btn btn-sm btn-danger ms-lg-2 mt-4 mt-lg-0" href="{{ path('logout') }}" role="button" data-bs-toggle="tooltip" title="Déconnexion"><i class="bi bi-box-arrow-right text-white"></i></a>
+                    </div>
                 </div>
             </div>
-        </div>
+        {% endif %}
     </div>
 </nav>

@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Login{% endblock %}
+
+{% block body %}
+    <div class="container h-100">
+        <div class="row h-100 justify-content-center">
+            <div class="col col-md-6 col-lg-4 my-auto text-center">
+                <img src="{{ asset('images/bot.svg') }}" width="60" height="60" alt="ccxt-quant-bot">
+                <h1 class="text-primary mb-4">Connexion</h1>
+
+                {# {% if error %}#}
+                {#   <div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>#}
+                {# {% endif %}#}
+                {{ include('_part/_flash_message.html.twig') }}
+
+                <form class="row g-3 needs-validation {% if error %}was-validated{% endif %}" data-controller="field-validation" data-field-validation-target="form" action="{{ path('login') }}" method="post" novalidate>
+                    <div class="form-floating">
+                        <input type="email" class="form-control" id="username" name="_username" value="{{ last_username }}" required data-action="focus->field-validation#validate">
+                        <label class="form-label" for="username">Email:</label>
+                        <div class="invalid-feedback">
+                            Veuilez entrer une adresse email valide
+                        </div>
+                    </div>
+                    <div class="form-floating my-3">
+                        <input type="password" class="form-control" id="password" name="_password" required data-action="focus->field-validation#validate">
+                        <label for="password">Mot de passe:</label>
+                    </div>
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+                    {# If you want to control the URL the user is redirected to on success
+                        <input type="hidden" name="_target_path" value="/account"/> #}
+                    <div class="col-12 d-flex justify-content-center">
+                        <button type="submit" class="btn btn-primary btn-lg">Connexion</button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+{% endblock %}
