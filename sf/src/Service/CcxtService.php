@@ -38,4 +38,21 @@ class CcxtService
         return $ticker;
     }
 
+    public function fetchBalance(Market $market)
+    {
+        if ($market->getName() === 'Kucoin') {
+            $kucoin = new Kucoin([
+                'apiKey' => $market->getApiKey(),
+                'secret' => $market->getApiSecret(),
+                'password' => $market->getApiPassword(),
+            ]);
+
+            if ($kucoin->checkRequiredCredentials()) {
+                return $kucoin->fetch_balance();
+            }
+        }
+
+        return null;
+    }
+
 }

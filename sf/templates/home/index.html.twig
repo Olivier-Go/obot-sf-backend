@@ -6,9 +6,9 @@
     <div class="container-fluid mb-auto">
         <div class="row">
             <div class="col p-3">
-                <h1 class="text-primary text-center mb-3">/</h1>
+                <h1 class="h2 text-primary text-center mb-3">Données de marché</h1>
                 <div class="row row-cols-1 row-cols-md-2 g-4" data-controller="tabbable">
-                    <div class="col col-lg-3">
+                    <div class="col col-lg-4">
                         <div class="card border-primary h-100">
                             <div class="d-flex align-items-start h-100">
                                 <div class="card-header-rounder-2 bg-dark h-100">
@@ -21,7 +21,6 @@
                                 <div class="card-body bg-secondary bg-opacity-10 overflow-hidden h-100 p-2">
                                     <div class="tab-content" id="v-pills-tabContent">
                                         {% for ticker in tickers %}
-                                            {% dump(ticker) %}
                                             <div class="tab-pane tabbable-pane tabbable-{{ ticker.name|lower|replace({'/': '-'}) }} {% if loop.last %}fade-in active show{% endif %}" role="tabpanel">
                                                 <h2>{{ ticker.market.name }}</h2>
                                                 <div class="text-primary"><i class="bi bi-arrow-repeat me-2"></i><small>{{ ticker.time|date('d/m/Y-H:i:s') }}</small></div>
@@ -30,7 +29,7 @@
                                                         <p class="mb-0">Volume:</p>
                                                         <div class="h5 ms-2 mb-0">
                                                             <span class="d-inline-block h5 badge bg-secondary mb-0">
-                                                                {{ ticker.volume|number_format(0)  }}
+                                                                {{ ticker.volume|number_format(0, ',', ' ')  }}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -38,7 +37,7 @@
                                                         <p class="mb-0">Prix:</p>
                                                         <div class="h5 ms-2 mb-0">
                                                             <span class="d-inline-block h5 badge bg-primary mb-0">
-                                                                {{ ticker.last|number_format(2)  }}
+                                                                {{ ticker.last|number_format(2, ',', ' ')  }}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -46,7 +45,7 @@
                                                         <p class="mb-0">Moyenne:</p>
                                                         <div class="h5 ms-2 mb-0">
                                                             <span class="d-inline-block h5 badge bg-info mb-0">
-                                                                {{ ticker.averagePrice|number_format(2)  }}
+                                                                {{ ticker.averagePrice|number_format(2, ',', ' ')  }}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -54,7 +53,7 @@
                                                         <p class="mb-0">Bas:</p>
                                                         <div class="h5 ms-2 mb-0">
                                                             <span class="d-inline-block h5 badge bg-danger mb-0">
-                                                                {{ ticker.low|number_format(2)  }}
+                                                                {{ ticker.low|number_format(2, ',', ' ')  }}
                                                             </span>
                                                         </div>
                                                     </div>
@@ -62,21 +61,59 @@
                                                         <p class="mb-0">Haut:</p>
                                                         <div class="h5 ms-2 mb-0">
                                                             <span class="d-inline-block h5 badge bg-success mb-0">
-                                                                {{ ticker.high|number_format(2)  }}
+                                                                {{ ticker.high|number_format(2, ',', ' ')  }}
                                                             </span>
                                                         </div>
                                                     </div>
                                                 </div>
+                                                {% if ticker.market.balance is not empty %}
+                                                    <hr>
+                                                    <div class="mt-1">
+                                                        <p class="h4">Balance :</p>
+                                                        {% for balance in ticker.market.balance.info.data %}
+                                                            {%  if balance.currency in ticker.name %}
+                                                                <div class="d-flex flex-wrap justify-content-between align-items-center border-rounder-full shadow-sm bg-light my-2">
+                                                                    <p class="my-2 mx-4"><strong class="text-primary">{{ balance.currency }}</strong></p>
+                                                                    <ul class="list-group list-group-flush flex-grow-1">
+                                                                        {% if balance.type is defined %}
+                                                                            <li class="list-group-item py-1 d-flex justify-content-between align-items-center">
+                                                                                Type:
+                                                                                <strong>{{ balance.type }}</strong>
+                                                                            </li>
+                                                                        {% endif %}
+                                                                        {% if balance.balance is defined %}
+                                                                            <li class="list-group-item py-1 d-flex justify-content-between align-items-center">
+                                                                                Balance:
+                                                                                <strong>{{ balance.balance }}</strong>
+                                                                            </li>
+                                                                        {% endif %}
+                                                                        {% if balance.available is defined %}
+                                                                            <li class="list-group-item py-1 d-flex justify-content-between align-items-center">
+                                                                                Disponible:
+                                                                                <strong>{{ balance.available }}</strong>
+                                                                            </li>
+                                                                        {% endif %}
+                                                                        {% if balance.holds is defined %}
+                                                                            <li class="list-group-item py-1 d-flex justify-content-between align-items-center">
+                                                                                Réservé:
+                                                                                <strong>{{ balance.holds }}</strong>
+                                                                            </li>
+                                                                        {% endif %}
+                                                                    </ul>
+                                                                </div>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </div>
+                                                {% endif %}
                                             </div>
                                         {% endfor %}
-                                        <hr>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col col-lg-9">
-                        <div class="card border-primary h-100 overflow-hidden">
+                    <div class="col col-lg-8">
+                        <div class="card border-primary overflow-hidden">
                             <div class="tab-content">
                                 {% for ticker in tickers %}
                                     {#<div class="tab-pane fade {% if loop.first %}active show{% endif %}" id="{{ ticker.name|lower|replace({'/': '-'}) }}" role="tabpanel">
@@ -104,6 +141,36 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col p-3">
+                <h2 class="text-primary text-center mb-3">Opportunités d'arbitrage</h2>
+                <div class="card border-primary overflow-hidden">
+                    <div class="table-responsive">
+                        <table class="table table-light table-striped table-bordered border-secondary mb-0">
+                            <thead class="table-dark">
+                            <tr>
+                                <th scope="col">Date</th>
+                                <th scope="col">Marché</th>
+                                <th scope="col">Paire</th>
+                                <th scope="col">Différence</th>
+                                <th scope="col">Taille</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <th scope="row">1</th>
+                                <td>Mark</td>
+                                <td>Otto</td>
+                                <td>@mdo</td>
+                                <td>@mdo</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <small class="ms-1">Nombre d'opérations: <strong>10</strong></small>
             </div>
         </div>
     </div>

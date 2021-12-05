@@ -9,6 +9,13 @@ composer install
 yarn install
 ```
 
+### Generate JWT SSL keys:
+```sh
+php bin/console lexik:jwt:generate-keypair --skip-if-exists
+```
+
+Your keys will land in `config/jwt/private.pem` and `config/jwt/public.pem` (unless you configured a different path)
+
 ### Create database :
 ```sh
 bin/console doctrine:database:create

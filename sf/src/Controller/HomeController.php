@@ -24,6 +24,8 @@ class HomeController extends AbstractController
                 $ticker = $ccxtService->fetchMarketTickerData($market, $ticker);
                 $tickers->add($ticker);
             }
+
+            $market->balance = $ccxtService->fetchBalance($market);
         }
 
         return $this->render('home/index.html.twig', [

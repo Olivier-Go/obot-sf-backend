@@ -7,8 +7,17 @@ $card-border-radius: 12px;
 @import "~bootstrap/scss/bootstrap";
 @import "~bootstrap-icons/font/bootstrap-icons";
 
+body {
+  background-color: $gray-200;
+}
+
 .card-header-rounder-2 {
   border-radius: 10px 0 0 10px;
+}
+
+.border-rounder-full {
+  border-radius: 10px;
+  overflow: hidden;
 }
 
 .fade-in {

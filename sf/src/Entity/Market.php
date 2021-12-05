@@ -39,6 +39,11 @@ class Market
      */
     private $tickers;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $apiPassword;
+
     public function __construct()
     {
         $this->tickers = new ArrayCollection();
@@ -111,6 +116,18 @@ class Market
                 $ticker->setMarket(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getApiPassword(): ?string
+    {
+        return $this->apiPassword;
+    }
+
+    public function setApiPassword(?string $apiPassword): self
+    {
+        $this->apiPassword = $apiPassword;
 
         return $this;
     }
