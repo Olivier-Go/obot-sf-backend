@@ -2,30 +2,27 @@
 
 namespace App\Controller;
 
-use App\Repository\TickerRepository;
+use App\Repository\MarketRepository;
+use App\Service\CcxtService;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use ccxt\kucoin as Kucoin;
 
 class HomeController extends AbstractController
 {
     /**
      * @Route("/", name="home")
      */
-    public function index(TickerRepository $tickerRepository): Response
+    public function index(MarketRepository $marketRepository, CcxtService $ccxtService): Response
     {
-        $tickers = $tickerRepository->findAll();
+        $markets = $marketRepository->findAll();
+        $tickers = new ArrayCollection();
 
-        $kucoin = new Kucoin();
-        //$markets = $kucoin->load_markets();
-        $fluxUsdT = $kucoin->fetch_ticker('FLUX/USDT');
-
-        foreach ($tickers as $ticker) {
-            if ($ticker->getName() == $fluxUsdT['symbol']) {
-                foreach ($fluxUsdT as $key => $value) {
-                    $ticker->$key = $value;
-                }
+        foreach ($markets as $market) {
+            foreach ($market->getTickers() as $ticker) {
+                $ticker = $ccxtService->fetchMarketTickerData($market, $ticker);
+                $tickers->add($ticker);
             }
         }
 

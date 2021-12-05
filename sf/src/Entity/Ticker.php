@@ -27,6 +27,11 @@ class Ticker
      */
     private $tvChartTickerId;
 
+    /**
+     * @ORM\ManyToOne(targetEntity=Market::class, inversedBy="tickers")
+     */
+    private $market;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -52,6 +57,18 @@ class Ticker
     public function setTvChartTickerId(?string $tvChartTickerId): self
     {
         $this->tvChartTickerId = $tvChartTickerId;
+
+        return $this;
+    }
+
+    public function getMarket(): ?Market
+    {
+        return $this->market;
+    }
+
+    public function setMarket(?Market $market): self
+    {
+        $this->market = $market;
 
         return $this;
     }
