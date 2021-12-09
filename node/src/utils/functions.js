@@ -140,7 +140,7 @@ export const updateSellBuyDiff = (buyOrders, sellOrders, orderSize) => {
   });
 
   const price = (bestSellOrder.price - bestBuyOrder.price).toFixed(4);
-  const size = bestSellOrder.size > bestBuyOrder.size ? bestBuyOrder.size : bestSellOrder.size;
+  const size = bestSellOrder.size < bestBuyOrder.size ? bestSellOrder.size : bestBuyOrder.size;
   const datetime = bestSellOrder.datetime > bestBuyOrder.datetime ? bestBuyOrder.datetime : bestSellOrder.datetime;
   const received = bestSellOrder.received > bestBuyOrder.received ? bestBuyOrder.received : bestSellOrder.received;
 
@@ -160,12 +160,12 @@ export const updateSellBuyDiff = (buyOrders, sellOrders, orderSize) => {
   }
 };
 
-export const updateSellBuyOp = (sellBuyOp, sellByDiff, orderDiff) => {
-  if (!isEmptyObj(sellByDiff)) {
-    sellByDiff.diff.forEach(tick => {
+export const updateSellBuyOp = (sellBuyOp, sellBuyDiff, orderDiff, ticker = false) => {
+  if (!isEmptyObj(sellBuyDiff)) {
+    sellBuyDiff.diff.forEach(tick => {
       if (tick.price >= orderDiff) {
         // Ne pas compter les opérations pour le même datetime
-        if (sellBuyOp.history.length && (sellBuyOp.history[0].received === sellByDiff.diff[0].received)) {
+        if (sellBuyOp.history.length && (sellBuyOp.history[0].received === sellBuyDiff.diff[0].received)) {
           return sellBuyOp;
         }
 
@@ -181,7 +181,21 @@ export const updateSellBuyOp = (sellBuyOp, sellByDiff, orderDiff) => {
           count,
           history,
         };
-        return sellBuyOp;
+
+        // Envoi à l'API
+        if (ticker) {
+          return sellBuyOp = {
+            ticker,
+            'buyMarket': 1, // Bittrex
+            'sellMarket': 2, // Kucoin
+            'buyPrice': sellBuyDiff.bestBuyOrder[0].price,
+            'sellPrice': sellBuyDiff.bestSellOrder[0].price,
+            'size': tick.size,
+            'priceDiff': tick.price,
+            'received': (tick.received/1000).toFixed(0)
+          };
+        }
+        else return sellBuyOp;
       }
     });
   }

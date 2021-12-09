@@ -11,11 +11,15 @@ import {
 } from './utils/functions.js';
 import { ws as kucoinWs } from "./exchanges/kucoin.js";
 import { ws as bittrexWs } from "./exchanges/bittrex.js";
+import axios from "axios";
 
 const app = {
+  ticker: 1, // FLUX/USDT
+  interval: null,
   startTime: 0,
   resetTime: 0,
   memHeapUsed: 0,
+  apiToken: null,
   threshold: process.env.APP_THRESHOLD,
   orderSize: process.env.ORDER_SIZE,
   orderDiff: process.env.ORDER_DIFF,
@@ -54,12 +58,13 @@ const app = {
     console.log(` Threshold : ${app.threshold}  |  OrderSize : ${app.orderSize}  |  OrderDiff : ${app.orderDiff}`);
 
     const today = new Date();
-    const date = `${today.getDate()}/${today.getMonth()+1}/${today.getFullYear()}`;
+    const date = `${twoDigit(today.getDate())}/${twoDigit(today.getMonth()+1)}/${today.getFullYear()}`;
     const time = `${twoDigit(today.getHours())}:${twoDigit(today.getMinutes())}:${twoDigit(today.getSeconds())}`;
     const since = new Date(timeAgo(app.startTime) * 1000).toISOString().substr(11, 8);
     app.used = Math.round(process.memoryUsage().heapUsed / 1024 / 1024 * 100) / 100;
 
     console.log(` ${date} ${time} - Started : ${since} -  Mem : ${app.used} MB `);
+    console.log(` Connexion API : ${app.apiToken ? 'OK' : 'KO'}             `);
     console.log(`-----------------------------------------------------------`);
   },
 
@@ -85,33 +90,62 @@ const app = {
     console.table(drawOrdersArr(app.sellBuyDiffBtoK.diff));
   },
 
-  printBuySellOp: () => {
+  buySellOp: (print = false, send = false) => {
     console.log(`          OP  :   BUY KUCOIN / SELL BITTREX                   `);
     if (!isEmptyObj(app.buySellDiffKtoB)) {
       app.buySellOpKtoB = updateBuySellOp(app.buySellOpKtoB, app.buySellDiffKtoB, app.orderDiff);
-      console.log(app.buySellOpKtoB.count);
-      console.table(drawOrdersArr(app.buySellOpKtoB.history, 10));
+      if (print) {
+        console.log(app.buySellOpKtoB.count);
+        console.table(drawOrdersArr(app.buySellOpKtoB.history, 10));
+      }
+
     }
     console.log(`          OP  :   BUY BITTREX / SELL KUCOIN                   `);
     if (!isEmptyObj(app.buySellDiffBtoK)) {
       app.buySellOpBtoK = updateBuySellOp(app.buySellOpBtoK, app.buySellDiffBtoK, app.orderDiff);
-      console.log(app.buySellOpBtoK.count);
-      console.table(drawOrdersArr(app.buySellOpBtoK.history, 10));
+      if (print) {
+        console.log(app.buySellOpBtoK.count);
+        console.table(drawOrdersArr(app.buySellOpBtoK.history, 10));
+      }
     }
   },
 
-  printSellBuyOp: () => {
+  sellBuyOp: (print = false, ticker = false) => {
     console.log(`          OP  :   SELL KUCOIN / BUY BITTREX                   `);
     if (!isEmptyObj(app.sellBuyDiffKtoB)) {
-      app.sellBuyOpKtoB = updateSellBuyOp(app.sellBuyOpKtoB, app.sellBuyDiffKtoB, app.orderDiff);
-      console.log(app.sellBuyOpKtoB.count);
-      console.table(drawOrdersArr(app.sellBuyOpKtoB.history, 10));
+      const op = updateSellBuyOp(app.sellBuyOpKtoB, app.sellBuyDiffKtoB, app.orderDiff, ticker);
+      //console.log(op)
+      if (app.apiToken && ticker && op && op.ticker) {
+        axios({
+          method: 'post',
+          url: `${process.env.API_URL}/api/arbitrage/opportunity/add`,
+          headers: {'Authorization': `Bearer ${app.apiToken}`},
+          data: { ...op },
+        })
+          .then((response) => {
+            console.log(response.data);
+
+          })
+          .catch((error) => {
+            console.warn(error.response.data);
+          })
+          .finally(() => {
+            app.stop();
+          });
+      }
+      if (print) {
+        app.sellBuyOpKtoB = op ? updateSellBuyOp(app.sellBuyOpKtoB, app.sellBuyDiffKtoB, app.orderDiff) : app.sellBuyOpKtoB;
+        console.log(app.sellBuyOpKtoB.count);
+        console.table(drawOrdersArr(app.sellBuyOpKtoB.history, 10));
+      }
     }
     console.log(`          OP  :   SELL BITTREX / BUY KUCOIN                   `);
     if (!isEmptyObj(app.sellBuyDiffBtoK)) {
-      app.sellBuyOpBtoK = updateSellBuyOp(app.sellBuyOpBtoK, app.sellBuyDiffBtoK, app.orderDiff);
-      console.log(app.sellBuyOpBtoK.count);
-      console.table(drawOrdersArr(app.sellBuyOpBtoK.history, 10));
+      if (print) {
+        app.sellBuyOpBtoK = updateSellBuyOp(app.sellBuyOpBtoK, app.sellBuyDiffBtoK, app.orderDiff);
+        console.log(app.sellBuyOpBtoK.count);
+        console.table(drawOrdersArr(app.sellBuyOpBtoK.history, 10));
+      }
     }
   },
 
@@ -127,17 +161,43 @@ const app = {
     app.printBanner();
     //kucoinWs.printOrderBook();
     //bittrexWs.printOrderBook();
-    app.printBuySellDiff();
-    app.printBuySellOp();
+   // app.printBuySellDiff();
+    //app.buySellOp(true, true);
     app.printSellBuyDiff();
-    app.printSellBuyOp();
+    app.sellBuyOp(true, app.ticker);
   },
 
-  run: () => {
-    app.init();
-    setInterval(app.draw, app.threshold);
+  run: (api = false) => {
+    if (api) {
+      axios({
+        method: 'post',
+        url: `${process.env.API_URL}/api/login_check`,
+        data: {
+          'username': process.env.API_USERNAME,
+          'password': process.env.API_PASSWORD,
+        },
+      })
+        .then((response) => {
+          app.apiToken = response.data.token;
+          app.init();
+          app.interval = setInterval(app.draw, app.threshold);
+        })
+        .catch((error) => {
+          console.warn(error.response.data);
+        })
+        .finally(() => {
+        });
+    }
+    else {
+      app.init();
+      app.interval = setInterval(app.draw, app.threshold);
+    }
+  },
+
+  stop: () => {
+    clearInterval(app.interval);
   }
 };
 
-app.run();
+app.run(true);
 

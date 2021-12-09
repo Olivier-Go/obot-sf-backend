@@ -44,9 +44,15 @@ class Market
      */
     private $apiPassword;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Opportunity::class, mappedBy="buyMarket")
+     */
+    private $opportunities;
+
     public function __construct()
     {
         $this->tickers = new ArrayCollection();
+        $this->opportunities = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -128,6 +134,36 @@ class Market
     public function setApiPassword(?string $apiPassword): self
     {
         $this->apiPassword = $apiPassword;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Opportunity[]
+     */
+    public function getOpportunities(): Collection
+    {
+        return $this->opportunities;
+    }
+
+    public function addOpportunity(Opportunity $opportunity): self
+    {
+        if (!$this->opportunities->contains($opportunity)) {
+            $this->opportunities[] = $opportunity;
+            $opportunity->setBuyMarket($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOpportunity(Opportunity $opportunity): self
+    {
+        if ($this->opportunities->removeElement($opportunity)) {
+            // set the owning side to null (unless already changed)
+            if ($opportunity->getBuyMarket() === $this) {
+                $opportunity->setBuyMarket(null);
+            }
+        }
 
         return $this;
     }

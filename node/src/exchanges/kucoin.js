@@ -2,10 +2,7 @@ import '../utils/env.js';
 import { updateOrdersArr, drawOrdersArr } from '../utils/functions.js';
 import { KucoinClient } from "ccxws";
 
-const kucoinClient = new KucoinClient({
-  apiKey: process.env.KUCOIN_API_KEY,
-  apiSecret: process.env.KUCOIN_API_SECRET,
-});
+const kucoinClient = new KucoinClient();
 
 export const ws = {
   state: 'Disconnected',

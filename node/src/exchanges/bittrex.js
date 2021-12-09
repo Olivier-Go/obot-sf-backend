@@ -2,10 +2,7 @@ import '../utils/env.js';
 import { updateOrdersArr, drawOrdersArr } from '../utils/functions.js';
 import { BittrexClient } from "ccxws";
 
-const bittrexClient = new BittrexClient({
-  apiKey: process.env.BITTREX_API_KEY,
-  apiSecret: process.env.BITTREX_API_SECRET,
-});
+const bittrexClient = new BittrexClient();
 
 export const ws = {
   state: 'Disconnected',
