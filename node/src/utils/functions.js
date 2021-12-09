@@ -93,13 +93,17 @@ export const updateBuySellDiff = (sellOrders, buyOrders, orderSize) => {
 };
 
 
-export const updateBuySellOp = (buySellOp, buySellDiff, orderDiff) => {
+export const updateBuySellOp = (buySellOp, buySellDiff, orderDiff, ticker = null, buyMarket = null, sellMarket = null) => {
   if (!isEmptyObj(buySellDiff)) {
     buySellDiff.diff.forEach(tick => {
       if (tick.price >= orderDiff) {
         // Ne pas compter les opérations pour le même datetime
-        if (buySellOp.history.length && (buySellOp.history[0].received === buySellDiff.diff[0].received)) {
-          return buySellOp;
+        if (buySellOp.history.length) {
+          const opDatetime = Number((buySellOp.history[0].received/1000).toFixed(0));
+          const diffDatetime = Number((buySellDiff.diff[0].received/1000).toFixed(0));
+          if (opDatetime === diffDatetime) {
+            return null;
+          }
         }
 
         let count = buySellOp.count + 1;
@@ -114,7 +118,22 @@ export const updateBuySellOp = (buySellOp, buySellDiff, orderDiff) => {
           count,
           history,
         };
-        return buySellOp;
+
+        // Envoi à l'API
+        if (ticker && buyMarket && sellMarket) {
+          return buySellOp = {
+            ticker,
+            'direction': 'Buy->Sell',
+            buyMarket,
+            sellMarket,
+            'buyPrice': buySellDiff.bestBuyOrder[0].price,
+            'sellPrice': buySellDiff.bestSellOrder[0].price,
+            'size': tick.size,
+            'priceDiff': tick.price,
+            'received': (tick.received/1000).toFixed(0)
+          };
+        }
+        else return buySellOp;
       }
     });
   }
@@ -160,13 +179,17 @@ export const updateSellBuyDiff = (buyOrders, sellOrders, orderSize) => {
   }
 };
 
-export const updateSellBuyOp = (sellBuyOp, sellBuyDiff, orderDiff, ticker = false) => {
+export const updateSellBuyOp = (sellBuyOp, sellBuyDiff, orderDiff, ticker = null, buyMarket = null, sellMarket = null) => {
   if (!isEmptyObj(sellBuyDiff)) {
     sellBuyDiff.diff.forEach(tick => {
       if (tick.price >= orderDiff) {
         // Ne pas compter les opérations pour le même datetime
-        if (sellBuyOp.history.length && (sellBuyOp.history[0].received === sellBuyDiff.diff[0].received)) {
-          return sellBuyOp;
+        if (sellBuyOp.history.length) {
+          const opDatetime = Number((sellBuyOp.history[0].received/1000).toFixed(0));
+          const diffDatetime = Number((sellBuyDiff.diff[0].received/1000).toFixed(0));
+          if (opDatetime === diffDatetime) {
+            return null;
+          }
         }
 
         let count = sellBuyOp.count + 1;
@@ -183,11 +206,12 @@ export const updateSellBuyOp = (sellBuyOp, sellBuyDiff, orderDiff, ticker = fals
         };
 
         // Envoi à l'API
-        if (ticker) {
+        if (ticker && buyMarket && sellMarket) {
           return sellBuyOp = {
             ticker,
-            'buyMarket': 1, // Bittrex
-            'sellMarket': 2, // Kucoin
+            'direction': 'Sell->Buy',
+            buyMarket,
+            sellMarket,
             'buyPrice': sellBuyDiff.bestBuyOrder[0].price,
             'sellPrice': sellBuyDiff.bestSellOrder[0].price,
             'size': tick.size,

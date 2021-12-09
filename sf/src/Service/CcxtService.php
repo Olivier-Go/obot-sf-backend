@@ -4,7 +4,7 @@ namespace App\Service;
 use App\Entity\Market;
 use App\Entity\Ticker;
 use ccxt\kucoin as Kucoin;
-use ccxt\binance as Binance;
+use ccxt\bittrex as Bittrex;
 use DateTime;
 
 class CcxtService
@@ -19,11 +19,11 @@ class CcxtService
     {
         $marketData = [];
 
-        if ($market->getName() === 'Binance' && $ticker->getMarket() === $market) {
-            $binance = new Binance();
-            $marketData = $binance->fetch_ticker($ticker->getName());
+        if ($market->getId() === 1 && $ticker->getMarket() === $market) {
+            $bittrex = new Bittrex();
+            $marketData = $bittrex->fetch_ticker($ticker->getName());
         }
-        if ($market->getName() === 'Kucoin' && $ticker->getMarket() === $market) {
+        if ($market->getId() === 2 && $ticker->getMarket() === $market) {
             $kucoin = new Kucoin();
             $marketData = $kucoin->fetch_ticker($ticker->getName());
         }
@@ -40,7 +40,18 @@ class CcxtService
 
     public function fetchBalance(Market $market)
     {
-        if ($market->getName() === 'Kucoin') {
+        if ($market->getId() === 1) {
+            $bittrex = new Bittrex([
+                'apiKey' => $market->getApiKey(),
+                'secret' => $market->getApiSecret()
+            ]);
+
+            if ($bittrex->checkRequiredCredentials()) {
+                return $bittrex->fetch_balance();
+            }
+        }
+
+        if ($market->getId() === 2) {
             $kucoin = new Kucoin([
                 'apiKey' => $market->getApiKey(),
                 'secret' => $market->getApiSecret(),

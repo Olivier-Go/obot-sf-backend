@@ -25,6 +25,11 @@ class Opportunity
     private $ticker;
 
     /**
+     * @ORM\Column(type="string", length=255)
+     */
+    private $direction;
+
+    /**
      * @ORM\ManyToOne(targetEntity=Market::class, inversedBy="opportunities", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      */
@@ -73,6 +78,7 @@ class Opportunity
      */
     private $updated;
 
+
     public function getId(): ?int
     {
         return $this->id;
@@ -86,6 +92,18 @@ class Opportunity
     public function setTicker(?Ticker $ticker): self
     {
         $this->ticker = $ticker;
+
+        return $this;
+    }
+
+    public function getDirection(): ?string
+    {
+        return $this->direction;
+    }
+
+    public function setDirection(string $direction): self
+    {
+        $this->direction = $direction;
 
         return $this;
     }

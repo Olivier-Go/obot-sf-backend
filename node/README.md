@@ -8,6 +8,9 @@ yarn
 Rename `.env.dist` to `.env`.
 
 ```sh
-# launch server
-yarn start
+# launch dev server
+yarn run-dev
+
+# launch prod server
+yarn run-prod
 ```

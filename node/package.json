@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "nodemon src/index.js"
+    "run-dev": "nodemon src/index.js",
+    "run-prod": "node src/index.js"
   },
   "dependencies": {
     "axios": "^0.24.0",
