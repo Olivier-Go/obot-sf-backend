@@ -1,5 +1,5 @@
-import '../utils/env.js';
-import { updateOrdersArr, drawOrdersArr } from '../utils/functions.js';
+import './../utils/env.js';
+import { updateOrdersArr, drawOrdersArr } from './../utils/functions.js';
 import { KucoinClient } from "ccxws";
 
 const kucoinClient = new KucoinClient();

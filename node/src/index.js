@@ -1,221 +1,104 @@
-import './utils/env.js';
-import { 
-  updateBuySellDiff,
-  updateSellBuyDiff,
-  drawOrdersArr, 
-  isEmptyObj, 
-  timeAgo,
-  twoDigit,
-  updateBuySellOp,
-  updateSellBuyOp
-} from './utils/functions.js';
+import "./utils/env.js";
+import { drawOrdersArr, isEmptyObj, startTime, memoryUsage } from "./utils/functions.js";
+import { updateBuySellDiff, updateSellBuyDiff, updateBuySellOp, updateSellBuyOp } from "./opportunities.js";
+import { apiFetchConnection, apiAddOpportunity } from "./requests.js";
+import { state } from "./state.js";
 import { ws as kucoinWs } from "./exchanges/kucoin.js";
 import { ws as bittrexWs } from "./exchanges/bittrex.js";
-import axios from "axios";
+import { ws as binanceWs } from "./exchanges/binance.js";
 
-const app = {
-  ticker: 1, // FLUX/USDT
-  interval: null,
-  startTime: 0,
-  resetTime: 0,
-  memHeapUsed: 0,
-  apiToken: null,
-  threshold: process.env.APP_THRESHOLD,
-  orderSize: process.env.ORDER_SIZE,
-  orderDiff: process.env.ORDER_DIFF,
-  buySellDiffKtoB: {},
-  buySellDiffBtoK: {},
-  buySellOpKtoB: {
-    'count' : 0,
-    'order': {},
-    'history': [],
-  },
-  buySellOpBtoK: {
-    'count' : 0,
-    'order': {},
-    'history': [],
-  },
-  sellBuyDiffKtoB: {},
-  sellBuyDiffBtoK: {},
-  sellBuyOpKtoB: {
-    'count' : 0,
-    'order': {},
-    'history': [],
-  },
-  sellBuyOpBtoK: {
-    'count' : 0,
-    'order': {},
-    'history': [],
-  },
-
+export const app = {
   init: () => {
-    app.startTime = Date.now();
+    state.startTime = Date.now();
     kucoinWs.run();
     bittrexWs.run();
+    binanceWs.run();
     setInterval(() => {
-      app.resetTime += 1;
+      state.resetTime += 1;
     }, 1000);
   },
 
   printBanner: () => {
-    console.log(`-----------------------------------------------------------`);
-    console.log(` Threshold : ${app.threshold}  |  OrderSize : ${app.orderSize}  |  OrderDiff : ${app.orderDiff}`);
-
-    const today = new Date();
-    const date = `${twoDigit(today.getDate())}/${twoDigit(today.getMonth()+1)}/${today.getFullYear()}`;
-    const time = `${twoDigit(today.getHours())}:${twoDigit(today.getMinutes())}:${twoDigit(today.getSeconds())}`;
-    const since = new Date(timeAgo(app.startTime) * 1000).toISOString().substr(11, 8);
-    app.used = Math.round(process.memoryUsage().heapUsed / 1024 / 1024 * 100) / 100;
-
-    console.log(` ${date} ${time} - Started : ${since} -  Mem : ${app.used} MB `);
-    console.log(` Connexion API : ${app.apiToken ? 'OK' : 'KO'}             `);
-    console.log(`-----------------------------------------------------------`);
+    console.log(`----------------------------------------------------------------------------`);
+    console.log(` Threshold : ${state.threshold}  |  OrderSize : ${state.orderSize}  |  OrderDiff : ${state.orderDiff}`);
+    const startedTime = startTime();
+    console.log(` ${startedTime.date} ${startedTime.time} - Started : ${startedTime.since} -  Mem : ${memoryUsage()} MB `);
+    console.log(` API : ${state.apiToken ? 'OK' : 'KO'} | Bittrex : ${bittrexWs.state} | Kucoin : ${kucoinWs.state} | Binance : ${binanceWs.state}`);
+    console.log(`----------------------------------------------------------------------------`);
   },
 
   printBuySellDiff: () => {
-    console.log(`          DIFF  :   BUY KUCOIN / SELL BITTREX                   `);
-    console.log(`                    ${kucoinWs.state}  / ${bittrexWs.state}     `);
-    app.buySellDiffKtoB = updateBuySellDiff(kucoinWs.sellOrders, bittrexWs.buyOrders, app.orderSize);
-    console.table(drawOrdersArr(app.buySellDiffKtoB.diff));
-    console.log(`          DIFF  :   BUY BITTREX / SELL KUCOIN                   `);
-    console.log(`                    ${bittrexWs.state}  / ${kucoinWs.state}     `);
-    app.buySellDiffBtoK = updateBuySellDiff(bittrexWs.sellOrders, kucoinWs.buyOrders, app.orderSize);
-    console.table(drawOrdersArr(app.buySellDiffBtoK.diff));
+    console.log(`          DIFF  :   BUY BITTREX / SELL BINANCE                   `);
+    state.buySellDiffBittrexToBinance = updateBuySellDiff(bittrexWs.sellOrders, binanceWs.buyOrders, state.orderSize);
+    console.table(drawOrdersArr(state.buySellDiffBittrexToBinance.diff));
+    console.log(`          DIFF  :   BUY BINANCE / SELL BITTREX                   `);
+    state.buySellDiffBinanceToBittrex = updateBuySellDiff(binanceWs.sellOrders, bittrexWs.buyOrders, state.orderSize);
+    console.table(drawOrdersArr(state.buySellDiffBinanceToBittrex.diff));
   },
 
   printSellBuyDiff: () => {
-    console.log(`          DIFF  :   SELL KUCOIN / BUY BITTREX                   `);
-    console.log(`                    ${kucoinWs.state}  / ${bittrexWs.state}     `);
-    app.sellBuyDiffKtoB = updateSellBuyDiff(kucoinWs.buyOrders, bittrexWs.sellOrders, app.orderSize);
-    console.table(drawOrdersArr(app.sellBuyDiffKtoB.diff));
-    console.log(`          DIFF  :   SELL BITTREX / BUY KUCOIN                   `);
-    console.log(`                    ${bittrexWs.state}  / ${kucoinWs.state}     `);
-    app.sellBuyDiffBtoK = updateSellBuyDiff(bittrexWs.buyOrders, kucoinWs.sellOrders, app.orderSize);
-    console.table(drawOrdersArr(app.sellBuyDiffBtoK.diff));
+    console.log(`          DIFF  :   SELL BITTREX / BUY BINANCE                   `);
+    state.sellBuyDiffBittrexToBinance = updateSellBuyDiff(bittrexWs.buyOrders, binanceWs.sellOrders, state.orderSize);
+    console.table(drawOrdersArr(state.sellBuyDiffBittrexToBinance.diff));
+    console.log(`          DIFF  :   SELL BINANCE / BUY BITTREX                   `);
+    state.sellBuyDiffBinanceToBittrex = updateSellBuyDiff(binanceWs.buyOrders, bittrexWs.sellOrders, state.orderSize);
+    console.table(drawOrdersArr(state.sellBuyDiffBinanceToBittrex.diff));
   },
 
   buySellOp: (print = false, ticker = false) => {
-    console.log(`          OP  :   BUY KUCOIN / SELL BITTREX                   `);
-    if (!isEmptyObj(app.buySellDiffKtoB)) {
-      const op = updateBuySellOp(app.buySellOpKtoB, app.buySellDiffKtoB, app.orderDiff, ticker, 2, 1); // 1 = Bittrex, 2 = Kucoin
+    console.log(`          OP  :   BUY BITTREX / SELL BINANCE                   `);
+    if (!isEmptyObj(state.buySellDiffBittrexToBinance)) {
+      const op = updateBuySellOp(state.buySellOpBittrexToBinance, state.buySellDiffBittrexToBinance, state.orderDiff, ticker, 1, 3); // 3 = Binance, 1 = Bittrex
       //console.log(op)
-      if (app.apiToken && ticker && !isEmptyObj(op.order)) {
-        app.stop();
-        axios({
-          method: 'post',
-          url: `${process.env.API_URL}/api/arbitrage/opportunity/add`,
-          headers: {'Authorization': `Bearer ${app.apiToken}`},
-          data: { ...op.order },
-        })
-            .then((response) => {
-              //console.log(response.data);
-              if (response.status === 201) {
-                app.run();
-              }
-            })
-            .catch((error) => {
-              console.warn(error.response.data);
-            })
-            .finally(() => {
-            });
+      if (state.apiToken && ticker && !isEmptyObj(op.order)) {
+        apiAddOpportunity(op);
       }
       if (print) {
-        app.buySellOpKtoB = !isEmptyObj(op.order) ? updateBuySellOp(app.buySellOpKtoB, app.buySellDiffKtoB, app.orderDiff) : app.buySellOpKtoB;
-        console.log(app.buySellOpKtoB.count);
-        console.table(drawOrdersArr(app.buySellOpKtoB.history, 1));
+        state.buySellOpBittrexToBinance = !isEmptyObj(op.order) ? updateBuySellOp(state.buySellOpBittrexToBinance, state.buySellDiffBittrexToBinance, state.orderDiff) : state.buySellOpBittrexToBinance;
+        console.log(state.buySellOpBittrexToBinance.count);
+        console.table(drawOrdersArr(state.buySellOpBittrexToBinance.history, 1));
       }
     }
-    console.log(`          OP  :   BUY BITTREX / SELL KUCOIN                   `);
-    if (!isEmptyObj(app.buySellDiffBtoK)) {
-      const op = updateBuySellOp(app.buySellOpBtoK, app.buySellDiffBtoK, app.orderDiff, ticker, 1, 2); // 1 = Bittrex, 2 = Kucoin
+    console.log(`          OP  :   BUY BINANCE / SELL BITTREX                   `);
+    if (!isEmptyObj(state.buySellDiffBinanceToBittrex)) {
+      const op = updateBuySellOp(state.buySellOpBinanceToBittrex, state.buySellDiffBinanceToBittrex, state.orderDiff, ticker, 3, 1); // 3 = Binance, 1 = Bittrex
       //console.log(op)
-      if (app.apiToken && ticker && !isEmptyObj(op.order)) {
-        app.stop();
-        axios({
-          method: 'post',
-          url: `${process.env.API_URL}/api/arbitrage/opportunity/add`,
-          headers: {'Authorization': `Bearer ${app.apiToken}`},
-          data: { ...op.order },
-        })
-            .then((response) => {
-              //console.log(response.data);
-              if (response.status === 201) {
-                app.run();
-              }
-            })
-            .catch((error) => {
-              console.warn(error.response.data);
-            })
-            .finally(() => {
-            });
+      if (state.apiToken && ticker && !isEmptyObj(op.order)) {
+        apiAddOpportunity(op);
       }
       if (print) {
-        app.buySellOpBtoK = !isEmptyObj(op.order) ? updateBuySellOp(app.buySellOpBtoK, app.buySellDiffBtoK, app.orderDiff) : app.buySellOpBtoK;
-        console.log(app.buySellOpBtoK.count);
-        console.table(drawOrdersArr(app.buySellOpBtoK.history, 1));
+        state.buySellOpBinanceToBittrex = !isEmptyObj(op.order) ? updateBuySellOp(state.buySellOpBinanceToBittrex, state.buySellDiffBinanceToBittrex, state.orderDiff) : state.buySellOpBinanceToBittrex;
+        console.log(state.buySellOpBinanceToBittrex.count);
+        console.table(drawOrdersArr(state.buySellOpBinanceToBittrex.history, 1));
       }
     }
   },
 
   sellBuyOp: (print = false, ticker = false) => {
-    console.log(`          OP  :   SELL KUCOIN / BUY BITTREX                   `);
-    if (!isEmptyObj(app.sellBuyDiffKtoB)) {
-      const op = updateSellBuyOp(app.sellBuyOpKtoB, app.sellBuyDiffKtoB, app.orderDiff, ticker, 1, 2); // 1 = Bittrex, 2 = Kucoin
+    console.log(`          OP  :   SELL BITTREX / BUY BINANCE                   `);
+    if (!isEmptyObj(state.sellBuyDiffBittrexToBinance)) {
+      const op = updateSellBuyOp(state.sellBuyOpBittrexToBinance, state.sellBuyDiffBittrexToBinance, state.orderDiff, ticker, 3, 1); // 3 = Binance, 1 = Bittrex
       //console.log(op)
-      if (app.apiToken && ticker && !isEmptyObj(op.order)) {
-        app.stop();
-        axios({
-          method: 'post',
-          url: `${process.env.API_URL}/api/arbitrage/opportunity/add`,
-          headers: {'Authorization': `Bearer ${app.apiToken}`},
-          data: { ...op.order },
-        })
-          .then((response) => {
-            //console.log(response.data);
-            if (response.status === 201) {
-              app.run();
-            }
-          })
-          .catch((error) => {
-            console.warn(error.response.data);
-          })
-          .finally(() => {
-          });
+      if (state.apiToken && ticker && !isEmptyObj(op.order)) {
+        apiAddOpportunity(op);
       }
       if (print) {
-        app.sellBuyOpKtoB = !isEmptyObj(op.order) ? updateSellBuyOp(app.sellBuyOpKtoB, app.sellBuyDiffKtoB, app.orderDiff) : app.sellBuyOpKtoB;
-        console.log(app.sellBuyOpKtoB.count);
-        console.table(drawOrdersArr(app.sellBuyOpKtoB.history, 1));
+        state.sellBuyOpBittrexToBinance = !isEmptyObj(op.order) ? updateSellBuyOp(state.sellBuyOpBittrexToBinance, state.sellBuyDiffBittrexToBinance, state.orderDiff) : state.sellBuyOpBittrexToBinance;
+        console.log(state.sellBuyOpBittrexToBinance.count);
+        console.table(drawOrdersArr(state.sellBuyOpBittrexToBinance.history, 1));
       }
     }
-    console.log(`          OP  :   SELL BITTREX / BUY KUCOIN                   `);
-    if (!isEmptyObj(app.sellBuyDiffBtoK)) {
-      const op = updateSellBuyOp(app.sellBuyOpBtoK, app.sellBuyDiffBtoK, app.orderDiff, ticker, 2, 1); // 1 = Bittrex, 2 = Kucoin
+    console.log(`          OP  :   SELL BINANCE / BUY BITTREX                   `);
+    if (!isEmptyObj(state.sellBuyDiffBinanceToBittrex)) {
+      const op = updateSellBuyOp(state.sellBuyOpBinanceToBittrex, state.sellBuyDiffBinanceToBittrex, state.orderDiff, ticker, 1, 3); // 3 = Binance, 1 = Bittrex
       //console.log(op)
-      if (app.apiToken && ticker && !isEmptyObj(op.order)) {
-        app.stop();
-        axios({
-          method: 'post',
-          url: `${process.env.API_URL}/api/arbitrage/opportunity/add`,
-          headers: {'Authorization': `Bearer ${app.apiToken}`},
-          data: { ...op.order },
-        })
-            .then((response) => {
-              //console.log(response.data);
-              if (response.status === 201) {
-                app.run();
-              }
-            })
-            .catch((error) => {
-              console.warn(error.response.data);
-            })
-            .finally(() => {
-            });
+      if (state.apiToken && ticker && !isEmptyObj(op.order)) {
+        apiAddOpportunity(op);
       }
       if (print) {
-        app.sellBuyOpBtoK = !isEmptyObj(op.order) ? updateSellBuyOp(app.sellBuyOpBtoK, app.sellBuyDiffBtoK, app.orderDiff) : app.sellBuyOpBtoK;
-        console.log(app.sellBuyOpBtoK.count);
-        console.table(drawOrdersArr(app.sellBuyOpBtoK.history, 1));
+        state.sellBuyOpBinanceToBittrex = !isEmptyObj(op.order) ? updateSellBuyOp(state.sellBuyOpBinanceToBittrex, state.sellBuyDiffBinanceToBittrex, state.orderDiff) : state.sellBuyOpBinanceToBittrex;
+        console.log(state.sellBuyOpBinanceToBittrex.count);
+        console.table(drawOrdersArr(state.sellBuyOpBinanceToBittrex.history, 1));
       }
     }
   },
@@ -223,41 +106,26 @@ const app = {
   reset: () => {
     kucoinWs.reset();
     bittrexWs.reset();
-    return app.resetTime = 0;
+    binanceWs.reset();
+    return state.resetTime = 0;
   },
 
   draw: () => {
     console.clear();
-    if (app.resetTime > 600) app.reset(); // 10 minutes
+    if (state.resetTime > 600) app.reset(); // 10 minutes
     app.printBanner();
     //kucoinWs.printOrderBook();
     //bittrexWs.printOrderBook();
+    //binanceWs.printOrderBook();
     app.printBuySellDiff();
-    app.buySellOp(true, app.ticker);
+    app.buySellOp(true, state.ticker);
     app.printSellBuyDiff();
-    app.sellBuyOp(true, app.ticker);
+    app.sellBuyOp(true, state.ticker);
   },
 
   start: (api = false) => {
     if (api) {
-      axios({
-        method: 'post',
-        url: `${process.env.API_URL}/api/login_check`,
-        data: {
-          'username': process.env.API_USERNAME,
-          'password': process.env.API_PASSWORD,
-        },
-      })
-        .then((response) => {
-          app.apiToken = response.data.token;
-          app.init();
-          app.run();
-        })
-        .catch((error) => {
-          console.warn(error.response.data);
-        })
-        .finally(() => {
-        });
+      apiFetchConnection();
     }
     else {
       app.init();
@@ -266,11 +134,11 @@ const app = {
   },
 
   run: () => {
-    app.interval = setInterval(app.draw, app.threshold);
+    state.interval = setInterval(app.draw, state.threshold);
   },
 
   stop: () => {
-    clearInterval(app.interval);
+    clearInterval(state.interval);
   }
 };
 
