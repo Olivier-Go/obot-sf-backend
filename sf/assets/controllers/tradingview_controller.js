@@ -12,9 +12,9 @@ export default class extends Controller {
         new TradingView.widget(
             {
                 "width": '100%',
-                "height": 500,
+                "height": 620,
                 "symbol": this.tickerValue,
-                "interval": "D",
+                "interval": "60",
                 "timezone": "Europe/Paris",
                 "theme": "dark",
                 "style": "1",

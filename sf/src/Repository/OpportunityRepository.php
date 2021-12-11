@@ -4,8 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Opportunity;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
-use Doctrine\ORM\NonUniqueResultException;
-use Doctrine\ORM\NoResultException;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -21,16 +20,15 @@ class OpportunityRepository extends ServiceEntityRepository
         parent::__construct($registry, Opportunity::class);
     }
 
-    /**
-     * @throws NonUniqueResultException
-     * @throws NoResultException
-     */
-    public function countOpportunities()
+    public function findAllQB(): Query
     {
         return $this->createQueryBuilder('o')
-            ->select('count(o.id)')
+            ->leftJoin('o.ticker', 'ticker')
+            ->leftJoin('o.buyMarket', 'buyMarket')
+            ->leftJoin('o.sellMarket', 'sellMarket')
+            ->addOrderBy('o.received', 'ASC')
             ->getQuery()
-            ->getSingleScalarResult();
+            ;
     }
 
     // /**

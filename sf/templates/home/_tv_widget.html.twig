@@ -13,13 +13,13 @@
                                         >
                                         </iframe>
                                     </div>#}
-                <div class="tab-pane tabbable-pane tabbable-{{ ticker.name|lower|replace({'/': '-'}) }} {% if loop.first %}fade-in active show{% endif %}" role="tabpanel">
+                <div class="tab-pane tabbable-pane tabbable-{{ ticker.id }} {% if loop.first %}fade-in active show{% endif %}" role="tabpanel">
                     <div class="tradingview-widget-container"
                          data-controller="tradingview"
-                         data-tradingview-id-value="tradingview_{{ ticker.name|lower|replace({'/': '-'}) }}"
+                         data-tradingview-id-value="tradingview_{{ ticker.id }}"
                          data-tradingview-ticker-value="{{ ticker.tvChartTickerId }}"
                     >
-                        <div id="tradingview_{{ ticker.name|lower|replace({'/': '-'}) }}"></div>
+                        <div id="tradingview_{{ ticker.id }}"></div>
                     </div>
                 </div>
             {% endfor %}

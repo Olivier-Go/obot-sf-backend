@@ -79,6 +79,9 @@ class ApiController extends AbstractController
         $em->persist($opportunity);
         $em->flush();
 
+        // Simulation traitement transaction
+        sleep(10);
+
         return $this->json([
             'Opportunity created.',
         ], Response::HTTP_CREATED);

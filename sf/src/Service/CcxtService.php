@@ -5,6 +5,7 @@ use App\Entity\Market;
 use App\Entity\Ticker;
 use ccxt\kucoin as Kucoin;
 use ccxt\bittrex as Bittrex;
+use ccxt\binance as Binance;
 use DateTime;
 
 class CcxtService
@@ -27,6 +28,10 @@ class CcxtService
             $kucoin = new Kucoin();
             $marketData = $kucoin->fetch_ticker($ticker->getName());
         }
+        if ($market->getId() === 3 && $ticker->getMarket() === $market) {
+            $binance = new Binance();
+            $marketData = $binance->fetch_ticker($ticker->getName());
+        }
 
         $ticker->time = !empty($marketData) ? new DateTime($marketData['datetime']) : 0;
         $ticker->volume = !empty($marketData) ? $marketData['baseVolume'] : 0;
@@ -40,6 +45,8 @@ class CcxtService
 
     public function fetchBalance(Market $market)
     {
+        $balance = null;
+
         if ($market->getId() === 1) {
             $bittrex = new Bittrex([
                 'apiKey' => $market->getApiKey(),
@@ -47,10 +54,21 @@ class CcxtService
             ]);
 
             if ($bittrex->checkRequiredCredentials()) {
-                return $bittrex->fetch_balance();
+                $bittrexBalance = $bittrex->fetch_balance();
+                if (isset($bittrexBalance['info'])) {
+                    $balance = [];
+                    foreach ($bittrexBalance['info'] as $currency) {
+                        $balance[] = [
+                            'currency' => $currency['currencySymbol'],
+                            'type' => null,
+                            'balance' => $currency['total'],
+                            'available' => $currency['available'],
+                            'holds' => $currency['total'] - $currency['available']
+                        ];
+                    }
+                }
             }
         }
-
         if ($market->getId() === 2) {
             $kucoin = new Kucoin([
                 'apiKey' => $market->getApiKey(),
@@ -59,11 +77,46 @@ class CcxtService
             ]);
 
             if ($kucoin->checkRequiredCredentials()) {
-                return $kucoin->fetch_balance();
+                $kucoinBalance = $kucoin->fetch_balance();
+                if (isset($kucoinBalance['info']) && isset($kucoinBalance['info']['data'])) {
+                    $balance = [];
+                    foreach ($kucoinBalance['info']['data'] as $currency) {
+                        $balance[] = [
+                            'currency' => $currency['currency'],
+                            'type' => $currency['type'],
+                            'balance' => $currency['balance'],
+                            'available' => $currency['available'],
+                            'holds' => $currency['holds']
+                        ];
+                    }
+                }
+            }
+        }
+        if ($market->getId() === 3) {
+            $binance = new Binance([
+                'apiKey' => $market->getApiKey(),
+                'secret' => $market->getApiSecret(),
+                'password' => $market->getApiPassword(),
+            ]);
+
+            if ($binance->checkRequiredCredentials()) {
+                $binanceBalance = $binance->fetch_balance();
+                if (isset($binanceBalance['info']) && isset($binanceBalance['info']['balances'])) {
+                    $balance = [];
+                    foreach ($binanceBalance['info']['balances'] as $currency) {
+                        $balance[] = [
+                            'currency' => $currency['asset'],
+                            'type' => $binanceBalance['info']['accountType'],
+                            'balance' => $currency['free'] + $currency['locked'],
+                            'available' => $currency['free'],
+                            'holds' => $currency['locked']
+                        ];
+                    }
+                }
             }
         }
 
-        return null;
+        return $balance;
     }
 
 }

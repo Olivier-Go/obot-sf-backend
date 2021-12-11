@@ -3,7 +3,6 @@
 namespace App\Controller;
 
 use App\Repository\MarketRepository;
-use App\Repository\OpportunityRepository;
 use App\Service\CcxtService;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -15,11 +14,9 @@ class HomeController extends AbstractController
     /**
      * @Route("/", name="home")
      */
-    public function index(MarketRepository $marketRepository, CcxtService $ccxtService, OpportunityRepository $opportunityRepository): Response
+    public function index(MarketRepository $marketRepository, CcxtService $ccxtService): Response
     {
-        $markets = $marketRepository->findAll();
-        $opportunities = $opportunityRepository->findBy([], ['received' => 'ASC']);
-        $totalOpportunities = $opportunityRepository->countOpportunities();
+        $markets = $marketRepository->findBy([], ['id' => 'DESC']);
         $tickers = new ArrayCollection();
 
         foreach ($markets as $market) {
@@ -27,14 +24,11 @@ class HomeController extends AbstractController
                 $ticker = $ccxtService->fetchMarketTickerData($market, $ticker);
                 $tickers->add($ticker);
             }
-
             $market->balance = $ccxtService->fetchBalance($market);
         }
 
         return $this->render('home/index.html.twig', [
             'tickers' => $tickers,
-            'opportunities' => $opportunities,
-            'totalOpportunities' => $totalOpportunities
         ]);
     }
 

@@ -27,20 +27,24 @@ const app = {
   buySellDiffBtoK: {},
   buySellOpKtoB: {
     'count' : 0,
+    'order': {},
     'history': [],
   },
   buySellOpBtoK: {
     'count' : 0,
+    'order': {},
     'history': [],
   },
   sellBuyDiffKtoB: {},
   sellBuyDiffBtoK: {},
   sellBuyOpKtoB: {
     'count' : 0,
+    'order': {},
     'history': [],
   },
   sellBuyOpBtoK: {
     'count' : 0,
+    'order': {},
     'history': [],
   },
 
@@ -95,56 +99,60 @@ const app = {
     if (!isEmptyObj(app.buySellDiffKtoB)) {
       const op = updateBuySellOp(app.buySellOpKtoB, app.buySellDiffKtoB, app.orderDiff, ticker, 2, 1); // 1 = Bittrex, 2 = Kucoin
       //console.log(op)
-      if (app.apiToken && ticker && op && op.ticker) {
+      if (app.apiToken && ticker && !isEmptyObj(op.order)) {
+        app.stop();
         axios({
           method: 'post',
           url: `${process.env.API_URL}/api/arbitrage/opportunity/add`,
           headers: {'Authorization': `Bearer ${app.apiToken}`},
-          data: { ...op },
+          data: { ...op.order },
         })
             .then((response) => {
               //console.log(response.data);
-              app.run();
+              if (response.status === 201) {
+                app.run();
+              }
             })
             .catch((error) => {
               console.warn(error.response.data);
             })
             .finally(() => {
-              app.stop();
             });
       }
       if (print) {
-        app.buySellOpKtoB = op ? updateBuySellOp(app.buySellOpKtoB, app.buySellDiffKtoB, app.orderDiff) : app.buySellOpKtoB;
+        app.buySellOpKtoB = !isEmptyObj(op.order) ? updateBuySellOp(app.buySellOpKtoB, app.buySellDiffKtoB, app.orderDiff) : app.buySellOpKtoB;
         console.log(app.buySellOpKtoB.count);
-        console.table(drawOrdersArr(app.buySellOpKtoB.history, 10));
+        console.table(drawOrdersArr(app.buySellOpKtoB.history, 1));
       }
     }
     console.log(`          OP  :   BUY BITTREX / SELL KUCOIN                   `);
     if (!isEmptyObj(app.buySellDiffBtoK)) {
       const op = updateBuySellOp(app.buySellOpBtoK, app.buySellDiffBtoK, app.orderDiff, ticker, 1, 2); // 1 = Bittrex, 2 = Kucoin
       //console.log(op)
-      if (app.apiToken && ticker && op && op.ticker) {
+      if (app.apiToken && ticker && !isEmptyObj(op.order)) {
+        app.stop();
         axios({
           method: 'post',
           url: `${process.env.API_URL}/api/arbitrage/opportunity/add`,
           headers: {'Authorization': `Bearer ${app.apiToken}`},
-          data: { ...op },
+          data: { ...op.order },
         })
             .then((response) => {
               //console.log(response.data);
-              app.run();
+              if (response.status === 201) {
+                app.run();
+              }
             })
             .catch((error) => {
               console.warn(error.response.data);
             })
             .finally(() => {
-              app.stop();
             });
       }
       if (print) {
-        app.buySellOpBtoK = op ? updateBuySellOp(app.buySellOpBtoK, app.buySellDiffBtoK, app.orderDiff) : app.buySellOpBtoK;
+        app.buySellOpBtoK = !isEmptyObj(op.order) ? updateBuySellOp(app.buySellOpBtoK, app.buySellDiffBtoK, app.orderDiff) : app.buySellOpBtoK;
         console.log(app.buySellOpBtoK.count);
-        console.table(drawOrdersArr(app.buySellOpBtoK.history, 10));
+        console.table(drawOrdersArr(app.buySellOpBtoK.history, 1));
       }
     }
   },
@@ -154,56 +162,60 @@ const app = {
     if (!isEmptyObj(app.sellBuyDiffKtoB)) {
       const op = updateSellBuyOp(app.sellBuyOpKtoB, app.sellBuyDiffKtoB, app.orderDiff, ticker, 1, 2); // 1 = Bittrex, 2 = Kucoin
       //console.log(op)
-      if (app.apiToken && ticker && op && op.ticker) {
+      if (app.apiToken && ticker && !isEmptyObj(op.order)) {
+        app.stop();
         axios({
           method: 'post',
           url: `${process.env.API_URL}/api/arbitrage/opportunity/add`,
           headers: {'Authorization': `Bearer ${app.apiToken}`},
-          data: { ...op },
+          data: { ...op.order },
         })
           .then((response) => {
             //console.log(response.data);
-            app.run();
+            if (response.status === 201) {
+              app.run();
+            }
           })
           .catch((error) => {
             console.warn(error.response.data);
           })
           .finally(() => {
-            app.stop();
           });
       }
       if (print) {
-        app.sellBuyOpKtoB = op ? updateSellBuyOp(app.sellBuyOpKtoB, app.sellBuyDiffKtoB, app.orderDiff) : app.sellBuyOpKtoB;
+        app.sellBuyOpKtoB = !isEmptyObj(op.order) ? updateSellBuyOp(app.sellBuyOpKtoB, app.sellBuyDiffKtoB, app.orderDiff) : app.sellBuyOpKtoB;
         console.log(app.sellBuyOpKtoB.count);
-        console.table(drawOrdersArr(app.sellBuyOpKtoB.history, 10));
+        console.table(drawOrdersArr(app.sellBuyOpKtoB.history, 1));
       }
     }
     console.log(`          OP  :   SELL BITTREX / BUY KUCOIN                   `);
     if (!isEmptyObj(app.sellBuyDiffBtoK)) {
       const op = updateSellBuyOp(app.sellBuyOpBtoK, app.sellBuyDiffBtoK, app.orderDiff, ticker, 2, 1); // 1 = Bittrex, 2 = Kucoin
       //console.log(op)
-      if (app.apiToken && ticker && op && op.ticker) {
+      if (app.apiToken && ticker && !isEmptyObj(op.order)) {
+        app.stop();
         axios({
           method: 'post',
           url: `${process.env.API_URL}/api/arbitrage/opportunity/add`,
           headers: {'Authorization': `Bearer ${app.apiToken}`},
-          data: { ...op },
+          data: { ...op.order },
         })
             .then((response) => {
               //console.log(response.data);
-              app.run();
+              if (response.status === 201) {
+                app.run();
+              }
             })
             .catch((error) => {
               console.warn(error.response.data);
             })
             .finally(() => {
-              app.stop();
             });
       }
       if (print) {
-        app.sellBuyOpBtoK = op ? updateSellBuyOp(app.sellBuyOpBtoK, app.sellBuyDiffBtoK, app.orderDiff) : app.sellBuyOpBtoK;
+        app.sellBuyOpBtoK = !isEmptyObj(op.order) ? updateSellBuyOp(app.sellBuyOpBtoK, app.sellBuyDiffBtoK, app.orderDiff) : app.sellBuyOpBtoK;
         console.log(app.sellBuyOpBtoK.count);
-        console.table(drawOrdersArr(app.sellBuyOpBtoK.history, 10));
+        console.table(drawOrdersArr(app.sellBuyOpBtoK.history, 1));
       }
     }
   },
