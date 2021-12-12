@@ -49,10 +49,16 @@ class Market
      */
     private $opportunities;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Order::class, mappedBy="market")
+     */
+    private $orders;
+
     public function __construct()
     {
         $this->tickers = new ArrayCollection();
         $this->opportunities = new ArrayCollection();
+        $this->orders = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -162,6 +168,36 @@ class Market
             // set the owning side to null (unless already changed)
             if ($opportunity->getBuyMarket() === $this) {
                 $opportunity->setBuyMarket(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Order[]
+     */
+    public function getOrders(): Collection
+    {
+        return $this->orders;
+    }
+
+    public function addOrder(Order $order): self
+    {
+        if (!$this->orders->contains($order)) {
+            $this->orders[] = $order;
+            $order->setMarket($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrder(Order $order): self
+    {
+        if ($this->orders->removeElement($order)) {
+            // set the owning side to null (unless already changed)
+            if ($order->getMarket() === $this) {
+                $order->setMarket(null);
             }
         }
 

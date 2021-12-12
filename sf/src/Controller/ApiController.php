@@ -4,35 +4,35 @@ namespace App\Controller;
 
 use App\Entity\Market;
 use App\Entity\Opportunity;
-use App\Repository\MarketRepository;
-use App\Repository\TickerRepository;
+use App\Entity\Order;
 use App\Service\CcxtService;
-use DateInterval;
-use DateTime;
-use Doctrine\Persistence\ManagerRegistry;
+use App\Service\OpportunityService;
+use App\Service\OrderService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
-use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
- * @Route("/api", name="api_")
+ * @Route("/api")
  */
 class ApiController extends AbstractController
 {
     private CcxtService $ccxtService;
+    private OpportunityService $opportunityService;
+    private OrderService $orderService;
 
-    public function __construct(CcxtService $ccxtService)
+    public function __construct(CcxtService $ccxtService, OpportunityService $opportunityService, OrderService $orderService)
     {
         $this->ccxtService = $ccxtService;
+        $this->opportunityService = $opportunityService;
+        $this->orderService = $orderService;
     }
 
     /**
-     * @Route("/fetch/balance/{id<\d+>}", name="fetch_balance", methods="POST")
+     * @Route("/fetch/balance/{id<\d+>}", name="api_fetch_balance", methods="POST")
      */
-    public function fetchBalance(Request $request, Market $market): Response
+    public function fetchBalance(Market $market): Response
     {
         $balance = $this->ccxtService->fetchBalance($market);
 
@@ -44,46 +44,40 @@ class ApiController extends AbstractController
     }
 
     /**
-     * @Route("/arbitrage/opportunity/add", name="arbitrage_opportunity_add", methods="POST")
+     * @Route("/opportunity/new", name="api_opportunity_new", methods="POST")
      */
-    public function addOpportunity(Request $request, DenormalizerInterface $denormalizer, ValidatorInterface $validator, TickerRepository $tickerRepository, MarketRepository $marketRepository, ManagerRegistry $doctrine): Response
+    public function newOpportunity(Request $request): Response
     {
-        $data = json_decode($request->getContent());
-        if (isset($data->received)) {
-            $timestamp = $data->received;
-            if (!empty($timestamp)) {
-                $date = DateTime::createFromFormat('U', $timestamp);
-                $date->add(new DateInterval('PT1H'));
-                $data->received = $date->format('d/m/Y H:i:s');
-            }
+        $data = $request->getContent();
+        $opportunity = $this->opportunityService->createOpportunity($data);
+
+        if (!$opportunity instanceof Opportunity) {
+            return $this->json($opportunity, Response::HTTP_BAD_REQUEST);
         }
-
-        $opportunity = $denormalizer->denormalize($data, Opportunity::class);
-        $errors = $validator->validate($opportunity);
-        if (count($errors) > 0) {
-            $msgErrors = [];
-            foreach ($errors as $error) {
-                $msgErrors[] = [
-                    'field' => $error->getPropertyPath(),
-                    'message' => $error->getMessage(),
-                ];
-            }
-            return $this->json($msgErrors, Response::HTTP_BAD_REQUEST);
-        }
-
-        $opportunity->setTicker($tickerRepository->find($data->ticker));
-        $opportunity->setBuyMarket($marketRepository->find($data->buyMarket));
-        $opportunity->setSellMarket($marketRepository->find($data->sellMarket));
-
-        $em = $doctrine->getManager();
-        $em->persist($opportunity);
-        $em->flush();
 
         // Simulation traitement transaction
         sleep(10);
 
         return $this->json([
-            'Opportunity created.',
+            'message' => 'Opportunity ' . $opportunity->getId() . ' created.',
         ], Response::HTTP_CREATED);
     }
+
+    /**
+     * @Route("/order/new", name="api_order_new", methods={"POST"})
+     */
+    public function newOrder(Request $request): Response
+    {
+        $data = $request->getContent();
+        $order = $this->orderService->createOrder($data);
+
+        if (!$order instanceof Order) {
+            return $this->json($order, Response::HTTP_BAD_REQUEST);
+        }
+
+        return $this->json([
+            'message' => 'Order ' . $order->getId() . ' created.',
+        ], Response::HTTP_CREATED);
+    }
+
 }

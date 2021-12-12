@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Service;
 
 use App\Entity\Market;
@@ -7,14 +8,34 @@ use ccxt\kucoin as Kucoin;
 use ccxt\bittrex as Bittrex;
 use ccxt\binance as Binance;
 use DateTime;
+use Exception;
 
 class CcxtService
 {
-
-    public function __construct()
+    public function getExchangeInstance(Market $market)
     {
+        if ($market->getId() === 1) {
+            return new Bittrex([
+                'apiKey' => $market->getApiKey(),
+                'secret' => $market->getApiSecret()
+            ]);
+        }
+        if ($market->getId() === 2) {
+            return new Kucoin([
+                'apiKey' => $market->getApiKey(),
+                'secret' => $market->getApiSecret(),
+                'password' => $market->getApiPassword(),
+            ]);
+        }
+        if ($market->getId() === 3) {
+            return new Binance([
+                'apiKey' => $market->getApiKey(),
+                'secret' => $market->getApiSecret(),
+                'password' => $market->getApiPassword(),
+            ]);
+        }
+        return null;
     }
-
 
     public function fetchMarketTickerData(Market $market, Ticker $ticker): Ticker
     {
@@ -43,21 +64,18 @@ class CcxtService
         return $ticker;
     }
 
-    public function fetchBalance(Market $market)
+    public function fetchBalance(Market $market): array
     {
         $balance = null;
 
-        if ($market->getId() === 1) {
-            $bittrex = new Bittrex([
-                'apiKey' => $market->getApiKey(),
-                'secret' => $market->getApiSecret()
-            ]);
+        $exchange = $this->getExchangeInstance($market);
 
-            if ($bittrex->checkRequiredCredentials()) {
-                $bittrexBalance = $bittrex->fetch_balance();
-                if (isset($bittrexBalance['info'])) {
+        if ($exchange instanceof Bittrex) {
+            if ($exchange->checkRequiredCredentials()) {
+                $exchangeBalance = $exchange->fetch_balance();
+                if (isset($exchangeBalance['info'])) {
                     $balance = [];
-                    foreach ($bittrexBalance['info'] as $currency) {
+                    foreach ($exchangeBalance['info'] as $currency) {
                         $balance[] = [
                             'currency' => $currency['currencySymbol'],
                             'type' => null,
@@ -69,18 +87,12 @@ class CcxtService
                 }
             }
         }
-        if ($market->getId() === 2) {
-            $kucoin = new Kucoin([
-                'apiKey' => $market->getApiKey(),
-                'secret' => $market->getApiSecret(),
-                'password' => $market->getApiPassword(),
-            ]);
-
-            if ($kucoin->checkRequiredCredentials()) {
-                $kucoinBalance = $kucoin->fetch_balance();
-                if (isset($kucoinBalance['info']) && isset($kucoinBalance['info']['data'])) {
+        if ($exchange instanceof Kucoin) {
+            if ($exchange->checkRequiredCredentials()) {
+                $exchangeBalance = $exchange->fetch_balance();
+                if (isset($exchangeBalance['info']) && isset($exchangeBalance['info']['data'])) {
                     $balance = [];
-                    foreach ($kucoinBalance['info']['data'] as $currency) {
+                    foreach ($exchangeBalance['info']['data'] as $currency) {
                         $balance[] = [
                             'currency' => $currency['currency'],
                             'type' => $currency['type'],
@@ -92,21 +104,15 @@ class CcxtService
                 }
             }
         }
-        if ($market->getId() === 3) {
-            $binance = new Binance([
-                'apiKey' => $market->getApiKey(),
-                'secret' => $market->getApiSecret(),
-                'password' => $market->getApiPassword(),
-            ]);
-
-            if ($binance->checkRequiredCredentials()) {
-                $binanceBalance = $binance->fetch_balance();
-                if (isset($binanceBalance['info']) && isset($binanceBalance['info']['balances'])) {
+        if ($exchange instanceof Binance) {
+            if ($exchange->checkRequiredCredentials()) {
+                $exchangeBalance = $exchange->fetch_balance();
+                if (isset($exchangeBalance['info']) && isset($exchangeBalance['info']['balances'])) {
                     $balance = [];
-                    foreach ($binanceBalance['info']['balances'] as $currency) {
+                    foreach ($exchangeBalance['info']['balances'] as $currency) {
                         $balance[] = [
                             'currency' => $currency['asset'],
-                            'type' => $binanceBalance['info']['accountType'],
+                            'type' => $exchangeBalance['info']['accountType'],
                             'balance' => $currency['free'] + $currency['locked'],
                             'available' => $currency['free'],
                             'holds' => $currency['locked']
@@ -117,6 +123,128 @@ class CcxtService
         }
 
         return $balance;
+    }
+
+    public function fetchOpenOrders(Market $market): array
+    {
+        $openOrders = [];
+        $exchange = $this->getExchangeInstance($market);
+
+        if ($exchange) {
+            foreach ($market->getTickers() as $ticker) {
+                if ($exchange->has['fetchOpenOrders']) {
+                    $openOrders = $exchange->fetch_open_orders($ticker->getName());
+                }
+            }
+        }
+
+        return $openOrders;
+    }
+
+    public function fetchOrderById(Market $market, Int $clientOrderId): ?array
+    {
+        $exchange = $this->getExchangeInstance($market);
+
+        if ($exchange) {
+            foreach ($market->getTickers() as $ticker) {
+                if ($exchange->has['fetchOrder']) {
+                    try {
+                        return $exchange->fetch_order($clientOrderId, $ticker->getName());
+                    } catch (Exception $e) {
+                        continue;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function sendLimitSellOrder(Market $market, Ticker $ticker, $amount, $price)
+    {
+        $exchange = $this->getExchangeInstance($market);
+
+        if ($exchange) {
+            if ($exchange->has['createLimitOrder']) {
+                try {
+                    $order = $exchange->create_limit_sell_order($ticker->getName(), $amount, $price);
+                    unset($order['id']);
+                    $order['market'] = $market->getId();
+                    $order['ticker'] = $ticker->getId();
+                    return $order;
+                } catch (Exception $e) {
+
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function cancelOrderById(Market $market, Int $clientOrderId): ?array
+    {
+        $exchange = $this->getExchangeInstance($market);
+
+        if ($exchange) {
+            foreach ($market->getTickers() as $ticker) {
+                if ($exchange->has['cancelOrder']) {
+                    try {
+                        return $exchange->cancel_order($ticker->getName(), $clientOrderId);
+                    } catch (Exception $e) {
+                        continue;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function cancelOrders(Market $market): ?array
+    {
+        $exchange = $this->getExchangeInstance($market);
+
+        if ($exchange) {
+            foreach ($market->getTickers() as $ticker) {
+                if ($exchange->has['cancelAllOrders']) {
+                    try {
+                        return $exchange->cancel_all_orders($ticker->getName());
+                    } catch (Exception $e) {
+                        continue;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function fetchOrders(Market $market)
+    {
+        $binance = new Binance([
+            'apiKey' => $market->getApiKey(),
+            'secret' => $market->getApiSecret(),
+            'password' => $market->getApiPassword(),
+        ]);
+
+        dd($binance->fetch_order_book('FLUX/USDT'));
+
+        //dd($binance->has);
+        //dd($binance->fetch_order_book('FLUX/USDT'));
+        //dd($binance->fetch_orders('FLUX/USDT'));
+        //$order = $exchange->fetch_order($id);
+
+//        if ($binance->has['fetchOrder']) {
+//            dd($binance->fetch_order($id));
+//        }
+
+//        if ($binance->has['fetchOpenOrders']) {
+//            dd($binance->fetch_open_orders('FLUX/USDT'));
+//        }
+
+        if ($binance->has['fetchOrder']) {
+            dd($binance->f($id));
+        }
     }
 
 }

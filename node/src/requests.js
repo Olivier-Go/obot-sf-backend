@@ -28,7 +28,7 @@ export const apiAddOpportunity = (op) => {
     app.stop();
     axios({
         method: 'post',
-        url: `${process.env.API_URL}/api/arbitrage/opportunity/add`,
+        url: `${process.env.API_URL}/api/opportunity/new`,
         headers: {'Authorization': `Bearer ${state.apiToken}`},
         data: { ...op.order },
     })

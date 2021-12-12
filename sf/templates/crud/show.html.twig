@@ -1,0 +1,82 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Order{% endblock %}
+
+{% block body %}
+    <h1>Order</h1>
+
+    <table class="table">
+        <tbody>
+            <tr>
+                <th>Id</th>
+                <td>{{ order.id }}</td>
+            </tr>
+            <tr>
+                <th>ClientOrderId</th>
+                <td>{{ order.clientOrderId }}</td>
+            </tr>
+            <tr>
+                <th>Opened</th>
+                <td>{{ order.opened ? order.opened|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>LastTrade</th>
+                <td>{{ order.lastTrade ? order.lastTrade|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Status</th>
+                <td>{{ order.status }}</td>
+            </tr>
+            <tr>
+                <th>Type</th>
+                <td>{{ order.type }}</td>
+            </tr>
+            <tr>
+                <th>Side</th>
+                <td>{{ order.side }}</td>
+            </tr>
+            <tr>
+                <th>Price</th>
+                <td>{{ order.price }}</td>
+            </tr>
+            <tr>
+                <th>Average</th>
+                <td>{{ order.average }}</td>
+            </tr>
+            <tr>
+                <th>Amount</th>
+                <td>{{ order.amount }}</td>
+            </tr>
+            <tr>
+                <th>Filled</th>
+                <td>{{ order.filled }}</td>
+            </tr>
+            <tr>
+                <th>Remaining</th>
+                <td>{{ order.remaining }}</td>
+            </tr>
+            <tr>
+                <th>Cost</th>
+                <td>{{ order.cost }}</td>
+            </tr>
+            <tr>
+                <th>Fees</th>
+                <td>{{ order.fees ? order.fees|json_encode : '' }}</td>
+            </tr>
+            <tr>
+                <th>Created</th>
+                <td>{{ order.created ? order.created|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+            <tr>
+                <th>Updated</th>
+                <td>{{ order.updated ? order.updated|date('Y-m-d H:i:s') : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a href="{{ path('order_index') }}">back to list</a>
+
+    <a href="{{ path('order_edit', {'id': order.id}) }}">edit</a>
+
+    {{ include('order/_delete_form.html.twig') }}
+{% endblock %}

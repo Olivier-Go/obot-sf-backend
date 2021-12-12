@@ -39,9 +39,15 @@ class Ticker
      */
     private $opportunities;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Order::class, mappedBy="ticker")
+     */
+    private $orders;
+
     public function __construct()
     {
         $this->opportunities = new ArrayCollection();
+        $this->orders = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -109,6 +115,36 @@ class Ticker
             // set the owning side to null (unless already changed)
             if ($opportunity->getTicker() === $this) {
                 $opportunity->setTicker(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Order[]
+     */
+    public function getOrders(): Collection
+    {
+        return $this->orders;
+    }
+
+    public function addOrder(Order $order): self
+    {
+        if (!$this->orders->contains($order)) {
+            $this->orders[] = $order;
+            $order->setTicker($this);
+        }
+
+        return $this;
+    }
+
+    public function removeOrder(Order $order): self
+    {
+        if ($this->orders->removeElement($order)) {
+            // set the owning side to null (unless already changed)
+            if ($order->getTicker() === $this) {
+                $order->setTicker(null);
             }
         }
 
