@@ -5,13 +5,12 @@ namespace App\Service;
 use App\Entity\Opportunity;
 use App\Repository\MarketRepository;
 use App\Repository\TickerRepository;
-use DateInterval;
-use DateTime;
+use App\Utils\Tools;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-class OpportunityService
+class OpportunityService extends Tools
 {
     private DenormalizerInterface $denormalizer;
     private ValidatorInterface $validator;
@@ -31,14 +30,7 @@ class OpportunityService
     public function createOpportunity(String $data)
     {
         $data = json_decode($data);
-        if (isset($data->received)) {
-            $timestamp = $data->received;
-            if (!empty($timestamp)) {
-                $date = DateTime::createFromFormat('U', $timestamp);
-                $date->add(new DateInterval('PT1H'));
-                $data->received = $date->format('m/d/Y H:i:s');
-            }
-        }
+        $data->received = $this->convertTimestampSec($data->received);
 
         $opportunity = $this->denormalizer->denormalize($data, Opportunity::class);
         $errors = $this->validator->validate($opportunity);

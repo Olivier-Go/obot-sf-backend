@@ -76,7 +76,20 @@ class ApiController extends AbstractController
         }
 
         return $this->json([
-            'message' => 'Order ' . $order->getId() . ' created.',
+            'message' => 'Order ' . $order->getClientOrderId() . ' created.',
+        ], Response::HTTP_CREATED);
+    }
+
+    /**
+     * @Route("/order/update/all/{id<\d+>}", name="api_order_update_all", methods={"POST"})
+     */
+    public function updateAllOrders(Request $request, Market $market): Response
+    {
+        $exchangeOrders = $this->ccxtService->fetchOrders($market);
+        $orders = $this->orderService->updateOrders($exchangeOrders);
+
+        return $this->json([
+            'message' => count($orders) . ' order(s) updated.',
         ], Response::HTTP_CREATED);
     }
 
