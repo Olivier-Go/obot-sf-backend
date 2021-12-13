@@ -24,6 +24,15 @@ body {
   overflow: hidden;
 }
 
+.ticker-loading {
+  height: 620px;
+}
+
+.spinner-loading {
+  width: 3rem;
+  height: 3rem;
+}
+
 .fade-in {
   animation: fadeIn 0.5s;
   -webkit-animation: fadeIn 0.5s;

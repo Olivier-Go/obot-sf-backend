@@ -1,27 +1,32 @@
 <div class="col col-lg-4">
-    <div class="card border-primary h-100">
+    <div class="card border-primary border-rounder-full bg-dark h-100">
         <div class="d-flex align-items-start h-100">
             <div class="card-header-rounder-2 bg-dark h-100">
                 <div class="nav flex-column nav-pills p-2" role="tablist">
                     {% for ticker in tickers %}
-                        <button class="nav-link tabbable text-white {% if loop.first %}active{% endif %}" data-action="tabbable#show" data-class=".tabbable-{{ ticker.id }}" type="button" role="tab">{{ ticker.name }}</button>
+                        <button class="nav-link tabbable text-white {% if loop.first %}active{% endif %}"
+                                data-action="tabbable#show" data-class=".tabbable-{{ ticker.id }}" type="button"
+                                role="tab">{{ ticker.name }}</button>
                     {% endfor %}
                 </div>
             </div>
-            <div class="card-body bg-secondary bg-opacity-10 overflow-hidden h-100 p-2">
+            <div class="card-body bg-light opacity-10 overflow-hidden h-100 p-2">
                 <div class="tab-content" id="v-pills-tabContent">
                     {% for ticker in tickers %}
-                        <div class="tab-pane tabbable-pane tabbable-{{ ticker.id }} {% if loop.first %}fade-in active show{% endif %}" role="tabpanel">
+                        <div class="tab-pane tabbable-pane tabbable-{{ ticker.id }} {% if loop.first %}fade-in active show{% endif %}"
+                             role="tabpanel">
                             <h2>{{ ticker.market.name|capitalize }}</h2>
-                            <div class="text-primary"><i class="bi bi-arrow-repeat me-2"></i><small>{{ ticker.time|date('d/m/Y-H:i:s') }}</small></div>
+                            <div class="text-primary"><i
+                                        class="bi bi-arrow-repeat me-2"></i><small>{{ ticker.time|date('d/m/Y-H:i:s') }}</small>
+                            </div>
                             <div class="my-3">
                                 <div class="d-flex flex-wrap justify-content-between align-items-center my-2">
                                     <p class="mb-0">Volume:</p>
                                     {% if ticker.volume is not empty %}
                                         <div class="h5 ms-2 mb-0">
-                                            <span class="d-inline-block h5 badge bg-secondary mb-0">
-                                                {{ ticker.volume|number_format(0, ',', ' ')  }}
-                                            </span>
+                                    <span class="d-inline-block h5 badge bg-secondary mb-0">
+                                        {{ ticker.volume|number_format(0, ',', ' ') }}
+                                    </span>
                                         </div>
                                     {% endif %}
                                 </div>
@@ -30,8 +35,8 @@
                                     <div class="h5 ms-2 mb-0">
                                         {% if ticker.last is not empty %}
                                             <span class="d-inline-block h5 badge bg-primary mb-0">
-                                                {{ ticker.last|number_format(2, ',', ' ')  }}
-                                            </span>
+                                        {{ ticker.last|number_format(2, ',', ' ') }}
+                                    </span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -40,8 +45,8 @@
                                     <div class="h5 ms-2 mb-0">
                                         {% if ticker.averagePrice is not empty %}
                                             <span class="d-inline-block h5 badge bg-info mb-0">
-                                                {{ ticker.averagePrice|number_format(2, ',', ' ')  }}
-                                            </span>
+                                        {{ ticker.averagePrice|number_format(2, ',', ' ') }}
+                                    </span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -50,8 +55,8 @@
                                     <div class="h5 ms-2 mb-0">
                                         {% if ticker.low is not empty %}
                                             <span class="d-inline-block h5 badge bg-danger mb-0">
-                                                {{ ticker.low|number_format(2, ',', ' ')  }}
-                                            </span>
+                                        {{ ticker.low|number_format(2, ',', ' ') }}
+                                    </span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -60,8 +65,8 @@
                                     <div class="h5 ms-2 mb-0">
                                         {% if ticker.high is not empty %}
                                             <span class="d-inline-block h5 badge bg-success mb-0">
-                                                {{ ticker.high|number_format(2, ',', ' ')  }}
-                                            </span>
+                                        {{ ticker.high|number_format(2, ',', ' ') }}
+                                    </span>
                                         {% endif %}
                                     </div>
                                 </div>
@@ -71,9 +76,10 @@
                                 <div class="mt-1">
                                     <p class="h4">Balance :</p>
                                     {% for balance in ticker.market.balance %}
-                                        {%  if balance.currency in ticker.name %}
+                                        {% if balance.currency in ticker.name %}
                                             <div class="d-flex flex-wrap justify-content-between align-items-center border-rounder-full shadow-sm bg-light my-2">
-                                                <p class="my-2 mx-4"><strong class="text-primary">{{ balance.currency }}</strong></p>
+                                                <p class="my-2 mx-4"><strong
+                                                            class="text-primary">{{ balance.currency }}</strong></p>
                                                 <ul class="list-group list-group-flush flex-grow-1">
                                                     {% if balance.type is defined %}
                                                         <li class="list-group-item py-1 d-flex justify-content-between align-items-center">

@@ -14,7 +14,15 @@ class HomeController extends AbstractController
     /**
      * @Route("/", name="home", methods={"GET"})
      */
-    public function index(MarketRepository $marketRepository, CcxtService $ccxtService): Response
+    public function index(): Response
+    {
+        return $this->render('home/index.html.twig', []);
+    }
+
+    /**
+     * @Route("/ticker/data", name="ticker_data", methods={"GET"})
+     */
+    public function tickerData(MarketRepository $marketRepository, CcxtService $ccxtService): Response
     {
         $markets = $marketRepository->findBy([], ['id' => 'DESC']);
         $tickers = new ArrayCollection();
@@ -27,9 +35,8 @@ class HomeController extends AbstractController
             $market->balance = $ccxtService->fetchBalance($market);
         }
 
-        return $this->render('home/index.html.twig', [
+        return $this->render('home/_ticker_data.html.twig', [
             'tickers' => $tickers,
         ]);
     }
-
 }
