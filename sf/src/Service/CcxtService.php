@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\Balance;
 use App\Entity\Market;
 use App\Entity\Ticker;
 use App\Utils\Tools;
@@ -33,91 +34,43 @@ class CcxtService extends Tools
                 'apiKey' => $market->getApiKey(),
                 'secret' => $market->getApiSecret(),
                 'password' => $market->getApiPassword(),
+                'options' => [
+                    'recvWindow' => 10000
+                ]
             ]);
         }
         return null;
     }
 
-    public function fetchMarketTickerData(Market $market, Ticker $ticker): Ticker
+    public function fetchTickerInfos(Ticker $ticker): Ticker
     {
-        $marketData = [];
+        $exchange = $this->getExchangeInstance($ticker->getMarket());
+        $tickerInfos = $exchange->fetch_ticker($ticker->getName()) ?? [];
 
-        if ($market->getId() === 1 && $ticker->getMarket() === $market) {
-            $bittrex = new Bittrex();
-            $marketData = $bittrex->fetch_ticker($ticker->getName());
+        if (!empty($tickerInfos)) {
+            $ticker->setUpdated(new DateTime($this->convertTimestampMs($tickerInfos['timestamp'])));
+            $ticker->setVolume($tickerInfos['baseVolume']);
+            $ticker->setLast($tickerInfos['last']);
+            $ticker->setAverage($tickerInfos['average']);
+            $ticker->setLow($tickerInfos['low']);
+            $ticker->setHigh($tickerInfos['high']);
         }
-        if ($market->getId() === 2 && $ticker->getMarket() === $market) {
-            $kucoin = new Kucoin();
-            $marketData = $kucoin->fetch_ticker($ticker->getName());
-        }
-        if ($market->getId() === 3 && $ticker->getMarket() === $market) {
-            $binance = new Binance();
-            $marketData = $binance->fetch_ticker($ticker->getName());
-        }
-
-        $ticker->time = !empty($marketData) ? new DateTime($marketData['datetime']) : 0;
-        $ticker->volume = !empty($marketData) ? $marketData['baseVolume'] : 0;
-        $ticker->last = !empty($marketData) ? $marketData['last'] : 0;
-        $ticker->averagePrice = !empty($marketData) ? $marketData['average'] : 0;
-        $ticker->low = !empty($marketData) ? $marketData['low'] : 0;
-        $ticker->high = !empty($marketData) ? $marketData['high'] : 0;
 
         return $ticker;
     }
 
-    public function fetchBalance(Market $market): array
+    public function fetchAccountBalance(Balance $balance): Balance
     {
-        $balance = null;
+        $exchange = $this->getExchangeInstance($balance->getTicker()->getMarket());
 
-        $exchange = $this->getExchangeInstance($market);
-
-        if ($exchange instanceof Bittrex) {
-            if ($exchange->checkRequiredCredentials()) {
-                $exchangeBalance = $exchange->fetch_balance();
-                if (isset($exchangeBalance['info'])) {
-                    $balance = [];
-                    foreach ($exchangeBalance['info'] as $currency) {
-                        $balance[] = [
-                            'currency' => $currency['currencySymbol'],
-                            'type' => null,
-                            'balance' => $currency['total'],
-                            'available' => $currency['available'],
-                            'holds' => $currency['total'] - $currency['available']
-                        ];
-                    }
-                }
-            }
-        }
-        if ($exchange instanceof Kucoin) {
-            if ($exchange->checkRequiredCredentials()) {
-                $exchangeBalance = $exchange->fetch_balance();
-                if (isset($exchangeBalance['info']) && isset($exchangeBalance['info']['data'])) {
-                    $balance = [];
-                    foreach ($exchangeBalance['info']['data'] as $currency) {
-                        $balance[] = [
-                            'currency' => $currency['currency'],
-                            'type' => $currency['type'],
-                            'balance' => $currency['balance'],
-                            'available' => $currency['available'],
-                            'holds' => $currency['holds']
-                        ];
-                    }
-                }
-            }
-        }
-        if ($exchange instanceof Binance) {
-            if ($exchange->checkRequiredCredentials()) {
-                $exchangeBalance = $exchange->fetch_balance();
-                if (isset($exchangeBalance['info']) && isset($exchangeBalance['info']['balances'])) {
-                    $balance = [];
-                    foreach ($exchangeBalance['info']['balances'] as $currency) {
-                        $balance[] = [
-                            'currency' => $currency['asset'],
-                            'type' => $exchangeBalance['info']['accountType'],
-                            'balance' => $currency['free'] + $currency['locked'],
-                            'available' => $currency['free'],
-                            'holds' => $currency['locked']
-                        ];
+        if ($exchange->checkRequiredCredentials()) {
+            $exchangeBalances = $exchange->fetch_balance();
+            if (isset($exchangeBalances)) {
+                foreach ($exchangeBalances as $symbol => $data) {
+                    if ($symbol === $balance->getCurrency()) {
+                        $balance->setTotal($data['total']);
+                        $balance->setAvailable($data['free']);
+                        $balance->setHold($data['total'] - $data['free']);
                     }
                 }
             }

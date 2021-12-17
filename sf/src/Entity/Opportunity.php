@@ -30,7 +30,7 @@ class Opportunity
     private $direction;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Market::class, inversedBy="opportunities", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity=Market::class, inversedBy="buyOpportunities", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      */
     private $buyMarket;
@@ -41,7 +41,7 @@ class Opportunity
     private $buyPrice;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Market::class, inversedBy="opportunities", cascade={"persist"})
+     * @ORM\ManyToOne(targetEntity=Market::class, inversedBy="sellOpportunities", cascade={"persist"})
      * @ORM\JoinColumn(nullable=false)
      */
     private $sellMarket;

@@ -8,6 +8,7 @@ use App\Entity\Order;
 use App\Service\CcxtService;
 use App\Service\OpportunityService;
 use App\Service\OrderService;
+use App\Service\WorkerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,26 +22,14 @@ class ApiController extends AbstractController
     private CcxtService $ccxtService;
     private OpportunityService $opportunityService;
     private OrderService $orderService;
+    private WorkerService $workerService;
 
-    public function __construct(CcxtService $ccxtService, OpportunityService $opportunityService, OrderService $orderService)
+    public function __construct(CcxtService $ccxtService, OpportunityService $opportunityService, OrderService $orderService, WorkerService $workerService)
     {
         $this->ccxtService = $ccxtService;
         $this->opportunityService = $opportunityService;
         $this->orderService = $orderService;
-    }
-
-    /**
-     * @Route("/fetch/balance/{id<\d+>}", name="api_fetch_balance", methods="POST")
-     */
-    public function fetchBalance(Market $market): Response
-    {
-        $balance = $this->ccxtService->fetchBalance($market);
-
-        if (!$balance) return $this->json(['message' => $market->getName() . ': fetch balance error.'], Response::HTTP_INTERNAL_SERVER_ERROR);
-
-        return $this->json([
-            $balance
-        ], Response::HTTP_OK);
+        $this->workerService = $workerService;
     }
 
     /**
@@ -49,14 +38,13 @@ class ApiController extends AbstractController
     public function newOpportunity(Request $request): Response
     {
         $data = $request->getContent();
-        $opportunity = $this->opportunityService->createOpportunity($data);
+        $opportunity = $this->opportunityService->denormalizeOpportunity($data);
 
         if (!$opportunity instanceof Opportunity) {
             return $this->json($opportunity, Response::HTTP_BAD_REQUEST);
         }
 
-        // Simulation traitement transaction
-        sleep(10);
+        dd($this->workerService->execute($opportunity));
 
         return $this->json([
             'message' => 'Opportunity ' . $opportunity->getId() . ' created.',

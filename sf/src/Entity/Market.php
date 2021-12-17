@@ -47,18 +47,30 @@ class Market
     /**
      * @ORM\OneToMany(targetEntity=Opportunity::class, mappedBy="buyMarket")
      */
-    private $opportunities;
+    private $buyOpportunities;
+
+    /**
+     * @ORM\OneToMany(targetEntity=Opportunity::class, mappedBy="sellMarket")
+     */
+    private $sellOpportunities;
 
     /**
      * @ORM\OneToMany(targetEntity=Order::class, mappedBy="market")
      */
     private $orders;
 
+    /**
+     * @ORM\OneToMany(targetEntity=Balance::class, mappedBy="market")
+     */
+    private $balances;
+
     public function __construct()
     {
         $this->tickers = new ArrayCollection();
-        $this->opportunities = new ArrayCollection();
+        $this->buyOpportunities = new ArrayCollection();
+        $this->sellOpportunities = new ArrayCollection();
         $this->orders = new ArrayCollection();
+        $this->balances = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -147,27 +159,57 @@ class Market
     /**
      * @return Collection|Opportunity[]
      */
-    public function getOpportunities(): Collection
+    public function getBuyOpportunities(): Collection
     {
-        return $this->opportunities;
+        return $this->buyOpportunities;
     }
 
-    public function addOpportunity(Opportunity $opportunity): self
+    public function addBuyOpportunity(Opportunity $buyOpportunities): self
     {
-        if (!$this->opportunities->contains($opportunity)) {
-            $this->opportunities[] = $opportunity;
-            $opportunity->setBuyMarket($this);
+        if (!$this->buyOpportunities->contains($buyOpportunities)) {
+            $this->buyOpportunities[] = $buyOpportunities;
+            $buyOpportunities->setBuyMarket($this);
         }
 
         return $this;
     }
 
-    public function removeOpportunity(Opportunity $opportunity): self
+    public function removeBuyOpportunity(Opportunity $buyOpportunity): self
     {
-        if ($this->opportunities->removeElement($opportunity)) {
+        if ($this->buyOpportunities->removeElement($buyOpportunity)) {
             // set the owning side to null (unless already changed)
-            if ($opportunity->getBuyMarket() === $this) {
-                $opportunity->setBuyMarket(null);
+            if ($buyOpportunity->getBuyMarket() === $this) {
+                $buyOpportunity->setBuyMarket(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Opportunity[]
+     */
+    public function getSellOpportunities(): Collection
+    {
+        return $this->sellOpportunities;
+    }
+
+    public function addSellOpportunity(Opportunity $sellOpportunities): self
+    {
+        if (!$this->sellOpportunities->contains($sellOpportunities)) {
+            $this->sellOpportunities[] = $sellOpportunities;
+            $sellOpportunities->setSellMarket($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSellOpportunity(Opportunity $sellOpportunity): self
+    {
+        if ($this->sellOpportunities->removeElement($sellOpportunity)) {
+            // set the owning side to null (unless already changed)
+            if ($sellOpportunity->getSellMarket() === $this) {
+                $sellOpportunity->setSellMarket(null);
             }
         }
 
@@ -198,6 +240,36 @@ class Market
             // set the owning side to null (unless already changed)
             if ($order->getMarket() === $this) {
                 $order->setMarket(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection|Balance[]
+     */
+    public function getBalances(): Collection
+    {
+        return $this->balances;
+    }
+
+    public function addBalance(Balance $balance): self
+    {
+        if (!$this->balances->contains($balance)) {
+            $this->balances[] = $balance;
+            $balance->setMarket($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBalance(Balance $balance): self
+    {
+        if ($this->balances->removeElement($balance)) {
+            // set the owning side to null (unless already changed)
+            if ($balance->getMarket() === $this) {
+                $balance->setMarket(null);
             }
         }
 

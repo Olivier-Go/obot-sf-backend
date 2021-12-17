@@ -27,7 +27,7 @@ class OpportunityService extends Tools
         $this->doctrine = $doctrine;
     }
 
-    public function createOpportunity(String $data)
+    public function denormalizeOpportunity(String $data)
     {
         $data = json_decode($data);
         $data->received = $this->convertTimestampSec($data->received);
@@ -49,6 +49,11 @@ class OpportunityService extends Tools
         $opportunity->setBuyMarket($this->marketRepository->find($data->buyMarket));
         $opportunity->setSellMarket($this->marketRepository->find($data->sellMarket));
 
+        return $opportunity;
+    }
+
+    public function createOpportunity(Opportunity $opportunity): Opportunity
+    {
         $em = $this->doctrine->getManager();
         $em->persist($opportunity);
         $em->flush();

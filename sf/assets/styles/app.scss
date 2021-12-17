@@ -24,8 +24,11 @@ body {
   overflow: hidden;
 }
 
-.ticker-loading {
-  height: 620px;
+#ticker-loading {
+  z-index: 1000;
+  width: 95%;
+  height: 97%;
+  backdrop-filter: blur(2px);
 }
 
 .spinner-loading {
