@@ -19,7 +19,7 @@ Encore
     .cleanupOutputBeforeBuild(['public'], (options) => {
         options.verbose = true;
         options.root = __dirname;
-        options.exclude = ['images', '.htaccess', 'index.php'];
+        options.exclude = ['images', '.htaccess', 'robots.txt', 'index.php'];
     })
     .enableBuildNotifications()
     .enableSourceMaps(!Encore.isProduction())

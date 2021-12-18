@@ -25,6 +25,7 @@
 /node_modules/
 /public/
 !/public/index.php
+!/public/robots.txt
 !/public/images/
 npm-debug.log
 yarn-error.log
