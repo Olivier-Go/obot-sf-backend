@@ -37,6 +37,7 @@ Encore
             fingerprints: true,
             theme_color: '#212529',
             display: 'standalone',
+            id: '/?web-app',
             start_url: '/?web-app',
             ios: {
                 'apple-mobile-web-app-title': '0Bot',
