@@ -13,7 +13,9 @@
         "sass": "^1.44.0",
         "sass-loader": "^12.3.0",
         "stimulus": "^2.0.0",
-        "webpack-notifier": "^1.6.0"
+        "webpack-notifier": "^1.6.0",
+        "webpack-pwa-manifest": "^4.3.0",
+        "workbox-webpack-plugin": "^6.4.2"
     },
     "license": "UNLICENSED",
     "private": true,
