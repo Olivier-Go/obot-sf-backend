@@ -5,13 +5,13 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+            <div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
                 <div class="offcanvas-header justify-content-end pb-0">
                     <button type="button" class="btn btn-dark" data-bs-dismiss="offcanvas" aria-label="Close"><i class="bi bi-x-lg h5"></i></button>
                 </div>
                 <div class="offcanvas-body">
                     <div class="d-lg-flex flex-grow-1 align-items-center">
-                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <ul class="navbar-nav text-center me-auto mb-2 mb-lg-0">
                             <li class="nav-item">
                                 <a class="nav-link {% if app.request.get('_route') == 'home' %}active{% endif %}" href="{{ path('home') }}">Marchés</a>
                             </li>
@@ -39,7 +39,9 @@
                                 <button class="btn btn-primary" type="submit" id="search-form"><i class="bi bi-search"></i></button>
                             </div>
                         </form>#}
-                        <a class="btn btn-sm btn-danger ms-lg-2 mt-4 mt-lg-0" href="{{ path('logout') }}" role="button" data-bs-toggle="tooltip" title="Déconnexion"><i class="bi bi-box-arrow-right text-white"></i></a>
+                        <div class="text-center">
+                            <a class="btn btn-sm btn-danger d-inline-block ms-lg-2 mt-4 mt-lg-0" href="{{ path('logout') }}" role="button" data-bs-toggle="tooltip" title="Déconnexion"><i class="bi bi-box-arrow-right text-white"></i></a>
+                        </div>
                     </div>
                 </div>
             </div>

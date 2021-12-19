@@ -31,7 +31,7 @@ Encore
             filename: "manifest.webmanifest",
             name: '0Bot',
             short_name: '0Bot',
-            description: 'ccxt-quant-bot',
+            description: '© 2021 0Bot',
             background_color: '#212529',
             inject: true,
             fingerprints: true,
@@ -75,7 +75,7 @@ Encore
             screenshots: [
                 {
                     "src": "images/screenshot.png",
-                    "sizes": "1280x598",
+                    "sizes": "699x598",
                     "type": "image/png"
                 },
             ]
