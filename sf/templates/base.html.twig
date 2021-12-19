@@ -5,9 +5,12 @@
         <meta name="viewport"
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <meta name="apple-mobile-web-app-capable" content="yes" />
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
-        <link rel="icon" href="{{ asset('images/bot.svg') }}">
+        <link rel="icon" href="{{ asset('build/images/bot.svg') }}">
+        <link rel="apple-touch-icon" href="{{ asset('build/images/bot192.png') }}" />
+        <link rel="apple-touch-startup-image" href="{{ asset('build/images/screenshot.png') }}" />
 
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}

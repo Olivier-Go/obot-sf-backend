@@ -8,99 +8,6 @@ if (!Encore.isRuntimeEnvironmentConfigured()) {
     Encore.configureRuntimeEnvironment(process.env.NODE_ENV || 'dev');
 }
 
-// define the pwa configuration
-Encore
-    .setOutputPath('public/')
-    .setPublicPath('/')
-
-    .addEntry('pwa', './assets/pwa.js')
-
-    .enableSingleRuntimeChunk()
-    .cleanupOutputBeforeBuild(['public'], (options) => {
-        options.verbose = true;
-        options.root = __dirname;
-        options.exclude = ['images', '.htaccess', 'robots.txt', 'index.php'];
-    })
-    .enableBuildNotifications()
-    .enableSourceMaps(!Encore.isProduction())
-    // enables hashed filenames (e.g. app.abc123.css)
-    .enableVersioning(Encore.isProduction())
-
-    .addPlugin(
-        new WebpackPwaManifest({
-            filename: "manifest.webmanifest",
-            name: '0Bot',
-            short_name: '0Bot',
-            description: '© 2021 0Bot',
-            background_color: '#212529',
-            inject: true,
-            fingerprints: true,
-            theme_color: '#212529',
-            display: 'standalone',
-            id: '/',
-            scope: '/',
-            start_url: '/',
-            ios: {
-                'apple-mobile-web-app-title': '0Bot',
-                'apple-mobile-web-app-status-bar-style': 'black'
-            },
-            crossorigin: null, //can be null, use-credentials or anonymous
-            icons: [
-                {
-                    src: 'public/images/bot192.png',
-                    size: '192x192',
-                    ios: true
-                },
-                {
-                    src: 'public/images/bot256.png',
-                    size: '256x256',
-                    ios: true
-                },
-                {
-                    src: 'public/images/bot512.png',
-                    size: '512x512',
-                    ios: true
-                },
-                {
-                    src: 'public/images/bot1024.png',
-                    size: '1024x1024',
-                    ios: 'startup'
-                },
-                {
-                    src: 'public/images/bot1024.png',
-                    size: '1024x1024',
-                    purpose: 'maskable'
-                }
-            ],
-            screenshots: [
-                {
-                    "src": "images/screenshot.png",
-                    "sizes": "699x598",
-                    "type": "image/png"
-                },
-            ]
-        })
-    )
-
-    .addPlugin(
-        new WorkboxPlugin.GenerateSW({
-            // these options encourage the ServiceWorkers to get in there fast
-            // and not allow any straggling "old" SWs to hang around
-            clientsClaim: true,
-            skipWaiting: true
-        })
-    )
-;
-
-// build the pwa configuration
-const pwaConfig = Encore.getWebpackConfig();
-
-// Set a unique name for the config (needed later!)
-pwaConfig.name = 'pwaConfig';
-
-// reset Encore to build the second config
-Encore.reset();
-
 // define the app configuration
 Encore
     // directory where compiled assets will be stored
@@ -109,6 +16,20 @@ Encore
     .setPublicPath('/build')
     // only needed for CDN's or sub-directory deploy
     .setManifestKeyPrefix('build/')
+
+    .copyFiles({
+        from: './assets/images',
+
+        // optional target path, relative to the output dir
+        to: 'images/[path][name].[ext]',
+
+        // if versioning is enabled, add the file hash too
+        // to: 'images/[path][name].[hash:8].[ext]',
+
+        // only copy files matching this pattern
+        // pattern: /\.(png|jpg|jpeg)$/
+        pattern: /bot.svg|screenshot.png$/
+    })
 
     /*
      * ENTRY CONFIG
@@ -174,4 +95,96 @@ const appConfig = Encore.getWebpackConfig();
 // Set a unique name for the config (needed later!)
 appConfig.name = 'appConfig';
 
-module.exports = [pwaConfig, appConfig];
+// reset Encore to build the second config
+Encore.reset();
+
+// define the pwa configuration
+Encore
+    .setOutputPath('public/')
+    .setPublicPath('/')
+
+    .addEntry('pwa', './assets/pwa.js')
+
+    .enableSingleRuntimeChunk()
+    .cleanupOutputBeforeBuild([
+        '**/*',
+        '!index.php',
+        '!robots.txt',
+        '!build/**'
+    ], (options) => {
+        options.verbose = true;
+    })
+    .enableBuildNotifications()
+    .enableSourceMaps(!Encore.isProduction())
+    // enables hashed filenames (e.g. app.abc123.css)
+    .enableVersioning(Encore.isProduction())
+
+    .addPlugin(
+        new WebpackPwaManifest({
+            filename: "manifest.webmanifest",
+            name: '0Bot',
+            short_name: '0Bot',
+            description: '© 2021 0Bot',
+            background_color: '#212529',
+            inject: true,
+            fingerprints: true,
+            theme_color: '#212529',
+            display: 'standalone',
+            id: '/',
+            scope: '/',
+            start_url: '/',
+            ios: {
+                'apple-mobile-web-app-title': '0Bot',
+                'apple-mobile-web-app-status-bar-style': 'black'
+            },
+            crossorigin: null, //can be null, use-credentials or anonymous
+            icons: [
+                {
+                    src: './assets/images/bot192.png',
+                    size: '192x192',
+                    type: "image/png"
+                },
+                {
+                    src: './assets/images/bot256.png',
+                    size: '256x256',
+                    type: "image/png"
+                },
+                {
+                    src: './assets/images/bot512.png',
+                    size: '512x512',
+                    type: "image/png"
+                },
+                {
+                    src: './assets/images/bot1024.png',
+                    size: '1024x1024',
+                    type: "image/png",
+                    purpose: 'maskable'
+                }
+            ],
+            screenshots: [
+                {
+                    "src": "build/images/screenshot.png",
+                    "sizes": "699x598",
+                    "type": "image/png"
+                },
+            ]
+        })
+    )
+
+    .addPlugin(
+        new WorkboxPlugin.GenerateSW({
+            // these options encourage the ServiceWorkers to get in there fast
+            // and not allow any straggling "old" SWs to hang around
+            clientsClaim: true,
+            skipWaiting: true
+        })
+    )
+;
+
+// build the pwa configuration
+const pwaConfig = Encore.getWebpackConfig();
+
+// Set a unique name for the config (needed later!)
+pwaConfig.name = 'pwaConfig';
+
+module.exports = [appConfig, pwaConfig];
