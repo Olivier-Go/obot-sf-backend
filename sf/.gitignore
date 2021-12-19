@@ -23,7 +23,7 @@
 
 ###> symfony/webpack-encore-bundle ###
 /node_modules/
-/public/
+/public/*
 !/public/index.php
 !/public/robots.txt
 !/public/images/

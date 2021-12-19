@@ -37,8 +37,9 @@ Encore
             fingerprints: true,
             theme_color: '#212529',
             display: 'standalone',
-            id: '/?web-app',
-            start_url: '/?web-app',
+            id: '/',
+            scope: '/',
+            start_url: '/',
             ios: {
                 'apple-mobile-web-app-title': '0Bot',
                 'apple-mobile-web-app-status-bar-style': 'black'
@@ -46,20 +47,37 @@ Encore
             crossorigin: null, //can be null, use-credentials or anonymous
             icons: [
                 {
-                    src: 'public/images/bot.svg',
-                    sizes: [96, 128, 192, 256, 384, 512], // multiple sizes
+                    src: 'public/images/bot192.png',
+                    size: '192x192',
                     ios: true
                 },
                 {
-                    src: 'public/images/bot.svg',
-                    size: '1024x1024', // you can also use the specifications pattern
+                    src: 'public/images/bot256.png',
+                    size: '256x256',
+                    ios: true
+                },
+                {
+                    src: 'public/images/bot512.png',
+                    size: '512x512',
+                    ios: true
+                },
+                {
+                    src: 'public/images/bot1024.png',
+                    size: '1024x1024',
                     ios: 'startup'
                 },
                 {
-                    src: 'public/images/bot.svg',
+                    src: 'public/images/bot1024.png',
                     size: '1024x1024',
                     purpose: 'maskable'
                 }
+            ],
+            screenshots: [
+                {
+                    "src": "images/screenshot.png",
+                    "sizes": "1280x598",
+                    "type": "image/png"
+                },
             ]
         })
     )
