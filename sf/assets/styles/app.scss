@@ -36,6 +36,10 @@ body {
   height: 3rem;
 }
 
+.offcanvas-top {
+  height: max-content;
+}
+
 .fade-in {
   animation: fadeIn 0.5s;
   -webkit-animation: fadeIn 0.5s;
