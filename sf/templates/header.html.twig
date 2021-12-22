@@ -1,6 +1,6 @@
-<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark py-0">
+<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark py-0" data-controller="stream" data-stream-source="ws://localhost:8080/">
     <div class="container-fluid">
-        <a class="navbar-brand py-0 text-primary" href="{{ path('home') }}" data-bs-toggle="tooltip" title="Retour à l'accueil"><i class="bi bi-robot" style="font-size: 1.85em;"></i></a>
+        <a id="robot" class="navbar-brand py-0 text-primary" href="{{ path('node') }}" data-bs-toggle="tooltip" title="Node Server"><i class="bi bi-robot" style="font-size: 1.85em;"></i></a>
         {% if is_granted('ROLE_USER') %}
             <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                 <span class="navbar-toggler-icon"></span>

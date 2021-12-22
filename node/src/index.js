@@ -1,4 +1,5 @@
 import "./utils/env.js";
+import { flush } from "log-buffer";
 import { drawOrdersArr, isEmptyObj, startTime, memoryUsage } from "./utils/functions.js";
 import { updateBuySellDiff, updateSellBuyDiff, updateBuySellOp, updateSellBuyOp } from "./opportunities.js";
 import { apiFetchConnection, apiAddOpportunity } from "./requests.js";
@@ -121,6 +122,7 @@ export const app = {
     app.buySellOp(true, state.ticker);
     app.printSellBuyDiff();
     app.sellBuyOp(true, state.ticker);
+    flush();
   },
 
   start: (api = false) => {
@@ -142,5 +144,5 @@ export const app = {
   }
 };
 
-app.start(true);
+app.start(false);
 

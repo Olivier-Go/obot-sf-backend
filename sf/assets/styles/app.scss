@@ -40,6 +40,11 @@ body {
   height: max-content;
 }
 
+#console {
+  font-size: .7em;
+  font-weight: lighter;
+}
+
 .fade-in {
   animation: fadeIn 0.5s;
   -webkit-animation: fadeIn 0.5s;

@@ -9,8 +9,8 @@ Rename `.env.dist` to `.env`.
 
 ```sh
 # launch dev server
-yarn run-dev
+yarn start
 
-# launch prod server
-yarn run-prod
+# launch websocket server
+yarn ws
 ```

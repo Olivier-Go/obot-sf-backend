@@ -5,15 +5,17 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "run-dev": "nodemon src/index.js",
-    "run-prod": "node src/index.js"
+    "start": "nodemon src/index.js",
+    "ws": "nodemon src/ws.js"
   },
   "dependencies": {
     "axios": "^0.24.0",
     "ccxws": "^0.47.0",
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
-    "mapsort": "^1.0.5"
+    "log-buffer": "^0.0.3",
+    "mapsort": "^1.0.5",
+    "ws": "^8.4.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"
