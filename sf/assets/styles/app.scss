@@ -1,6 +1,7 @@
 // customize some Bootstrap variables
 $primary: darken(#428bca, 20%);
-$offcanvas-bg-color: #212529;
+$darkest: #212529;
+$offcanvas-bg-color: $darkest;
 $card-border-radius: 12px;
 
 // the ~ allows you to reference things in node_modules
@@ -36,13 +37,37 @@ body {
   height: 3rem;
 }
 
-.offcanvas-top {
-  height: max-content;
-}
-
 #console {
   font-size: .7em;
   font-weight: lighter;
+}
+
+nav.navbar {
+  height: 50px;
+
+  .navbar-toggler {
+    background-image: none;
+    border: none;
+  }
+}
+
+
+button.navbar-toggler {
+  &:focus {
+    box-shadow: none;
+  }
+}
+
+.offcanvas {
+  height: max-content;
+
+  > .offcanvas-header {
+    padding-top: .6rem;
+  }
+}
+
+#robot {
+  font-size: 32px;
 }
 
 .fade-in {
@@ -56,23 +81,30 @@ body {
   0% {opacity:0;}
   100% {opacity:1;}
 }
-
 @-moz-keyframes fadeIn {
   0% {opacity:0;}
   100% {opacity:1;}
 }
-
 @-webkit-keyframes fadeIn {
   0% {opacity:0;}
   100% {opacity:1;}
 }
-
 @-o-keyframes fadeIn {
   0% {opacity:0;}
   100% {opacity:1;}
 }
-
 @-ms-keyframes fadeIn {
   0% {opacity:0;}
   100% {opacity:1;}
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 12px;
+}
+::-webkit-scrollbar-track {
+  background-color: $darkest;
+}
+::-webkit-scrollbar-thumb {
+  background: $secondary;
 }

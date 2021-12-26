@@ -15,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class OpportunityController extends AbstractController
 {
     /**
-     * @Route("/", name="opportunity_index", methods={"GET"})
+     * @Route("/", name="opportunity_index")
      */
     public function index(Request $request, OpportunityRepository $opportunityRepository, PaginatorInterface $paginator): Response
     {

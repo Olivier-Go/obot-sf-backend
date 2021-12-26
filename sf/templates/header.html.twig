@@ -1,7 +1,18 @@
-<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark py-0" data-controller="stream" data-stream-source="ws://localhost:8080/">
+<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark py-0">
     <div class="container-fluid">
-        <a id="robot" class="navbar-brand py-0 text-primary" href="{{ path('node') }}" data-bs-toggle="tooltip" title="Node Server"><i class="bi bi-robot" style="font-size: 1.85em;"></i></a>
         {% if is_granted('ROLE_USER') %}
+            <span data-bs-toggle="tooltip" title="Node Server" data-bs-placement="bottom">
+                <button type="button"
+                        class="btn btn-link navbar-brand py-0"
+                        data-bs-toggle="modal"
+                        data-bs-target="#nodeModal"
+                        data-controller="stream"
+                        data-stream-source="{{ node_ws_url }}"
+                        data-stream-key="{{ ws_stream_key() }}"
+                >
+                    <i id="robot" class="bi bi-robot text-primary"></i>
+                </button>
+            </span>
             <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -20,6 +31,9 @@
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link {% if app.request.get('_route') == 'order_index' %}active{% endif %}" href="{{ path('order_index') }}">Ordres</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if app.request.get('_route') == 'node_console' %}active{% endif %}" href="{{ path('node_console') }}">Console</a>
                             </li>
                             {#<li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -45,7 +59,25 @@
                     </div>
                 </div>
             </div>
+        {% else %}
+            <i id="robot" class="bi bi-robot text-primary"></i>
         {% endif %}
     </div>
 </nav>
 <div class="mb-5"></div>
+<div class="modal fade" id="nodeModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content bg-light" data-controller="node-ws" data-node-ws-url-value="{{ absolute_url(path('node')) }}">
+            <div class="modal-header py-1 px-4">
+                <i id="robot" class="bi bi-robot text-primary me-2"></i>
+                <h5 class="modal-title">Node server</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" data-action="node-ws#reload" aria-label="Close"></button>
+            </div>
+            <div class="modal-body row justify-content-between mx-2">
+                <button type="button" id="startRobot" class="btn btn-success col-5" data-action="node-ws#clic" data-node-ws-command="start"><i class="bi bi-activity"></i> Start</button>
+                <button type="button" id="stopRobot" class="btn btn-danger col-5" data-action="node-ws#clic" data-node-ws-command="stop"><i class="bi bi-dash-lg"></i> Stop</button>
+            </div>
+            <div class="modal-footer m-2" data-node-ws-target="result"></div>
+        </div>
+    </div>
+</div>

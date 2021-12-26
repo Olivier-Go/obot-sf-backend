@@ -19,7 +19,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class OrderController extends AbstractController
 {
     /**
-     * @Route("/", name="order_index", methods={"GET"})
+     * @Route("/", name="order_index")
      */
     public function index(Request $request, OrderRepository $orderRepository, PaginatorInterface $paginator, MarketRepository $marketRepository, TickerRepository $tickerRepository, CcxtService $ccxtService): Response
     {

@@ -6,6 +6,7 @@
 parameters:
     worker_order_diff: '%env(WORKER_ORDER_DIFF)%'
     worker_order_size: '%env(WORKER_ORDER_SIZE)%'
+    node_working_dir: '%env(NODE_WORKING_DIR)%'
 
 services:
     # default configuration for services in *this* file

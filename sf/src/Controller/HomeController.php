@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class HomeController extends AbstractController
 {
     /**
-     * @Route("/", name="home", methods={"GET"})
+     * @Route("/", name="home")
      */
     public function index(TickerRepository $tickerRepository): Response
     {
@@ -26,7 +26,7 @@ class HomeController extends AbstractController
     }
 
     /**
-     * @Route("/tickers/data", name="tickers_data", methods={"GET"})
+     * @Route("/tickers/data", name="tickers_data")
      */
     public function tickersData(TickerRepository $tickerRepository, BalanceRepository $balanceRepository, CcxtService $ccxtService, ManagerRegistry $doctrine): Response
     {
