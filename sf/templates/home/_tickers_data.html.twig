@@ -77,9 +77,9 @@
                     {% for balance in ticker.market.balances|sort((a, b) => a.currency <=> b.currency)  %}
                         {% if balance.currency in ticker.name %}
                             <div class="d-flex flex-wrap justify-content-between align-items-center border-rounder-full shadow-sm bg-light my-2">
-                                <p class="my-2 mx-4">
+                                <div class="my-2 mx-4">
                                     <strong class="text-primary">{{ balance.currency }}</strong>
-                                </p>
+                                </div>
                                 <ul class="list-group list-group-flush flex-grow-1">
                                     {% if balance.total is defined %}
                                         <li class="list-group-item py-1 d-flex justify-content-between align-items-center">

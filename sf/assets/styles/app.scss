@@ -37,6 +37,10 @@ body {
   height: 3rem;
 }
 
+.console-wrapper {
+  min-width: max-content;
+}
+
 #console {
   font-size: .7em;
   font-weight: lighter;
@@ -52,8 +56,9 @@ nav.navbar {
 }
 
 
-button.navbar-toggler {
+button.navbar-toggler, button.navbar-brand {
   &:focus {
+    outline: none;
     box-shadow: none;
   }
 }

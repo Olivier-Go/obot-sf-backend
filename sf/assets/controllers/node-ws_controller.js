@@ -8,7 +8,9 @@ export default class extends Controller {
         url: String,
     }
 
-    connect() {}
+    connect() {
+        this.state = 0;
+    }
 
     clic(event) {
         const url = this.urlValue;
@@ -31,13 +33,14 @@ export default class extends Controller {
         })
             .then(response => response.json())
             .then(responseJson => {
+                this.state = 1;
                 buttonTarget.innerHTML = originalButton;
                 let html = '';
                 if (responseJson.app) {
                     html += `
-                        <div class="border-rounder-full w-100">
+                        <div class="border-rounder-full shadow-sm w-100">
                             <div class="card-header d-flex justify-content-between">
-                                <strong>App</strong>
+                                <strong class="text-primary">App</strong>
                                 ${responseJson.app.state === 'running' ? ` 
                                     <i class="bi bi-check-circle-fill text-success"></i>
                                 ` : `
@@ -60,9 +63,9 @@ export default class extends Controller {
                 }
                 if (responseJson.server) {
                     html += `
-                        <div class="border-rounder-full w-100">
+                        <div class="border-rounder-full shadow-sm w-100">
                             <div class="card-header d-flex justify-content-between">
-                                <strong>Server</strong>
+                                <strong class="text-primary">Server</strong>
                                 ${responseJson.server.state === 'listening' ? ` 
                                     <i class="bi bi-check-circle-fill text-success"></i>
                                 ` : `
@@ -103,6 +106,8 @@ export default class extends Controller {
     }
 
     reload() {
-        setTimeout(() => location.reload(), 500);
+        if (this.state === 1) {
+            setTimeout(() => location.reload(), 500);
+        }
     }
 }

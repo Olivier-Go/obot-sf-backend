@@ -1,18 +1,16 @@
 <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark py-0">
     <div class="container-fluid">
         {% if is_granted('ROLE_USER') %}
-            <span data-bs-toggle="tooltip" title="Node Server" data-bs-placement="right">
-                <button type="button"
-                        class="btn btn-sm btn-link navbar-brand py-0"
-                        data-bs-toggle="modal"
-                        data-bs-target="#nodeModal"
-                        data-controller="stream"
-                        data-stream-source="{{ node_ws_url }}"
-                        data-stream-key="{{ ws_stream_key() }}"
-                >
-                    <i id="robot" class="bi bi-robot text-primary"></i>
-                </button>
-            </span>
+            <button type="button"
+                    class="btn btn-sm btn-link navbar-brand py-0"
+                    data-bs-toggle="modal"
+                    data-bs-target="#nodeModal"
+                    data-controller="stream"
+                    data-stream-source="{{ node_ws_url }}"
+                    data-stream-key="{{ ws_stream_key() }}"
+            >
+                <i id="robot" class="bi bi-robot text-primary"></i>
+            </button>
             <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
