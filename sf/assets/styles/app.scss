@@ -39,6 +39,8 @@ body {
 
 .console-wrapper {
   min-width: max-content;
+  display: flex;
+  flex-grow: 1;
 }
 
 #console {
