@@ -1,9 +1,18 @@
-import { createServer } from 'http';
+import "./utils/env.js";
+import { createServer as HttpServer } from 'http';
+import { createServer as HttpsServer } from 'https';
+import fs from 'fs';
 import url from 'url';
 import { WebSocketServer } from 'ws';
 import { spawn } from "child_process";
 
-const server = createServer();
+const server = process.env.APP_ENV === 'prod'
+    ? HttpsServer({
+        cert: fs.readFileSync(process.env.WS_CERT_PATH),
+        key: fs.readFileSync(process.env.WS_KEY_PATH),
+    })
+    : HttpServer();
+
 const wss = new WebSocketServer({ noServer: true });
 
 let app = spawn('node', ['./src/app.js']);
@@ -32,7 +41,7 @@ wss.on('connection', (ws, request) => {
     });
 });
 
-server.listen(8080, () => console.log(JSON.stringify({
+server.listen(process.env.WS_PORT, () => console.log(JSON.stringify({
         server: {
             state: 'listening',
             pid: process.pid,

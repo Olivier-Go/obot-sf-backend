@@ -1,9 +1,9 @@
 <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark py-0">
     <div class="container-fluid">
         {% if is_granted('ROLE_USER') %}
-            <span data-bs-toggle="tooltip" title="Node Server" data-bs-placement="bottom">
+            <span data-bs-toggle="tooltip" title="Node Server" data-bs-placement="right">
                 <button type="button"
-                        class="btn btn-link navbar-brand py-0"
+                        class="btn btn-sm btn-link navbar-brand py-0"
                         data-bs-toggle="modal"
                         data-bs-target="#nodeModal"
                         data-controller="stream"
@@ -53,8 +53,8 @@
                                 <button class="btn btn-primary" type="submit" id="search-form"><i class="bi bi-search"></i></button>
                             </div>
                         </form>#}
-                        <div class="text-center mb-lg-0 mb-5">
-                            <a class="btn btn-sm btn-danger d-inline-block ms-lg-2 mt-4 mt-lg-0" href="{{ path('logout') }}" role="button" data-bs-toggle="tooltip" title="Déconnexion"><i class="bi bi-box-arrow-right text-whit h5"></i></a>
+                        <div class="text-center mb-lg-0 mb-5" data-bs-toggle="tooltip" title="Déconnexion" data-bs-placement="left">
+                            <a class="btn btn-sm btn-danger d-inline-block ms-lg-2 mt-4 mt-lg-0" href="{{ path('logout') }}" role="button"><i class="bi bi-box-arrow-right text-whit h5"></i></a>
                         </div>
                     </div>
                 </div>
