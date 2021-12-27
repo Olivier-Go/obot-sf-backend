@@ -23,7 +23,6 @@ class OpportunityRepository extends ServiceEntityRepository
     public function findAllQB(): Query
     {
         return $this->createQueryBuilder('o')
-            ->leftJoin('o.ticker', 'ticker')
             ->leftJoin('o.buyMarket', 'buyMarket')
             ->leftJoin('o.sellMarket', 'sellMarket')
             ->addOrderBy('o.received', 'ASC')

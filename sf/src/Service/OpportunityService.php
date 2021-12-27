@@ -45,7 +45,6 @@ class OpportunityService extends Tools
             return $msgErrors;
         }
 
-        $opportunity->setTicker($this->tickerRepository->find($data->ticker));
         $opportunity->setBuyMarket($this->marketRepository->find($data->buyMarket));
         $opportunity->setSellMarket($this->marketRepository->find($data->sellMarket));
 

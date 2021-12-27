@@ -14,7 +14,7 @@
                             <tr>
                                 <th scope="col">{{ knp_pagination_sortable(opportunities, '#', 'o.id') }}</th>
                                 <th scope="col">{{ knp_pagination_sortable(opportunities, 'Received', 'o.received') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Ticker', 'ticker.name') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Ticker', 'o.ticker') }}</th>
                                 <th scope="col">{{ knp_pagination_sortable(opportunities, 'Direction', 'o.direction') }}</th>
                                 <th scope="col">{{ knp_pagination_sortable(opportunities, 'Price diff', 'o.priceDiff') }}</th>
                                 <th scope="col">{{ knp_pagination_sortable(opportunities, 'Buy market', 'buyMarket.name') }}</th>
@@ -30,7 +30,7 @@
                                 <tr>
                                     <th scope="row">{{ opportunity.id }}</th>
                                     <td>{{ opportunity.received|date('d/m/Y H:i:s') }}</td>
-                                    <td>{{ opportunity.ticker.name }}</td>
+                                    <td>{{ opportunity.ticker }}</td>
                                     <td><span class="text-{{ opportunity.direction == 'Sell->Buy' ? 'danger' : 'success' }}">{{ opportunity.direction }}</span></td>
                                     <td>{{ opportunity.priceDiff }}</td>
                                     <td>{{ opportunity.buyMarket.name }}</td>

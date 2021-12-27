@@ -69,6 +69,11 @@ class Balance
         return $this->id;
     }
 
+    public function __toString(): string
+    {
+    return 'Market: '.strtoupper($this->getMarket()->getName()).' / Currency: '.$this->getCurrency().' / Total: '.($this->getTotal() ? $this->getTotal() : 0).' / Available: '.($this->getAvailable() ? $this->getAvailable() : 0).' / Hold: '.($this->getHold() ? $this->getHold() : 0);
+    }
+
     public function getMarket(): ?Market
     {
         return $this->market;

@@ -79,6 +79,27 @@ class CcxtService extends Tools
         return $balance;
     }
 
+    public function fetchOrderBook(Market $market, string $ticker): ?array
+    {
+        $exchange = $this->getExchangeInstance($market);
+
+        if ($exchange && $exchange->has['fetchOrderBook']) {
+            try {
+                $exchangeOrderBook = $exchange->fetch_order_book($ticker);
+                if (is_array($exchangeOrderBook)) {
+                    $orderBook['askPrice'] = $exchangeOrderBook['asks'][0][0];
+                    $orderBook['askSize'] = $exchangeOrderBook['asks'][0][1];
+                    $orderBook['bidPrice'] = $exchangeOrderBook['bids'][0][0];
+                    $orderBook['bidSize'] = $exchangeOrderBook['bids'][0][1];
+                    return $orderBook;
+                }
+            } catch (Exception $e) {
+            }
+        }
+
+        return null;
+    }
+
     public function fetchOrders(Market $market): array
     {
         $orders = [];

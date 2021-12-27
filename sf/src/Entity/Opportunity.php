@@ -19,8 +19,7 @@ class Opportunity
     private $id;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Ticker::class, inversedBy="opportunities", cascade={"persist"})
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\Column(type="string", length=255)
      */
     private $ticker;
 
@@ -84,12 +83,12 @@ class Opportunity
         return $this->id;
     }
 
-    public function getTicker(): ?Ticker
+    public function getTicker(): ?string
     {
         return $this->ticker;
     }
 
-    public function setTicker(?Ticker $ticker): self
+    public function setTicker(string $ticker): self
     {
         $this->ticker = $ticker;
 

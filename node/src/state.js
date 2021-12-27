@@ -1,7 +1,7 @@
 import "./utils/env.js";
 
 export const state = {
-    ticker: 1, // FLUX/USDT
+    ticker: 'FLUX/USDT',
     interval: null,
     startTime: 0,
     resetTime: 0,

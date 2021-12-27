@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Balance;
+use App\Entity\Market;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -19,6 +20,19 @@ class BalanceRepository extends ServiceEntityRepository
         parent::__construct($registry, Balance::class);
     }
 
+    public function findMarketBalancesForTicker(Market $market, string $ticker)
+    {
+        return $this->createQueryBuilder('b')
+            ->leftJoin('b.ticker', 't')
+            ->leftJoin('b.market', 'm')
+            ->andWhere('m = :market')
+            ->andWhere('t.name = :ticker')
+            ->setParameter('market', $market)
+            ->setParameter('ticker', $ticker)
+            ->getQuery()
+            ->getResult()
+            ;
+    }
 
     // /**
     //  * @return Balance[] Returns an array of Balance objects
