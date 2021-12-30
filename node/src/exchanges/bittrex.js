@@ -42,12 +42,9 @@ export const ws = {
   },
 
   printOrderBook: () => {
-    console.log(`-----------------------------------------------------------`);
-    console.log(`  BITTREX  |  State : ${ws.state}  |  Market : ${ws.market.id}`);
-    console.log(`-----------------------------------------------------------`);
-    console.log(`                      BUY ORDERS                         `);
+    console.log(`  BITTREX  BUY ORDERS    |  Market : ${ws.market.id}    `);
     console.table(ws.filteredBuyOrders);
-    console.log(`                      SELL ORDERS                         `);
+    console.log(`  BITTREX  SELL ORDERS   |  Market : ${ws.market.id}    `);
     console.table(ws.filteredSellOrders);
   }
 };

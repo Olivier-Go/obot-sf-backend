@@ -42,12 +42,9 @@ export const ws = {
   },
 
   printOrderBook: () => {
-    console.log(`-----------------------------------------------------------`);
-    console.log(`  BINANCE  |  State : ${ws.state}  |  Market : ${ws.market.id}`);
-    console.log(`-----------------------------------------------------------`);
-    console.log(`                      BUY ORDERS                         `);
+    console.log(`  BINANCE  BUY ORDERS    |  Market : ${ws.market.id}    `);
     console.table(ws.filteredBuyOrders);
-    console.log(`                      SELL ORDERS                         `);
+    console.log(`  BINANCE  SELL ORDERS   |  Market : ${ws.market.id}    `);
     console.table(ws.filteredSellOrders);
   }
 };

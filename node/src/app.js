@@ -125,7 +125,7 @@ export const app = {
     app.buySellOp(true, state.ticker);
     app.printSellBuyDiff();
     app.sellBuyOp(true, state.ticker);
-    flush();
+    flush(8192);
   },
 
   start: (apiState) => {

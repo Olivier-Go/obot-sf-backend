@@ -42,12 +42,9 @@ export const ws = {
   },
 
   printOrderBook: () => {
-    console.log(`-----------------------------------------------------------`);
-    console.log(`  KUCOIN  |  State : ${ws.state}  |  Market : ${ws.market.id}`);
-    console.log(`-----------------------------------------------------------`);
-    console.log(`                      BUY ORDERS                         `);
+    console.log(`  KUCOIN  BUY ORDERS    |  Market : ${ws.market.id}    `);
     console.table(ws.filteredBuyOrders);
-    console.log(`                      SELL ORDERS                         `);
+    console.log(`  KUCOIN  SELL ORDERS   |  Market : ${ws.market.id}    `);
     console.table(ws.filteredSellOrders);
   }
 };

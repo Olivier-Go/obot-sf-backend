@@ -9,7 +9,7 @@ use App\Service\CcxtService;
 use App\Service\OpportunityService;
 use App\Service\OrderService;
 use App\Service\WorkerService;
-use Symfony\Bridge\Doctrine\ManagerRegistry;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -36,7 +36,7 @@ class ApiController extends AbstractController
     /**
      * @Route("/opportunity/new", name="api_opportunity_new", methods="POST")
      */
-    public function newOpportunity(Request $request, ManagerRegistry $managerRegistry): Response
+    public function newOpportunity(Request $request, ManagerRegistry $doctrine): Response
     {
         $data = $request->getContent();
         $opportunity = $this->opportunityService->denormalizeOpportunity($data);
@@ -49,7 +49,7 @@ class ApiController extends AbstractController
 //
 //        $opportunity = $this->workerService->execute($opportunity);
 
-        $em = $managerRegistry->getManager();
+        $em = $doctrine->getManager();
         $em->persist($opportunity);
         $em->flush();
 
