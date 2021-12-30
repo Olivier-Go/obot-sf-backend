@@ -1,7 +1,7 @@
 import "./utils/env.js";
 
 export const state = {
-    ticker: 'FLUX/USDT',
+    ticker: process.env.TICKER,
     interval: null,
     startTime: 0,
     resetTime: 0,
@@ -9,26 +9,26 @@ export const state = {
     threshold: process.env.APP_THRESHOLD,
     orderSize: process.env.ORDER_SIZE,
     orderDiff: process.env.ORDER_DIFF,
-    buySellDiffBittrexToBinance: {},
-    buySellDiffBinanceToBittrex: {},
-    buySellOpBittrexToBinance: {
+    buySellDiff1To2: {},
+    buySellDiff2To1: {},
+    buySellOp1To2: {
         'count' : 0,
         'order': {},
         'history': [],
     },
-    buySellOpBinanceToBittrex: {
+    buySellOp2To1: {
         'count' : 0,
         'order': {},
         'history': [],
     },
-    sellBuyDiffBittrexToBinance: {},
-    sellBuyDiffBinanceToBittrex: {},
-    sellBuyOpBittrexToBinance: {
+    sellBuyDiff1To2: {},
+    sellBuyDiff2To1: {},
+    sellBuyOp1To2: {
         'count' : 0,
         'order': {},
         'history': [],
     },
-    sellBuyOpBinanceToBittrex: {
+    sellBuyOp2To1: {
         'count' : 0,
         'order': {},
         'history': [],

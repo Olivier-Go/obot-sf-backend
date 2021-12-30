@@ -45,8 +45,8 @@ class OpportunityService extends Tools
             return $msgErrors;
         }
 
-        $opportunity->setBuyMarket($this->marketRepository->find($data->buyMarket));
-        $opportunity->setSellMarket($this->marketRepository->find($data->sellMarket));
+        $opportunity->setBuyMarket($this->marketRepository->findOneBy(['name' => strtolower($data->buyMarket)]));
+        $opportunity->setSellMarket($this->marketRepository->findOneBy(['name' => strtolower($data->sellMarket)]));
 
         return $opportunity;
     }

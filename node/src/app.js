@@ -3,17 +3,22 @@ import { flush } from "log-buffer";
 import { drawOrdersArr, isEmptyObj, startTime, memoryUsage } from "./utils/functions.js";
 import { updateBuySellDiff, updateSellBuyDiff, updateBuySellOp, updateSellBuyOp } from "./opportunities.js";
 import { apiFetchConnection, apiAddOpportunity } from "./requests.js";
+import { loadExchangeWs } from "./exchanges/exchange.js";
 import { state } from "./state.js";
-import { ws as kucoinWs } from "./exchanges/kucoin.js";
-import { ws as bittrexWs } from "./exchanges/bittrex.js";
-import { ws as binanceWs } from "./exchanges/binance.js";
+import {ws as binanceWs} from "./exchanges/binance.js";
+import {ws as kucoinWs} from "./exchanges/kucoin.js";
+import {ws as bittrexWs} from "./exchanges/bittrex.js";
+
+let exchange1Ws = null;
+let exchange2Ws = null;
 
 export const app = {
   init: () => {
     state.startTime = Date.now();
-    kucoinWs.run();
-    bittrexWs.run();
-    binanceWs.run();
+    exchange1Ws = loadExchangeWs(1, process.env.EXCHANGE1);
+    exchange2Ws = loadExchangeWs(2, process.env.EXCHANGE2);
+    exchange1Ws.run();
+    exchange2Ws.run();
     setInterval(() => {
       state.resetTime += 1;
     }, 1000);
@@ -24,90 +29,89 @@ export const app = {
     console.log(` Threshold : ${state.threshold}  |  OrderSize : ${state.orderSize}  |  OrderDiff : ${state.orderDiff}`);
     const startedTime = startTime();
     console.log(` ${startedTime.date} ${startedTime.time} - Started : ${startedTime.since} -  Mem : ${memoryUsage()} MB `);
-    console.log(` API : ${state.apiToken ? 'OK' : 'KO'} | Bittrex : ${bittrexWs.state} | Kucoin : ${kucoinWs.state} | Binance : ${binanceWs.state}`);
+    console.log(` API : ${process.env.API_STATE === 'enable' ? state.apiToken ? 'OK' : 'KO' : 'Disabled'} | ${process.env.EXCHANGE1} : ${exchange1Ws.state} | ${process.env.EXCHANGE2} : ${exchange2Ws.state}`);
     console.log(`----------------------------------------------------------------------------`);
   },
 
   printBuySellDiff: () => {
-    console.log(`          DIFF  :   BUY BITTREX / SELL BINANCE                   `);
-    state.buySellDiffBittrexToBinance = updateBuySellDiff(bittrexWs.sellOrders, binanceWs.buyOrders, state.orderSize);
-    console.table(drawOrdersArr(state.buySellDiffBittrexToBinance.diff));
-    console.log(`          DIFF  :   BUY BINANCE / SELL BITTREX                   `);
-    state.buySellDiffBinanceToBittrex = updateBuySellDiff(binanceWs.sellOrders, bittrexWs.buyOrders, state.orderSize);
-    console.table(drawOrdersArr(state.buySellDiffBinanceToBittrex.diff));
+    console.log(`          DIFF  :   BUY ${process.env.EXCHANGE1} / SELL ${process.env.EXCHANGE2}                   `);
+    state.buySellDiff1To2 = updateBuySellDiff(exchange1Ws.sellOrders, exchange2Ws.buyOrders, state.orderSize);
+    console.table(drawOrdersArr(state.buySellDiff1To2.diff));
+    console.log(`          DIFF  :   BUY ${process.env.EXCHANGE2} / SELL ${process.env.EXCHANGE1}                   `);
+    state.buySellDiff2To1 = updateBuySellDiff(exchange2Ws.sellOrders, exchange1Ws.buyOrders, state.orderSize);
+    console.table(drawOrdersArr(state.buySellDiff2To1.diff));
   },
 
   printSellBuyDiff: () => {
-    console.log(`          DIFF  :   SELL BITTREX / BUY BINANCE                   `);
-    state.sellBuyDiffBittrexToBinance = updateSellBuyDiff(bittrexWs.buyOrders, binanceWs.sellOrders, state.orderSize);
-    console.table(drawOrdersArr(state.sellBuyDiffBittrexToBinance.diff));
-    console.log(`          DIFF  :   SELL BINANCE / BUY BITTREX                   `);
-    state.sellBuyDiffBinanceToBittrex = updateSellBuyDiff(binanceWs.buyOrders, bittrexWs.sellOrders, state.orderSize);
-    console.table(drawOrdersArr(state.sellBuyDiffBinanceToBittrex.diff));
+    console.log(`          DIFF  :   SELL ${process.env.EXCHANGE1} / BUY ${process.env.EXCHANGE2}                    `);
+    state.sellBuyDiff1To2 = updateSellBuyDiff(exchange1Ws.buyOrders, exchange2Ws.sellOrders, state.orderSize);
+    console.table(drawOrdersArr(state.sellBuyDiff1To2.diff));
+    console.log(`          DIFF  :   SELL ${process.env.EXCHANGE2}  / BUY ${process.env.EXCHANGE1}                   `);
+    state.sellBuyDiff2To1 = updateSellBuyDiff(exchange2Ws.buyOrders, exchange1Ws.sellOrders, state.orderSize);
+    console.table(drawOrdersArr(state.sellBuyDiff2To1.diff));
   },
 
   buySellOp: (print = false, ticker = false) => {
-    console.log(`          OP  :   BUY BITTREX / SELL BINANCE                   `);
-    if (!isEmptyObj(state.buySellDiffBittrexToBinance)) {
-      const op = updateBuySellOp(state.buySellOpBittrexToBinance, state.buySellDiffBittrexToBinance, state.orderDiff, ticker, 1, 3); // 3 = Binance, 1 = Bittrex
+    console.log(`          OP  :   BUY ${process.env.EXCHANGE1} / SELL ${process.env.EXCHANGE2}                     `);
+    if (!isEmptyObj(state.buySellDiff1To2)) {
+      const op = updateBuySellOp(state.buySellOp1To2, state.buySellDiff1To2, state.orderDiff, ticker, process.env.EXCHANGE1, process.env.EXCHANGE2);
       //console.log(op)
       if (state.apiToken && ticker && !isEmptyObj(op.order)) {
         apiAddOpportunity(op);
       }
       if (print) {
-        state.buySellOpBittrexToBinance = !isEmptyObj(op.order) ? updateBuySellOp(state.buySellOpBittrexToBinance, state.buySellDiffBittrexToBinance, state.orderDiff) : state.buySellOpBittrexToBinance;
-        console.log(state.buySellOpBittrexToBinance.count);
-        console.table(drawOrdersArr(state.buySellOpBittrexToBinance.history, 1));
+        state.buySellOp1To2 = !isEmptyObj(op.order) ? updateBuySellOp(state.buySellOp1To2, state.buySellDiff1To2, state.orderDiff) : state.buySellOp1To2;
+        console.log(state.buySellOp1To2.count);
+        console.table(drawOrdersArr(state.buySellOp1To2.history, 1));
       }
     }
-    console.log(`          OP  :   BUY BINANCE / SELL BITTREX                   `);
-    if (!isEmptyObj(state.buySellDiffBinanceToBittrex)) {
-      const op = updateBuySellOp(state.buySellOpBinanceToBittrex, state.buySellDiffBinanceToBittrex, state.orderDiff, ticker, 3, 1); // 3 = Binance, 1 = Bittrex
+    console.log(`          OP  :   BUY ${process.env.EXCHANGE2}  / SELL ${process.env.EXCHANGE1}                   `);
+    if (!isEmptyObj(state.buySellDiff2To1)) {
+      const op = updateBuySellOp(state.buySellOp2To1, state.buySellDiff2To1, state.orderDiff, ticker, process.env.EXCHANGE2, process.env.EXCHANGE);
       //console.log(op)
       if (state.apiToken && ticker && !isEmptyObj(op.order)) {
         apiAddOpportunity(op);
       }
       if (print) {
-        state.buySellOpBinanceToBittrex = !isEmptyObj(op.order) ? updateBuySellOp(state.buySellOpBinanceToBittrex, state.buySellDiffBinanceToBittrex, state.orderDiff) : state.buySellOpBinanceToBittrex;
-        console.log(state.buySellOpBinanceToBittrex.count);
-        console.table(drawOrdersArr(state.buySellOpBinanceToBittrex.history, 1));
+        state.buySellOp2To1 = !isEmptyObj(op.order) ? updateBuySellOp(state.buySellOp2To1, state.buySellDiff2To1, state.orderDiff) : state.buySellOp2To1;
+        console.log(state.buySellOp2To1.count);
+        console.table(drawOrdersArr(state.buySellOp2To1.history, 1));
       }
     }
   },
 
   sellBuyOp: (print = false, ticker = false) => {
-    console.log(`          OP  :   SELL BITTREX / BUY BINANCE                   `);
-    if (!isEmptyObj(state.sellBuyDiffBittrexToBinance)) {
-      const op = updateSellBuyOp(state.sellBuyOpBittrexToBinance, state.sellBuyDiffBittrexToBinance, state.orderDiff, ticker, 3, 1); // 3 = Binance, 1 = Bittrex
+    console.log(`          OP  :   SELL ${process.env.EXCHANGE1}  / BUY ${process.env.EXCHANGE2}                   `);
+    if (!isEmptyObj(state.sellBuyDiff1To2)) {
+      const op = updateSellBuyOp(state.sellBuyOp1To2, state.sellBuyDiff1To2, state.orderDiff, ticker, process.env.EXCHANGE2, process.env.EXCHANGE1);
       //console.log(op)
       if (state.apiToken && ticker && !isEmptyObj(op.order)) {
         apiAddOpportunity(op);
       }
       if (print) {
-        state.sellBuyOpBittrexToBinance = !isEmptyObj(op.order) ? updateSellBuyOp(state.sellBuyOpBittrexToBinance, state.sellBuyDiffBittrexToBinance, state.orderDiff) : state.sellBuyOpBittrexToBinance;
-        console.log(state.sellBuyOpBittrexToBinance.count);
-        console.table(drawOrdersArr(state.sellBuyOpBittrexToBinance.history, 1));
+        state.sellBuyOp1To2 = !isEmptyObj(op.order) ? updateSellBuyOp(state.sellBuyOp1To2, state.sellBuyDiff1To2, state.orderDiff) : state.sellBuyOp1To2;
+        console.log(state.sellBuyOp1To2.count);
+        console.table(drawOrdersArr(state.sellBuyOp1To2.history, 1));
       }
     }
-    console.log(`          OP  :   SELL BINANCE / BUY BITTREX                   `);
-    if (!isEmptyObj(state.sellBuyDiffBinanceToBittrex)) {
-      const op = updateSellBuyOp(state.sellBuyOpBinanceToBittrex, state.sellBuyDiffBinanceToBittrex, state.orderDiff, ticker, 1, 3); // 3 = Binance, 1 = Bittrex
+    console.log(`          OP  :   SELL ${process.env.EXCHANGE2} / BUY ${process.env.EXCHANGE1}                   `);
+    if (!isEmptyObj(state.sellBuyDiff2To1)) {
+      const op = updateSellBuyOp(state.sellBuyOp2To1, state.sellBuyDiff2To1, state.orderDiff, ticker, process.env.EXCHANGE1, process.env.EXCHANGE2);
       //console.log(op)
       if (state.apiToken && ticker && !isEmptyObj(op.order)) {
         apiAddOpportunity(op);
       }
       if (print) {
-        state.sellBuyOpBinanceToBittrex = !isEmptyObj(op.order) ? updateSellBuyOp(state.sellBuyOpBinanceToBittrex, state.sellBuyDiffBinanceToBittrex, state.orderDiff) : state.sellBuyOpBinanceToBittrex;
-        console.log(state.sellBuyOpBinanceToBittrex.count);
-        console.table(drawOrdersArr(state.sellBuyOpBinanceToBittrex.history, 1));
+        state.sellBuyOp2To1 = !isEmptyObj(op.order) ? updateSellBuyOp(state.sellBuyOp2To1, state.sellBuyDiff2To1, state.orderDiff) : state.sellBuyOp2To1;
+        console.log(state.sellBuyOp2To1.count);
+        console.table(drawOrdersArr(state.sellBuyOp2To1.history, 1));
       }
     }
   },
 
   reset: () => {
-    kucoinWs.reset();
-    bittrexWs.reset();
-    binanceWs.reset();
+    exchange1Ws.reset();
+    exchange2Ws.reset();
     return state.resetTime = 0;
   },
 
@@ -115,9 +119,8 @@ export const app = {
     console.clear();
     if (state.resetTime > 600) app.reset(); // 10 minutes
     app.printBanner();
-    //kucoinWs.printOrderBook();
-    //bittrexWs.printOrderBook();
-    //binanceWs.printOrderBook();
+    exchange1Ws.printOrderBook();
+    exchange2Ws.printOrderBook();
     app.printBuySellDiff();
     app.buySellOp(true, state.ticker);
     app.printSellBuyDiff();
@@ -125,13 +128,18 @@ export const app = {
     flush();
   },
 
-  start: (api = false) => {
-    if (api) {
-      apiFetchConnection(true);
-    }
-    else {
-      app.init();
-      app.run();
+  start: (apiState) => {
+    switch (apiState) {
+      case "enable":
+        apiFetchConnection();
+        break;
+      case "disable":
+        app.init();
+        app.run();
+        break;
+      default:
+        console.log(`Variable API_STATE non definie !`);
+        process.exit(1);
     }
   },
 
@@ -144,5 +152,5 @@ export const app = {
   }
 };
 
-app.start(false);
+app.start(process.env.API_STATE);
 

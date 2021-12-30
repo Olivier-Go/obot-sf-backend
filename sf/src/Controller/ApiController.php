@@ -9,6 +9,7 @@ use App\Service\CcxtService;
 use App\Service\OpportunityService;
 use App\Service\OrderService;
 use App\Service\WorkerService;
+use Symfony\Bridge\Doctrine\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,7 +36,7 @@ class ApiController extends AbstractController
     /**
      * @Route("/opportunity/new", name="api_opportunity_new", methods="POST")
      */
-    public function newOpportunity(Request $request): Response
+    public function newOpportunity(Request $request, ManagerRegistry $managerRegistry): Response
     {
         $data = $request->getContent();
         $opportunity = $this->opportunityService->denormalizeOpportunity($data);
@@ -44,7 +45,13 @@ class ApiController extends AbstractController
             return $this->json($opportunity, Response::HTTP_BAD_REQUEST);
         }
 
-        //dd($this->workerService->execute($opportunity));
+//        dd($this->workerService->execute($opportunity));
+//
+//        $opportunity = $this->workerService->execute($opportunity);
+
+        $em = $managerRegistry->getManager();
+        $em->persist($opportunity);
+        $em->flush();
 
         return $this->json([
             'message' => 'Opportunity ' . $opportunity->getId() . ' created.',

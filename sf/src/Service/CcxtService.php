@@ -175,7 +175,33 @@ class CcxtService extends Tools
         return $openOrders;
     }
 
-    public function sendLimitSellOrder(Market $market, Ticker $ticker, $amount, $price)
+    public function sendSellMarketOrder(Market $market, string $ticker, $amount): ?array
+    {
+        $exchange = $this->getExchangeInstance($market);
+
+        if ($exchange) {
+            if ($exchange->has['createMarketOrder']) {
+                try {
+                    $order = $exchange->create_market_sell_order($ticker, $amount);
+                    dd($order);
+                    /*if (is_array($order)) {
+                        unset($order['id']);
+                        $order['opened'] = $this->convertTimestampMs($order['timestamp']);
+                        $order['lastTrade'] = $this->convertTimestampMs($order['lastTradeTimestamp']);
+                        $order['market'] = $market->getId();
+                        $order['ticker'] = $ticker->getId();
+                        return $order;
+                    }*/
+                } catch (Exception $e) {
+
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function sendLimitSellOrder(Market $market, Ticker $ticker, $amount, $price): ?array
     {
         $exchange = $this->getExchangeInstance($market);
 

@@ -15,8 +15,8 @@ class WorkerService
     private string $logs;
     private Array $buyMarketBalances;
     private Array $sellMarketBalances;
-    private ?Array $buyMarketOrderBook;
-    private ?Array $sellMarketOrderBook;
+    private /*?Array*/ $buyMarketOrderBook;
+    private /*?Array*/ $sellMarketOrderBook;
 
 
     public function __construct(ContainerBagInterface $params, CcxtService $ccxtService, BalanceRepository $balanceRepository)
@@ -25,6 +25,19 @@ class WorkerService
         $this->logs = '============= Worker start ==============' . PHP_EOL;
         $this->ccxtService = $ccxtService;
         $this->balanceRepository = $balanceRepository;
+
+        /*$this->buyMarketOrderBook = [
+            'askPrice' => 2.13811,
+            'askSize' => 177.809,
+            'bidPrice' => 2.1381,
+            'bidSize' => 38.35051355
+        ];
+        $this->sellMarketOrderBook = [
+            'askPrice' => 2.113,
+            'askSize' => 16.0,
+            'bidPrice' => 2.109,
+            'bidSize' => 308.35
+        ];*/
     }
 
     private function trace(string $message, ?Opportunity $opportunity = null): array
@@ -46,16 +59,35 @@ class WorkerService
         $sellMarket = $opportunity->getSellMarket();
 
         // Check priceDiff
-        $this->checkPriceDiff($opportunity, $priceDiff);
+        if (!$this->checkPriceDiff($opportunity, $priceDiff)) return $this->logs;
 
         // Check orderSize
-        $this->checkOrderSize($opportunity, $orderSize);
+        if (!$this->checkOrderSize($opportunity, $orderSize)) return $this->logs;
 
         // Get Balances
-        $this->getBalances($buyMarket, $sellMarket, $ticker);
+        if (!$this->getBalances($buyMarket, $sellMarket, $ticker)) return $this->logs;
 
         // Fetch Orderbooks
-        $this->fetchOrderBooks($buyMarket, $sellMarket, $ticker);
+        if (!$this->fetchOrderBooks($buyMarket, $sellMarket, $ticker)) return $this->logs;
+
+        //Direction
+        $this->trace('-----------------------------------------');
+        switch ($opportunity->getDirection()) {
+            case 'Buy->Sell':
+                /*$this->trace('OK: direction = ' . $opportunity->getDirection());
+                if (!$this->checkBuyMarketConditions($opportunity, $orderSize)) return $this->logs;
+                if (!$this->checkSellMarketConditions($opportunity, $orderSize)) return $this->logs;*/
+                break;
+            case 'Sell->Buy':
+                $this->trace('OK: direction = ' . $opportunity->getDirection());
+                if (!$this->checkSellMarketConditions($opportunity, $orderSize)) return $this->logs;
+                /*if (!$this->checkBuyMarketConditions($opportunity, $orderSize)) return $this->logs;*/
+                dd($this->ccxtService->sendSellMarketOrder($sellMarket, $ticker, 1));
+                break;
+            default:
+                $this->trace('ERROR: invalid direction');
+                return $this->logs;
+        }
 
 
         $timeElapsedMs = intval((microtime(true) - $startTime) * 1000);
@@ -64,30 +96,48 @@ class WorkerService
         dd($this->buyMarketOrderBook, $this->sellMarketOrderBook);
     }
 
-    private function checkPriceDiff(Opportunity $opportunity, float $priceDiff): void
+    /**
+     * @param Opportunity $opportunity
+     * @param float $priceDiff
+     * @return bool
+     */
+    private function checkPriceDiff(Opportunity $opportunity, float $priceDiff): bool
     {
         if ($opportunity->getPriceDiff() < $priceDiff) {
             $this->trace('ERROR: priceDiff < ' . $priceDiff);
-            return;
+            return false;
         }
         $this->trace('OK: priceDiff > ' . $priceDiff);
+        return true;
     }
 
-    private function checkOrderSize(Opportunity $opportunity, int $orderSize): void
+    /**
+     * @param Opportunity $opportunity
+     * @param int $orderSize
+     * @return bool
+     */
+    private function checkOrderSize(Opportunity $opportunity, int $orderSize): bool
     {
         if ($opportunity->getSize() < $orderSize) {
             $this->trace('ERROR: orderSize < ' . $orderSize);
-            return;
+            return false;
         }
         $this->trace('OK: orderSize > ' . $orderSize);
+        return true;
     }
 
-    private function getBalances(Market $buyMarket, Market $sellMarket, string $ticker): void
+    /**
+     * @param Market $buyMarket
+     * @param Market $sellMarket
+     * @param string $ticker
+     * @return bool
+     */
+    private function getBalances(Market $buyMarket, Market $sellMarket, string $ticker): bool
     {
         $this->buyMarketBalances = $this->balanceRepository->findMarketBalancesForTicker($buyMarket, $ticker);
         if (empty($this->buyMarketBalances)) {
             $this->trace('ERROR: get buyMarketBalances');
-            return;
+            return false;
         }
         $this->trace('OK: get buyMarketBalances');
         foreach ($this->buyMarketBalances as $balance) {
@@ -96,20 +146,27 @@ class WorkerService
         $this->sellMarketBalances = $this->balanceRepository->findMarketBalancesForTicker($sellMarket, $ticker);
         if (empty($this->sellMarketBalances)) {
             $this->trace('ERROR: get sellMarketBalances');
-            return;
+            return false;
         }
         $this->trace('OK: get sellMarketBalances');
         foreach ($this->sellMarketBalances as $balance) {
             $this->trace('==> Balance ' . $balance);
         }
+        return true;
     }
 
-    private function fetchOrderBooks(Market $buyMarket, Market $sellMarket, string $ticker): void
+    /**
+     * @param Market $buyMarket
+     * @param Market $sellMarket
+     * @param string $ticker
+     * @return bool
+     */
+    private function fetchOrderBooks(Market $buyMarket, Market $sellMarket, string $ticker): bool
     {
         $this->buyMarketOrderBook = $this->ccxtService->fetchOrderBook($buyMarket, $ticker);
         if (!$this->buyMarketOrderBook) {
             $this->trace('ERROR: fetch buyMarketOrderBook');
-            return;
+            return false;
         }
         $this->trace('OK: fetch buyMarketOrderBook');
         $buyMarketOBTrace = '';
@@ -121,7 +178,7 @@ class WorkerService
         $this->sellMarketOrderBook = $this->ccxtService->fetchOrderBook($sellMarket, $ticker);
         if (!$this->sellMarketOrderBook) {
             $this->trace('ERROR: fetch sellMarketOrderBook');
-            return;
+            return false;
         }
         $this->trace('OK: fetch sellMarketOrderBook');
         $sellMarketOBTrace = '';
@@ -129,5 +186,77 @@ class WorkerService
             $sellMarketOBTrace .= $key . ': ' . $value . ' / ';
         }
         $this->trace('==> OB Market: ' . strtoupper($sellMarket->getName()) . ' / ' . $sellMarketOBTrace);
+        return true;
     }
+
+    /**
+     * @param Opportunity $opportunity
+     * @param int $orderSize
+     * @return bool
+     */
+    private function checkBuyMarketConditions(Opportunity $opportunity, int $orderSize): bool
+    {
+        $cost = $orderSize * $opportunity->getBuyPrice();
+        $costThreshold = $cost * 0.05;
+        foreach ($this->buyMarketBalances as $balance) {
+            if ($balance->getCurrency() === 'USDT') {
+                if ($balance->getAvailable() > ($cost + $costThreshold)) {
+                    $this->trace('OK: sufficient buyMarket USDT balance');
+                }
+                else {
+                    $this->trace('ERROR: insufficient buyMarket USDT balance');
+                    return false;
+                }
+            }
+        }
+
+        if (!$this->buyMarketOrderBook['askPrice'] <= $opportunity->getBuyPrice()) {
+            $this->trace('ERROR: buyMarketOrderBook askPrice > buyPrice');
+            return false;
+        }
+        $this->trace('OK: buyMarketOrderBook askPrice <= buyPrice');
+
+        if (!$this->buyMarketOrderBook['askSize'] >= $orderSize) {
+            $this->trace('ERROR: buyMarketOrderBook askSize < orderSize');
+            return false;
+        }
+        $this->trace('OK: buyMarketOrderBook askSize >= orderSize');
+        return true;
+    }
+
+    /**
+     * @param Opportunity $opportunity
+     * @param int $orderSize
+     * @return bool
+     */
+    private function checkSellMarketConditions(Opportunity $opportunity, int $orderSize): bool
+    {
+        $cost = $orderSize / $opportunity->getSellPrice();
+        $costThreshold = $cost * 0.05;
+        foreach ($this->sellMarketBalances as $balance) {
+            if ($balance->getCurrency() === 'FLUX') {
+                if ($balance->getAvailable() > ($cost + $costThreshold)) {
+                    $this->trace('OK: sufficient sellMarket USDT balance');
+                }
+                else {
+                    $this->trace('ERROR: insufficient sellMarket USDT balance');
+                    return false;
+                }
+            }
+        }
+
+        if (!$this->sellMarketOrderBook['bidPrice'] >= $opportunity->getSellPrice()) {
+            $this->trace('ERROR: sellMarketOrderBook bidPrice < sellPrice');
+            return false;
+        }
+        $this->trace('OK: sellMarketOrderBook bidPrice >= sellPrice');
+
+        if (!$this->sellMarketOrderBook['bidSize'] >= $orderSize) {
+            $this->trace('ERROR: sellMarketOrderBook bidSize < orderSize');
+            return false;
+        }
+        $this->trace('OK: sellMarketOrderBook bidSize >= orderSize');
+        return true;
+    }
+
 }

@@ -36,11 +36,6 @@ class Ticker
     private $market;
 
     /**
-     * @ORM\OneToMany(targetEntity=Opportunity::class, mappedBy="ticker")
-     */
-    private $opportunities;
-
-    /**
      * @ORM\OneToMany(targetEntity=Order::class, mappedBy="ticker")
      */
     private $orders;
@@ -88,7 +83,6 @@ class Ticker
 
     public function __construct()
     {
-        $this->opportunities = new ArrayCollection();
         $this->orders = new ArrayCollection();
         $this->balances = new ArrayCollection();
     }
@@ -130,36 +124,6 @@ class Ticker
     public function setMarket(?Market $market): self
     {
         $this->market = $market;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Opportunity[]
-     */
-    public function getOpportunities(): Collection
-    {
-        return $this->opportunities;
-    }
-
-    public function addOpportunity(Opportunity $opportunity): self
-    {
-        if (!$this->opportunities->contains($opportunity)) {
-            $this->opportunities[] = $opportunity;
-            $opportunity->setTicker($this);
-        }
-
-        return $this;
-    }
-
-    public function removeOpportunity(Opportunity $opportunity): self
-    {
-        if ($this->opportunities->removeElement($opportunity)) {
-            // set the owning side to null (unless already changed)
-            if ($opportunity->getTicker() === $this) {
-                $opportunity->setTicker(null);
-            }
-        }
 
         return $this;
     }
