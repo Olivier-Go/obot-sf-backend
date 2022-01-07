@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "nodemon src/index.js",
+    "app": "nodemon src/app.js",
     "ws": "nodemon src/ws.js"
   },
   "dependencies": {

@@ -28,7 +28,7 @@ export const app = {
     console.log(`----------------------------------------------------------------------------`);
     console.log(` Threshold : ${state.threshold}  |  OrderSize : ${state.orderSize}  |  OrderDiff : ${state.orderDiff}`);
     const startedTime = startTime();
-    console.log(` ${startedTime.date} ${startedTime.time} - Started : ${startedTime.since} -  Mem : ${memoryUsage()} MB `);
+    console.log(` ${startedTime.date} ${startedTime.time} - Started : ${startedTime.since} - Mem : ${memoryUsage()} MB `);
     console.log(` API : ${process.env.API_STATE === 'enable' ? state.apiToken ? 'OK' : 'KO' : 'Disabled'} | ${process.env.EXCHANGE1} : ${exchange1Ws.state} | ${process.env.EXCHANGE2} : ${exchange2Ws.state}`);
     console.log(`----------------------------------------------------------------------------`);
   },
@@ -56,11 +56,11 @@ export const app = {
     if (!isEmptyObj(state.buySellDiff1To2)) {
       const op = updateBuySellOp(state.buySellOp1To2, state.buySellDiff1To2, state.orderDiff, ticker, process.env.EXCHANGE1, process.env.EXCHANGE2);
       //console.log(op)
-      if (state.apiToken && ticker && !isEmptyObj(op.order)) {
+      if (state.apiToken && ticker && !isEmptyObj(op.order) && state.resetTime > 10) {
         apiAddOpportunity(op);
       }
       if (print) {
-        state.buySellOp1To2 = !isEmptyObj(op.order) ? updateBuySellOp(state.buySellOp1To2, state.buySellDiff1To2, state.orderDiff) : state.buySellOp1To2;
+        state.buySellOp1To2 = !isEmptyObj(op.order) && state.resetTime > 10 ? updateBuySellOp(state.buySellOp1To2, state.buySellDiff1To2, state.orderDiff) : state.buySellOp1To2;
         console.log(state.buySellOp1To2.count);
         console.table(drawOrdersArr(state.buySellOp1To2.history, 1));
       }
@@ -69,11 +69,11 @@ export const app = {
     if (!isEmptyObj(state.buySellDiff2To1)) {
       const op = updateBuySellOp(state.buySellOp2To1, state.buySellDiff2To1, state.orderDiff, ticker, process.env.EXCHANGE2, process.env.EXCHANGE);
       //console.log(op)
-      if (state.apiToken && ticker && !isEmptyObj(op.order)) {
+      if (state.apiToken && ticker && !isEmptyObj(op.order) && state.resetTime > 10) {
         apiAddOpportunity(op);
       }
       if (print) {
-        state.buySellOp2To1 = !isEmptyObj(op.order) ? updateBuySellOp(state.buySellOp2To1, state.buySellDiff2To1, state.orderDiff) : state.buySellOp2To1;
+        state.buySellOp2To1 = !isEmptyObj(op.order) && state.resetTime > 10 ? updateBuySellOp(state.buySellOp2To1, state.buySellDiff2To1, state.orderDiff) : state.buySellOp2To1;
         console.log(state.buySellOp2To1.count);
         console.table(drawOrdersArr(state.buySellOp2To1.history, 1));
       }
@@ -85,11 +85,11 @@ export const app = {
     if (!isEmptyObj(state.sellBuyDiff1To2)) {
       const op = updateSellBuyOp(state.sellBuyOp1To2, state.sellBuyDiff1To2, state.orderDiff, ticker, process.env.EXCHANGE2, process.env.EXCHANGE1);
       //console.log(op)
-      if (state.apiToken && ticker && !isEmptyObj(op.order)) {
+      if (state.apiToken && ticker && !isEmptyObj(op.order) && state.resetTime > 10) {
         apiAddOpportunity(op);
       }
       if (print) {
-        state.sellBuyOp1To2 = !isEmptyObj(op.order) ? updateSellBuyOp(state.sellBuyOp1To2, state.sellBuyDiff1To2, state.orderDiff) : state.sellBuyOp1To2;
+        state.sellBuyOp1To2 = !isEmptyObj(op.order) && state.resetTime > 10 ? updateSellBuyOp(state.sellBuyOp1To2, state.sellBuyDiff1To2, state.orderDiff) : state.sellBuyOp1To2;
         console.log(state.sellBuyOp1To2.count);
         console.table(drawOrdersArr(state.sellBuyOp1To2.history, 1));
       }
@@ -98,11 +98,11 @@ export const app = {
     if (!isEmptyObj(state.sellBuyDiff2To1)) {
       const op = updateSellBuyOp(state.sellBuyOp2To1, state.sellBuyDiff2To1, state.orderDiff, ticker, process.env.EXCHANGE1, process.env.EXCHANGE2);
       //console.log(op)
-      if (state.apiToken && ticker && !isEmptyObj(op.order)) {
+      if (state.apiToken && ticker && !isEmptyObj(op.order) && state.resetTime > 10) {
         apiAddOpportunity(op);
       }
       if (print) {
-        state.sellBuyOp2To1 = !isEmptyObj(op.order) ? updateSellBuyOp(state.sellBuyOp2To1, state.sellBuyDiff2To1, state.orderDiff) : state.sellBuyOp2To1;
+        state.sellBuyOp2To1 = !isEmptyObj(op.order) && state.resetTime > 10 ? updateSellBuyOp(state.sellBuyOp2To1, state.sellBuyDiff2To1, state.orderDiff) : state.sellBuyOp2To1;
         console.log(state.sellBuyOp2To1.count);
         console.table(drawOrdersArr(state.sellBuyOp2To1.history, 1));
       }
