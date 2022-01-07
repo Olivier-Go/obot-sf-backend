@@ -119,13 +119,13 @@ export const app = {
     console.clear();
     if (state.resetTime > 600) app.reset(); // 10 minutes
     app.printBanner();
-    exchange1Ws.printOrderBook();
-    exchange2Ws.printOrderBook();
+    //exchange1Ws.printOrderBook();
+    //exchange2Ws.printOrderBook();
     app.printBuySellDiff();
     app.buySellOp(true, state.ticker);
     app.printSellBuyDiff();
     app.sellBuyOp(true, state.ticker);
-    flush(8192);
+    flush();
   },
 
   start: (apiState) => {
