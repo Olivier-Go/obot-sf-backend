@@ -5,9 +5,6 @@ import { updateBuySellDiff, updateSellBuyDiff, updateBuySellOp, updateSellBuyOp 
 import { apiFetchConnection, apiAddOpportunity } from "./requests.js";
 import { loadExchangeWs } from "./exchanges/exchange.js";
 import { state } from "./state.js";
-import {ws as binanceWs} from "./exchanges/binance.js";
-import {ws as kucoinWs} from "./exchanges/kucoin.js";
-import {ws as bittrexWs} from "./exchanges/bittrex.js";
 
 let exchange1Ws = null;
 let exchange2Ws = null;

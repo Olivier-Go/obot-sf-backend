@@ -77,6 +77,21 @@ class Opportunity
      */
     private $updated;
 
+    /**
+     * @ORM\Column(type="text", nullable=true)
+     */
+    private $logs;
+
+    /**
+     * @ORM\OneToOne(targetEntity=Order::class, cascade={"persist"})
+     */
+    private $buyOrder;
+
+    /**
+     * @ORM\OneToOne(targetEntity=Order::class, cascade={"persist"})
+     */
+    private $sellOrder;
+
 
     public function getId(): ?int
     {
@@ -211,6 +226,42 @@ class Opportunity
     public function setUpdated(\DateTimeInterface $updated): self
     {
         $this->updated = $updated;
+
+        return $this;
+    }
+
+    public function getLogs(): ?string
+    {
+        return $this->logs;
+    }
+
+    public function setLogs(?string $logs): self
+    {
+        $this->logs = $logs;
+
+        return $this;
+    }
+
+    public function getBuyOrder(): ?Order
+    {
+        return $this->buyOrder;
+    }
+
+    public function setBuyOrder(?Order $buyOrder): self
+    {
+        $this->buyOrder = $buyOrder;
+
+        return $this;
+    }
+
+    public function getSellOrder(): ?Order
+    {
+        return $this->sellOrder;
+    }
+
+    public function setSellOrder(?Order $sellOrder): self
+    {
+        $this->sellOrder = $sellOrder;
 
         return $this;
     }

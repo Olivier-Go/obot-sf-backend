@@ -35,7 +35,10 @@ export const apiAddOpportunity = (op) => {
         .then((response) => {
             //console.log(response.data);
             if (response.status === 201) {
-                app.run();
+                if (process.env.APP_ENV === 'prod') {
+                  app.run();
+                }
+                else process.exit(0);
             }
         })
         .catch((error) => {

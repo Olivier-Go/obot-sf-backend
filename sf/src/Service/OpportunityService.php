@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Entity\Opportunity;
 use App\Repository\MarketRepository;
-use App\Repository\TickerRepository;
 use App\Utils\Tools;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
@@ -14,20 +13,18 @@ class OpportunityService extends Tools
 {
     private DenormalizerInterface $denormalizer;
     private ValidatorInterface $validator;
-    private TickerRepository $tickerRepository;
     private MarketRepository $marketRepository;
     private ManagerRegistry $doctrine;
 
-    public function __construct(DenormalizerInterface $denormalizer, ValidatorInterface $validator, TickerRepository $tickerRepository, MarketRepository $marketRepository, ManagerRegistry $doctrine)
+    public function __construct(DenormalizerInterface $denormalizer, ValidatorInterface $validator, MarketRepository $marketRepository, ManagerRegistry $doctrine)
     {
         $this->denormalizer = $denormalizer;
         $this->validator = $validator;
-        $this->tickerRepository = $tickerRepository;
         $this->marketRepository = $marketRepository;
         $this->doctrine = $doctrine;
     }
 
-    public function denormalizeOpportunity(String $data)
+    public function denormalizeOpportunity(string $data)
     {
         $data = json_decode($data);
         $data->received = $this->convertTimestampSec($data->received);

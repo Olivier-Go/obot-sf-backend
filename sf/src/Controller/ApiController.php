@@ -2,14 +2,12 @@
 
 namespace App\Controller;
 
-use App\Entity\Market;
 use App\Entity\Opportunity;
-use App\Entity\Order;
+use App\Repository\MarketRepository;
 use App\Service\CcxtService;
 use App\Service\OpportunityService;
 use App\Service\OrderService;
 use App\Service\WorkerService;
-use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,21 +20,22 @@ class ApiController extends AbstractController
 {
     private CcxtService $ccxtService;
     private OpportunityService $opportunityService;
-    private OrderService $orderService;
     private WorkerService $workerService;
+    private MarketRepository $marketRepository;
 
-    public function __construct(CcxtService $ccxtService, OpportunityService $opportunityService, OrderService $orderService, WorkerService $workerService)
+    public function __construct(CcxtService $ccxtService, OpportunityService $opportunityService, OrderService $orderService, WorkerService $workerService, MarketRepository $marketRepository)
     {
         $this->ccxtService = $ccxtService;
         $this->opportunityService = $opportunityService;
         $this->orderService = $orderService;
         $this->workerService = $workerService;
+        $this->marketRepository = $marketRepository;
     }
 
     /**
      * @Route("/opportunity/new", name="api_opportunity_new", methods="POST")
      */
-    public function newOpportunity(Request $request, ManagerRegistry $doctrine): Response
+    public function newOpportunity(Request $request): Response
     {
         $data = $request->getContent();
         $opportunity = $this->opportunityService->denormalizeOpportunity($data);
@@ -45,47 +44,70 @@ class ApiController extends AbstractController
             return $this->json($opportunity, Response::HTTP_BAD_REQUEST);
         }
 
-//        dd($this->workerService->execute($opportunity));
-//
-//        $opportunity = $this->workerService->execute($opportunity);
+        $opportunity = $this->workerService->execute($opportunity);
 
-        $em = $doctrine->getManager();
-        $em->persist($opportunity);
-        $em->flush();
+        $this->opportunityService->createOpportunity($opportunity);
 
         return $this->json([
             'message' => 'Opportunity ' . $opportunity->getId() . ' created.',
         ], Response::HTTP_CREATED);
     }
 
+    /** ================> TEST ================> */
     /**
-     * @Route("/order/new", name="api_order_new", methods={"POST"})
+     * @Route("/ccxt/order/send", methods={"POST"})
      */
-    public function newOrder(Request $request): Response
+    public function ccxtSendOrder(Request $request)
     {
-        $data = $request->getContent();
-        $order = $this->orderService->createOrder($data);
+        $data = json_decode($request->getContent());
+        $ticker = $data->ticker;
+        $amount = $data->amount;
+        $sellMarket = $this->marketRepository->find($data->sellMarket);
+        $buyMarket = $this->marketRepository->find($data->buyMarket);
 
-        if (!$order instanceof Order) {
-            return $this->json($order, Response::HTTP_BAD_REQUEST);
+        if ($sellMarket) {
+            dd($this->ccxtService->sendSellMarketOrder($sellMarket, $ticker, $amount));
         }
-
-        return $this->json([
-            'message' => 'Order ' . $order->getClientOrderId() . ' created.',
-        ], Response::HTTP_CREATED);
+        if ($buyMarket) {
+            dd($this->ccxtService->sendBuyMarketOrder($buyMarket, $ticker, $amount));
+        }
     }
 
     /**
-     * @Route("/order/update/all/{id<\d+>}", name="api_order_update_all", methods={"POST"})
+     * @Route("/ccxt/orders", methods={"POST"})
      */
-    public function updateAllOrders(Request $request, Market $market): Response
+    public function ccxtOrders(Request $request): Response
     {
-        $exchangeOrders = $this->ccxtService->fetchOrders($market);
-        $orders = $this->orderService->updateOrders($exchangeOrders);
+        $data = json_decode($request->getContent());
+        $market = $this->marketRepository->find($data->market);
 
-        return $this->json([
-            'message' => count($orders) . ' order(s) updated.',
-        ], Response::HTTP_CREATED);
+        dd($this->ccxtService->fetchOrders($market, true));
+    }
+
+    /**
+     * @Route("/ccxt/order/fetch", methods={"POST"})
+     */
+    public function ccxtFetchOrder(Request $request): Response
+    {
+        $data = json_decode($request->getContent());
+        $market = $this->marketRepository->find($data->market);
+        $ticker = $data->ticker;
+        $orderId = $data->orderId;
+
+        dd($this->ccxtService->fetchOrder($market, $ticker, $orderId));
+    }
+
+    /**
+     * @Route("/ccxt/order/cancel", methods={"POST"})
+     */
+    public function ccxtCancelOrder(Request $request): Response
+    {
+        $data = json_decode($request->getContent());
+        $market = $this->marketRepository->find($data->market);
+        $ticker = $data->ticker;
+        $orderId = $data->orderId;
+
+        dd($this->ccxtService->cancelOrder($market, $ticker, $orderId));
     }
 
 }

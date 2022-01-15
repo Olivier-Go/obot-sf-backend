@@ -2,9 +2,12 @@
 
 namespace App\Service;
 
+use App\Entity\Order;
 use App\Entity\Market;
 use App\Entity\Opportunity;
+use App\Repository\OrderRepository;
 use App\Repository\BalanceRepository;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 
 class WorkerService
@@ -12,95 +15,123 @@ class WorkerService
     private ContainerBagInterface $params;
     private CcxtService $ccxtService;
     private BalanceRepository $balanceRepository;
+    private OrderRepository $orderRepository;
+    private ManagerRegistry $doctrine;
     private string $logs;
-    private Array $buyMarketBalances;
-    private Array $sellMarketBalances;
-    private /*?Array*/ $buyMarketOrderBook;
-    private /*?Array*/ $sellMarketOrderBook;
+    private string $startTime;
+    private array $buyMarketBalances;
+    private array $sellMarketBalances;
+    private ?array $buyMarketOrderBook;
+    private ?array $sellMarketOrderBook;
+    private ?array $buyOrder;
+    private ?array $sellOrder;
 
 
-    public function __construct(ContainerBagInterface $params, CcxtService $ccxtService, BalanceRepository $balanceRepository)
+    public function __construct(ContainerBagInterface $params, CcxtService $ccxtService, BalanceRepository $balanceRepository, OrderRepository $orderRepository, ManagerRegistry $doctrine)
     {
         $this->params = $params;
-        $this->logs = '============= Worker start ==============' . PHP_EOL;
         $this->ccxtService = $ccxtService;
         $this->balanceRepository = $balanceRepository;
-
-        /*$this->buyMarketOrderBook = [
-            'askPrice' => 2.13811,
-            'askSize' => 177.809,
-            'bidPrice' => 2.1381,
-            'bidSize' => 38.35051355
-        ];
-        $this->sellMarketOrderBook = [
-            'askPrice' => 2.113,
-            'askSize' => 16.0,
-            'bidPrice' => 2.109,
-            'bidSize' => 308.35
-        ];*/
+        $this->orderRepository = $orderRepository;
+        $this->doctrine = $doctrine;
+        $this->logs = '=================== Worker start ===================' . PHP_EOL;
+        $this->startTime = microtime(true);
+        $this->buyOrder = null;
+        $this->sellOrder = null;
     }
 
-    private function trace(string $message, ?Opportunity $opportunity = null): array
-    {
-        $this->logs = !empty($message) ? $this->logs . $message . PHP_EOL : $this->logs;
-        return [
-            'logs' => $this->logs,
-            'opportunity' => $opportunity,
-        ];
-    }
 
     public function execute(Opportunity $opportunity)
     {
-        $startTime = microtime(true);
         $priceDiff = $this->params->get('worker_order_diff');
         $orderSize = $this->params->get('worker_order_size');
         $ticker = $opportunity->getTicker();
         $buyMarket = $opportunity->getBuyMarket();
         $sellMarket = $opportunity->getSellMarket();
 
-        // Check priceDiff
-        if (!$this->checkPriceDiff($opportunity, $priceDiff)) return $this->logs;
+        if (!$this->checkPriceDiff($opportunity, $priceDiff))
+            return $this->exit($opportunity);
 
-        // Check orderSize
-        if (!$this->checkOrderSize($opportunity, $orderSize)) return $this->logs;
+        if (!$this->checkOrderSize($opportunity, $orderSize))
+            return $this->exit($opportunity);
 
-        // Get Balances
-        if (!$this->getBalances($buyMarket, $sellMarket, $ticker)) return $this->logs;
+        if (!$this->getBalances($buyMarket, $sellMarket, $ticker))
+            return $this->exit($opportunity);
 
-        // Fetch Orderbooks
-        if (!$this->fetchOrderBooks($buyMarket, $sellMarket, $ticker)) return $this->logs;
+        if (!$this->fetchOrderBooks($buyMarket, $sellMarket, $ticker))
+            return $this->exit($opportunity);
 
-        //Direction
-        $this->trace('-----------------------------------------');
+        // Direction
+        $this->printExecTime();
         switch ($opportunity->getDirection()) {
             case 'Buy->Sell':
-                /*$this->trace('OK: direction = ' . $opportunity->getDirection());
-                if (!$this->checkBuyMarketConditions($opportunity, $orderSize)) return $this->logs;
-                if (!$this->checkSellMarketConditions($opportunity, $orderSize)) return $this->logs;*/
+                $this->trace('OK: direction ' . $opportunity->getDirection());
+                if (!$this->checkBuyMarketConditions($opportunity, $orderSize))
+                    return $this->exit($opportunity);
+                if (!$this->checkSellMarketConditions($opportunity, $orderSize))
+                    return $this->exit($opportunity);
+                if (!$this->sendBuyOrder($buyMarket, $ticker, $orderSize))
+                    return $this->exit($opportunity);
+                if (!$this->sendSellOrder($sellMarket, $ticker, $orderSize))
+                    return $this->exit($opportunity);
+                if (!$this->validateOrder($buyMarket, $ticker, $this->buyOrder)) 
+                    $this->cancelOrder($buyMarket, $ticker, $this->buyOrder);
+                if (!$this->validateOrder($sellMarket, $ticker, $this->sellOrder)) 
+                    $this->cancelOrder($sellMarket, $ticker, $this->sellOrder);
+                // Update Balances
+                $this->printExecTime();
+                $this->updateBalances();
                 break;
+
             case 'Sell->Buy':
-                $this->trace('OK: direction = ' . $opportunity->getDirection());
-                if (!$this->checkSellMarketConditions($opportunity, $orderSize)) return $this->logs;
-                /*if (!$this->checkBuyMarketConditions($opportunity, $orderSize)) return $this->logs;*/
-                dd($this->ccxtService->sendSellMarketOrder($sellMarket, $ticker, 1));
+                $this->trace('OK: direction ' . $opportunity->getDirection());
+                if (!$this->checkSellMarketConditions($opportunity, $orderSize))
+                    return $this->exit($opportunity);
+                if (!$this->checkBuyMarketConditions($opportunity, $orderSize))
+                    return $this->exit($opportunity);
+                if (!$this->sendSellOrder($sellMarket, $ticker, $orderSize))
+                    return $this->exit($opportunity);
+                if (!$this->sendBuyOrder($buyMarket, $ticker, $orderSize))
+                    return $this->exit($opportunity);
+                if (!$this->validateOrder($sellMarket, $ticker, $this->sellOrder))
+                    $this->cancelOrder($sellMarket, $ticker, $this->sellOrder);
+                if (!$this->validateOrder($buyMarket, $ticker, $this->buyOrder))
+                    $this->cancelOrder($buyMarket, $ticker, $this->buyOrder);
+                // Update Balances
+                $this->printExecTime();
+                $this->updateBalances();
                 break;
+
             default:
                 $this->trace('ERROR: invalid direction');
-                return $this->logs;
         }
 
-
-        $timeElapsedMs = intval((microtime(true) - $startTime) * 1000);
-        dump($timeElapsedMs);
-        dump($this->logs);
-        dd($this->buyMarketOrderBook, $this->sellMarketOrderBook);
+        return $this->exit($opportunity);
     }
 
-    /**
-     * @param Opportunity $opportunity
-     * @param float $priceDiff
-     * @return bool
-     */
+    private function trace(string $message): string
+    {
+        $this->logs = !empty($message) ? $this->logs . $message . PHP_EOL : $this->logs;
+        return $this->logs;
+    }
+
+    private function printExecTime(): string
+    {
+        $timeElapsedMs = intval((microtime(true) - $this->startTime) * 1000);
+        return $this->trace('***************** ' . $timeElapsedMs . 'ms elapsed ******************');
+    }
+
+    private function exit(Opportunity $opportunity): Opportunity
+    {
+        $timeElapsedMs = intval((microtime(true) - $this->startTime) * 1000);
+        $this->trace('=============== Worker end in ' . $timeElapsedMs . 'ms ================');
+        $opportunity->setBuyOrder($this->buyOrder ? $this->orderRepository->findOneBy($this->buyOrder['orderId']) : null);
+        $opportunity->setSellOrder($this->sellOrder ? $this->orderRepository->findOneBy($this->sellOrder['orderId']) : null);
+        $opportunity->setLogs($this->logs);
+        return $opportunity;
+    }
+
+
     private function checkPriceDiff(Opportunity $opportunity, float $priceDiff): bool
     {
         if ($opportunity->getPriceDiff() < $priceDiff) {
@@ -111,11 +142,7 @@ class WorkerService
         return true;
     }
 
-    /**
-     * @param Opportunity $opportunity
-     * @param int $orderSize
-     * @return bool
-     */
+
     private function checkOrderSize(Opportunity $opportunity, int $orderSize): bool
     {
         if ($opportunity->getSize() < $orderSize) {
@@ -126,12 +153,7 @@ class WorkerService
         return true;
     }
 
-    /**
-     * @param Market $buyMarket
-     * @param Market $sellMarket
-     * @param string $ticker
-     * @return bool
-     */
+
     private function getBalances(Market $buyMarket, Market $sellMarket, string $ticker): bool
     {
         $this->buyMarketBalances = $this->balanceRepository->findMarketBalancesForTicker($buyMarket, $ticker);
@@ -155,12 +177,26 @@ class WorkerService
         return true;
     }
 
-    /**
-     * @param Market $buyMarket
-     * @param Market $sellMarket
-     * @param string $ticker
-     * @return bool
-     */
+
+    private function updateBalances(): void
+    {
+        $this->trace('OK: updateBalances');
+        foreach ($this->buyMarketBalances as $balance) {
+            $balance = $this->ccxtService->fetchAccountBalance($balance);
+            $this->doctrine->getManager()->persist($balance);
+            $this->trace('==> Balance ' . $balance);
+        }
+
+        foreach ($this->sellMarketBalances as $balance) {
+            $balance = $this->ccxtService->fetchAccountBalance($balance);
+            $this->doctrine->getManager()->persist($balance);
+            $this->trace('==> Balance ' . $balance);
+        }
+
+        $this->doctrine->getManager()->flush();
+    }
+
+
     private function fetchOrderBooks(Market $buyMarket, Market $sellMarket, string $ticker): bool
     {
         $this->buyMarketOrderBook = $this->ccxtService->fetchOrderBook($buyMarket, $ticker);
@@ -171,9 +207,9 @@ class WorkerService
         $this->trace('OK: fetch buyMarketOrderBook');
         $buyMarketOBTrace = '';
         foreach ($this->buyMarketOrderBook as $key => $value) {
-            $buyMarketOBTrace .= $key . ': ' . $value . ' / ';
+            $buyMarketOBTrace .= $key . ': ' . $value . ' | ';
         }
-        $this->trace('==> OB Market: ' . strtoupper($buyMarket->getName()) . ' / ' . $buyMarketOBTrace);
+        $this->trace('==> OB Market: ' . strtoupper($buyMarket->getName()) . ' | ' . $buyMarketOBTrace);
 
         $this->sellMarketOrderBook = $this->ccxtService->fetchOrderBook($sellMarket, $ticker);
         if (!$this->sellMarketOrderBook) {
@@ -183,17 +219,13 @@ class WorkerService
         $this->trace('OK: fetch sellMarketOrderBook');
         $sellMarketOBTrace = '';
         foreach ($this->sellMarketOrderBook as $key => $value) {
-            $sellMarketOBTrace .= $key . ': ' . $value . ' / ';
+            $sellMarketOBTrace .= $key . ': ' . $value . ' | ';
         }
-        $this->trace('==> OB Market: ' . strtoupper($sellMarket->getName()) . ' / ' . $sellMarketOBTrace);
+        $this->trace('==> OB Market: ' . strtoupper($sellMarket->getName()) . ' | ' . $sellMarketOBTrace);
         return true;
     }
 
-    /**
-     * @param Opportunity $opportunity
-     * @param int $orderSize
-     * @return bool
-     */
+
     private function checkBuyMarketConditions(Opportunity $opportunity, int $orderSize): bool
     {
         $cost = $orderSize * $opportunity->getBuyPrice();
@@ -224,11 +256,7 @@ class WorkerService
         return true;
     }
 
-    /**
-     * @param Opportunity $opportunity
-     * @param int $orderSize
-     * @return bool
-     */
+
     private function checkSellMarketConditions(Opportunity $opportunity, int $orderSize): bool
     {
         $cost = $orderSize / $opportunity->getSellPrice();
@@ -256,6 +284,83 @@ class WorkerService
             return false;
         }
         $this->trace('OK: sellMarketOrderBook bidSize >= orderSize');
+        return true;
+    }
+
+
+    private function sendBuyOrder(Market $market, string $ticker, int $orderSize): bool
+    {
+        $buyOrder = $this->ccxtService->sendBuyMarketOrder($market, $ticker, $orderSize);
+        if (!is_array($buyOrder) || !isset($buyOrder['orderId'])) {
+            $this->trace('ERROR: sendBuyOrder ' . strtoupper($market->getName()) . ' [' . $buyOrder ?? 'exchange createMarketOrder fail' . ']');;
+            return false;
+        }
+
+        $this->buyOrder = $buyOrder;
+        $this->trace('OK: sendBuyOrder ' . strtoupper($market->getName()));
+        return true;
+    }
+
+
+    private function sendSellOrder(Market $market, string $ticker, int $orderSize): bool
+    {
+        $sellOrder = $this->ccxtService->sendSellMarketOrder($market, $ticker, $orderSize);
+        if (!is_array($sellOrder) || !isset($sellOrder['orderId'])) {
+            $this->trace('ERROR: sendSellOrder ' . strtoupper($market->getName()) . ' [' . $sellOrder ?? 'exchange createMarketOrder fail' . ']');
+            return false;
+        }
+
+        $this->sellOrder = $sellOrder;
+        $this->trace('OK: sendSellOrder ' . strtoupper($market->getName()));
+        return true;
+    }
+
+
+    private function validateOrder(Market $market, string $ticker, array $order): bool
+    {
+        $order = $this->ccxtService->fetchOrder($market, $ticker, $order['orderId']);
+        if (!is_array($order)) {
+            $this->trace('ERROR: validateOrder ' . strtoupper($market->getName()) . ' [' . $order ?? 'exchange fetchOrder fail' . ']');
+            return false;
+        }
+
+        $newOrder = $this->orderService->denormalizeOrder($order);
+        if (!$newOrder instanceof Order) {
+            $this->trace('ERROR: createOrder ' . strtoupper($market->getName()) . ' [' . $newOrder['field'] . ' | ' . $newOrder['message'] . ']');
+        }
+        else $this->orderService->createOrder($order);
+
+        if ($newOrder->getStatus() !== 'closed') {
+            $this->trace('ERROR: validateOrder ' . strtoupper($market->getName()) . ' [Order status ' . $newOrder->getStatus() . ']');
+            return false;
+        }
+
+        $this->trace('OK: validateOrder ' . strtoupper($market->getName()) . ' [Order status ' . $newOrder->getStatus() . ']');
+        return true;
+    }
+
+
+    private function cancelOrder(Market $market, string $ticker, array $order): bool
+    {
+        $order = $this->ccxtService->cancelOrder($market, $ticker, $order['orderId']);
+        if (!is_array($order)) {
+            $this->trace('ERROR: cancelOrder ' . strtoupper($market->getName()) . ' [' . $order ?? 'exchange cancelOrder fail' . ']');
+            return false;
+        }
+
+        $existOrder = $this->orderService->denormalizeOrder($order);
+        if (!$existOrder instanceof Order) {
+            $this->trace('ERROR: cancelOrder ' . strtoupper($market->getName()) . ' [' . $existOrder['field'] . ' | ' . $existOrder['message'] . ']');
+            return false;
+        } else {
+            $updatedOrder = $this->orderService->updateOrder($existOrder);
+            if (!$updatedOrder instanceof Order) {
+                $this->trace('ERROR: cancelOrder ' . strtoupper($market->getName()) . ' [Order ' . $existOrder['orderId'] . ' not updated]');
+                return false;
+            }
+        }
+
+        $this->trace('OK: cancelOrder ' . strtoupper($market->getName()) . ' [Order ' . $updatedOrder->getOrderId() . ' canceled]');
         return true;
     }
 

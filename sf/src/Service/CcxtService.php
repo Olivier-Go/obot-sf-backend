@@ -100,6 +100,84 @@ class CcxtService extends Tools
         return null;
     }
 
+    public function sendSellMarketOrder(Market $market, string $ticker, $amount)
+    {
+        $exchange = $this->getExchangeInstance($market);
+
+        if ($exchange) {
+            if ($exchange->has['createMarketOrder']) {
+                try {
+                    $order = $exchange->create_market_sell_order($ticker, $amount);
+                    if (is_array($order)) {
+                        $order['orderId'] = $order['id'];
+                        $order['opened'] = $this->convertTimestampMs($order['timestamp']);
+                        $order['lastTrade'] = $this->convertTimestampMs($order['lastTradeTimestamp']);
+                        $order['market'] = $market->getId();
+                        $order['ticker'] = $ticker;
+                        unset($order['id']);
+                        return $order;
+                    }
+                } catch (Exception $e) {
+                    return $e->getMessage();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function sendBuyMarketOrder(Market $market, string $ticker, $amount)
+    {
+        $exchange = $this->getExchangeInstance($market);
+
+        if ($exchange) {
+            if ($exchange->has['createMarketOrder']) {
+                try {
+                    $order = $exchange->create_market_buy_order($ticker, $amount);
+                    if (is_array($order)) {
+                        $order['orderId'] = $order['id'];
+                        $order['opened'] = $this->convertTimestampMs($order['timestamp']);
+                        $order['lastTrade'] = $this->convertTimestampMs($order['lastTradeTimestamp']);
+                        $order['market'] = $market->getId();
+                        $order['ticker'] = $ticker;
+                        unset($order['id']);
+                        return $order;
+                    }
+                } catch (Exception $e) {
+                    return $e->getMessage();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public function sendLimitSellOrder(Market $market, string $ticker, $amount, $price)
+    {
+        $exchange = $this->getExchangeInstance($market);
+
+        if ($exchange) {
+            if ($exchange->has['createLimitOrder']) {
+                try {
+                    $order = $exchange->create_limit_sell_order($ticker, $amount, $price);
+                    if (is_array($order)) {
+                        $order['orderId'] = $order['id'];
+                        $order['opened'] = $this->convertTimestampMs($order['timestamp']);
+                        $order['lastTrade'] = $this->convertTimestampMs($order['lastTradeTimestamp']);
+                        $order['market'] = $market->getId();
+                        $order['ticker'] = $ticker;
+                        unset($order['id']);
+                        return $order;
+                    }
+                } catch (Exception $e) {
+                    return $e->getMessage();
+                }
+            }
+        }
+
+        return null;
+    }
+
     public function fetchOrders(Market $market): array
     {
         $orders = [];
@@ -110,11 +188,12 @@ class CcxtService extends Tools
                 if ($exchange->has['fetchOrders']) {
                     $exchangeOrders = $exchange->fetch_orders($ticker->getName());
                     foreach ($exchangeOrders as $exchangeOrder) {
-                        unset($exchangeOrder['id']);
+                        $exchangeOrder['orderId'] = $exchangeOrder['id'];
                         $exchangeOrder['opened'] = $this->convertTimestampMs($exchangeOrder['timestamp']);
                         $exchangeOrder['lastTrade'] = $this->convertTimestampMs($exchangeOrder['lastTradeTimestamp']);
                         $exchangeOrder['market'] = $market->getId();
-                        $exchangeOrder['ticker'] = $ticker->getId();
+                        $exchangeOrder['ticker'] = $ticker->getName();
+                        unset($exchangeOrder['id']);
                         $orders[] = $exchangeOrder;
                     }
                 }
@@ -124,188 +203,52 @@ class CcxtService extends Tools
         return $orders;
     }
 
-    public function fetchOrderById(Market $market, int $clientOrderId): ?array
+    public function fetchOrder(Market $market, string $ticker, string $orderId)
     {
         $exchange = $this->getExchangeInstance($market);
 
-        if ($exchange) {
-            foreach ($market->getTickers() as $ticker) {
-                if ($exchange->has['fetchOrder']) {
-                    try {
-                        $order = $exchange->fetch_order($clientOrderId, $ticker->getName());
-                        if (is_array($order)) {
-                            unset($order['id']);
-                            $order['opened'] = $this->convertTimestampMs($order['timestamp']);
-                            $order['lastTrade'] = $this->convertTimestampMs($order['lastTradeTimestamp']);
-                            $order['market'] = $market->getId();
-                            $order['ticker'] = $ticker->getId();
-                            return $order;
-                        }
-                    } catch (Exception $e) {
-                        continue;
-                    }
+        if ($exchange && $exchange->has['fetchOrder']) {
+            try {
+                $order = $exchange->fetch_order($orderId, $ticker);
+                if (is_array($order)) {
+                    $order['orderId'] = $order['id'];
+                    $order['opened'] = $this->convertTimestampMs($order['timestamp']);
+                    $order['lastTrade'] = $this->convertTimestampMs($order['lastTradeTimestamp']);
+                    $order['market'] = $market->getId();
+                    $order['ticker'] = $ticker;
+                    unset($order['id']);
+                    return $order;
                 }
+            } catch (Exception $e) {
+                return $e->getMessage();
             }
         }
 
         return null;
     }
 
-    public function fetchOpenOrders(Market $market): array
-    {
-        $openOrders = [];
-        $exchange = $this->getExchangeInstance($market);
-
-        if ($exchange) {
-            foreach ($market->getTickers() as $ticker) {
-                if ($exchange->has['fetchOpenOrders']) {
-                    $exchangeOrders = $exchange->fetch_open_orders($ticker->getName());
-                    foreach ($exchangeOrders as $exchangeOrder) {
-                        unset($exchangeOrder['id']);
-                        $exchangeOrder['opened'] = $this->convertTimestampMs($exchangeOrder['timestamp']);
-                        $exchangeOrder['lastTrade'] = $this->convertTimestampMs($exchangeOrder['lastTradeTimestamp']);
-                        $exchangeOrder['market'] = $market->getId();
-                        $exchangeOrder['ticker'] = $ticker->getId();
-                        $openOrders[] = $exchangeOrder;
-                    }
-                }
-            }
-        }
-
-        return $openOrders;
-    }
-
-    public function sendSellMarketOrder(Market $market, string $ticker, $amount): ?array
+    public function cancelOrder(Market $market, string $ticker, string $orderId)
     {
         $exchange = $this->getExchangeInstance($market);
 
-        if ($exchange) {
-            if ($exchange->has['createMarketOrder']) {
-                try {
-                    $order = $exchange->create_market_sell_order($ticker, $amount);
-                    dd($order);
-                    /*if (is_array($order)) {
-                        unset($order['id']);
-                        $order['opened'] = $this->convertTimestampMs($order['timestamp']);
-                        $order['lastTrade'] = $this->convertTimestampMs($order['lastTradeTimestamp']);
-                        $order['market'] = $market->getId();
-                        $order['ticker'] = $ticker->getId();
-                        return $order;
-                    }*/
-                } catch (Exception $e) {
-
+        if ($exchange && $exchange->has['cancelOrder']) {
+            try {
+                $order = $exchange->cancel_order($orderId, $ticker);
+                if (is_array($order)) {
+                    $order['orderId'] = $order['id'];
+                    $order['opened'] = $this->convertTimestampMs($order['timestamp']);
+                    $order['lastTrade'] = $this->convertTimestampMs($order['lastTradeTimestamp']);
+                    $order['market'] = $market->getId();
+                    $order['ticker'] = $ticker;
+                    unset($order['id']);
+                    return $order;
                 }
+            } catch (Exception $e) {
+                return $e->getMessage();
             }
         }
 
         return null;
-    }
-
-    public function sendLimitSellOrder(Market $market, Ticker $ticker, $amount, $price): ?array
-    {
-        $exchange = $this->getExchangeInstance($market);
-
-        if ($exchange) {
-            if ($exchange->has['createLimitOrder']) {
-                try {
-                    $order = $exchange->create_limit_sell_order($ticker->getName(), $amount, $price);
-                    if (is_array($order)) {
-                        unset($order['id']);
-                        $order['opened'] = $this->convertTimestampMs($order['timestamp']);
-                        $order['lastTrade'] = $this->convertTimestampMs($order['lastTradeTimestamp']);
-                        $order['market'] = $market->getId();
-                        $order['ticker'] = $ticker->getId();
-                        return $order;
-                    }
-                } catch (Exception $e) {
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public function cancelOrderById(Market $market, Int $clientOrderId): ?array
-    {
-        $exchange = $this->getExchangeInstance($market);
-
-        if ($exchange) {
-            foreach ($market->getTickers() as $ticker) {
-                if ($exchange->has['cancelOrder']) {
-                    try {
-                        $order = $exchange->cancel_order($ticker->getName(), $clientOrderId);
-                        if (is_array($order)) {
-                            unset($order['id']);
-                            $order['opened'] = $this->convertTimestampMs($order['timestamp']);
-                            $order['lastTrade'] = $this->convertTimestampMs($order['lastTradeTimestamp']);
-                            $order['market'] = $market->getId();
-                            $order['ticker'] = $ticker->getId();
-                            return $order;
-                        }
-                    } catch (Exception $e) {
-                        continue;
-                    }
-                }
-            }
-        }
-
-        return null;
-    }
-
-    public function cancelOrders(Market $market): ?array
-    {
-        $cancelOrders = [];
-        $exchange = $this->getExchangeInstance($market);
-
-        if ($exchange) {
-            foreach ($market->getTickers() as $ticker) {
-                if ($exchange->has['cancelAllOrders']) {
-                    try {
-                        $exchangeOrders = $exchange->cancel_all_orders($ticker->getName());
-                        foreach ($exchangeOrders as $exchangeOrder) {
-                            unset($exchangeOrder['id']);
-                            $exchangeOrder['opened'] = $this->convertTimestampMs($exchangeOrder['timestamp']);
-                            $exchangeOrder['lastTrade'] = $this->convertTimestampMs($exchangeOrder['lastTradeTimestamp']);
-                            $exchangeOrder['market'] = $market->getId();
-                            $exchangeOrder['ticker'] = $ticker->getId();
-                            $cancelOrders[] = $exchangeOrder;
-                        }
-                    } catch (Exception $e) {
-                        continue;
-                    }
-                }
-            }
-        }
-
-        return $cancelOrders;
-    }
-
-    public function test(Market $market)
-    {
-        $binance = new Binance([
-            'apiKey' => $market->getApiKey(),
-            'secret' => $market->getApiSecret(),
-            'password' => $market->getApiPassword(),
-        ]);
-
-        dd($binance->fetch_order_book('FLUX/USDT'));
-
-        //dd($binance->has);
-        //dd($binance->fetch_order_book('FLUX/USDT'));
-        //dd($binance->fetch_orders('FLUX/USDT'));
-        //$order = $exchange->fetch_order($id);
-
-//        if ($binance->has['fetchOrder']) {
-//            dd($binance->fetch_order($id));
-//        }
-
-//        if ($binance->has['fetchOpenOrders']) {
-//            dd($binance->fetch_open_orders('FLUX/USDT'));
-//        }
-
-        if ($binance->has['fetchOrder']) {
-            dd($binance->f($id));
-        }
     }
 
 }

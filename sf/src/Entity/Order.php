@@ -20,7 +20,12 @@ class Order
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=255, unique=true)
+     * @ORM\Column(type="string", length=255)
+     */
+    private $orderId;
+
+    /**
+     * @ORM\Column(type="string", length=255)
      */
     private $clientOrderId;
 
@@ -35,13 +40,12 @@ class Order
     private $lastTrade;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $status;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Ticker::class, inversedBy="orders")
-     * @ORM\JoinColumn(nullable=false)
+     * @ORM\Column(type="string", length=255)
      */
     private $ticker;
 
@@ -62,7 +66,7 @@ class Order
     private $side;
 
     /**
-     * @ORM\Column(type="float")
+     * @ORM\Column(type="float", nullable=true)
      */
     private $price;
 
@@ -72,7 +76,7 @@ class Order
     private $average;
 
     /**
-     * @ORM\Column(type="float")
+     * @ORM\Column(type="float", nullable=true)
      */
     private $amount;
 
@@ -114,9 +118,14 @@ class Order
         return $this->id;
     }
 
-    public function setId(int $id): self
+    public function getOrderId(): ?string
     {
-        $this->id = $id;
+        return $this->orderId;
+    }
+
+    public function setOrderId(string $orderId): self
+    {
+        $this->orderId = $orderId;
 
         return $this;
     }
@@ -162,19 +171,19 @@ class Order
         return $this->status;
     }
 
-    public function setStatus(string $status): self
+    public function setStatus(?string $status): self
     {
         $this->status = $status;
 
         return $this;
     }
 
-    public function getTicker(): ?Ticker
+    public function getTicker(): ?string
     {
         return $this->ticker;
     }
 
-    public function setTicker(?Ticker $ticker): self
+    public function setTicker(string $ticker): self
     {
         $this->ticker = $ticker;
 
@@ -222,7 +231,7 @@ class Order
         return $this->price;
     }
 
-    public function setPrice(float $price): self
+    public function setPrice(?float $price): self
     {
         $this->price = $price;
 
@@ -246,7 +255,7 @@ class Order
         return $this->amount;
     }
 
-    public function setAmount(float $amount): self
+    public function setAmount(?float $amount): self
     {
         $this->amount = $amount;
 
