@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Opportunity;
 use App\Repository\OpportunityRepository;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -32,6 +33,28 @@ class OpportunityController extends AbstractController
         return $this->render('opportunity/index.html.twig', [
             'opportunities' => $paginatedOpportunities
         ]);
+    }
+
+
+    /**
+     * @Route("/log", name="opportunity_log", methods={"POST"})
+     * @throws Exception
+     */
+    public function log(Request $request, OpportunityRepository $opportunityRepository): Response
+    {
+        $data = $request->toArray();
+        $response = [];
+
+        if ($data['id']) {
+            $opportunity = $opportunityRepository->find($data['id']);
+
+            if ($opportunity instanceof Opportunity) {
+                $response['logs'] = $opportunity->getLogs();
+                $response['received'] = $opportunity->getReceived()->format('d/m/Y H:i:s');
+            }
+        }
+
+        return $this->json($response);
     }
 
 }

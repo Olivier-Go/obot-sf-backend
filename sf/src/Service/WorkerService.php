@@ -43,6 +43,7 @@ class WorkerService
 
     public function execute(Opportunity $opportunity)
     {
+        $sendOrder = $this->params->get('worker_send_order');
         $priceDiff = $this->params->get('worker_order_diff');
         $orderSize = $this->params->get('worker_order_size');
         $ticker = $opportunity->getTicker();
@@ -70,6 +71,12 @@ class WorkerService
                     return $this->exit($opportunity);
                 if (!$this->checkSellMarketConditions($opportunity, $orderSize))
                     return $this->exit($opportunity);
+                if (!$sendOrder) {
+                    $this->trace('OK: send Order ' . $opportunity->getDirection());
+                    $this->printExecTime();
+                    $this->updateBalances();
+                    break;
+                }
                 if (!$this->sendBuyOrder($buyMarket, $ticker, $orderSize))
                     return $this->exit($opportunity);
                 if (!$this->sendSellOrder($sellMarket, $ticker, $orderSize))
@@ -89,6 +96,12 @@ class WorkerService
                     return $this->exit($opportunity);
                 if (!$this->checkBuyMarketConditions($opportunity, $orderSize))
                     return $this->exit($opportunity);
+                    if (!$sendOrder) {
+                        $this->trace('OK: send Order ' . $opportunity->getDirection());
+                        $this->printExecTime();
+                        $this->updateBalances();
+                        break;
+                    }
                 if (!$this->sendSellOrder($sellMarket, $ticker, $orderSize))
                     return $this->exit($opportunity);
                 if (!$this->sendBuyOrder($buyMarket, $ticker, $orderSize))
@@ -134,7 +147,7 @@ class WorkerService
 
     private function checkPriceDiff(Opportunity $opportunity, float $priceDiff): bool
     {
-        if ($opportunity->getPriceDiff() < $priceDiff) {
+        if (floatval($opportunity->getPriceDiff()) < $priceDiff) {
             $this->trace('ERROR: priceDiff < ' . $priceDiff);
             return false;
         }
@@ -145,7 +158,7 @@ class WorkerService
 
     private function checkOrderSize(Opportunity $opportunity, int $orderSize): bool
     {
-        if ($opportunity->getSize() < $orderSize) {
+        if (floatval($opportunity->getSize()) < $orderSize) {
             $this->trace('ERROR: orderSize < ' . $orderSize);
             return false;
         }
@@ -228,62 +241,61 @@ class WorkerService
 
     private function checkBuyMarketConditions(Opportunity $opportunity, int $orderSize): bool
     {
-        $cost = $orderSize * $opportunity->getBuyPrice();
-        $costThreshold = $cost * 0.05;
+        $cost = $orderSize * floatval($opportunity->getBuyPrice());
+        $costThreshold = $cost * 0.05;  // fees 5% USDT
         foreach ($this->buyMarketBalances as $balance) {
             if ($balance->getCurrency() === 'USDT') {
                 if ($balance->getAvailable() > ($cost + $costThreshold)) {
-                    $this->trace('OK: sufficient buyMarket USDT balance');
+                    $this->trace('OK: sufficient buyMarket USDT balance > ' . ($cost + $costThreshold));
                 }
                 else {
-                    $this->trace('ERROR: insufficient buyMarket USDT balance');
+                    $this->trace('ERROR: insufficient buyMarket USDT balance < ' . ($cost + $costThreshold));
                     return false;
                 }
             }
         }
 
-        if (!$this->buyMarketOrderBook['askPrice'] <= $opportunity->getBuyPrice()) {
-            $this->trace('ERROR: buyMarketOrderBook askPrice > buyPrice');
+        if (!($this->buyMarketOrderBook['bidPrice'] <= floatval($opportunity->getBuyPrice()))) {
+            $this->trace('ERROR: buyMarketOrderBook bidPrice > buyPrice');
             return false;
         }
-        $this->trace('OK: buyMarketOrderBook askPrice <= buyPrice');
+        $this->trace('OK: buyMarketOrderBook bidPrice <= buyPrice');
 
-        if (!$this->buyMarketOrderBook['askSize'] >= $orderSize) {
-            $this->trace('ERROR: buyMarketOrderBook askSize < orderSize');
+        if (!($this->buyMarketOrderBook['bidPrice'] >= $orderSize)) {
+            $this->trace('ERROR: buyMarketOrderBook bidPrice < orderSize');
             return false;
         }
-        $this->trace('OK: buyMarketOrderBook askSize >= orderSize');
+        $this->trace('OK: buyMarketOrderBook bidPrice >= orderSize');
         return true;
     }
 
 
     private function checkSellMarketConditions(Opportunity $opportunity, int $orderSize): bool
     {
-        $cost = $orderSize / $opportunity->getSellPrice();
-        $costThreshold = $cost * 0.05;
+        $cost = $orderSize + 1; // fees 1 FLUX
         foreach ($this->sellMarketBalances as $balance) {
             if ($balance->getCurrency() === 'FLUX') {
-                if ($balance->getAvailable() > ($cost + $costThreshold)) {
-                    $this->trace('OK: sufficient sellMarket USDT balance');
+                if ($balance->getAvailable() > $cost) {
+                    $this->trace('OK: sufficient sellMarket FLUX balance > ' . $cost);
                 }
                 else {
-                    $this->trace('ERROR: insufficient sellMarket USDT balance');
+                    $this->trace('ERROR: insufficient sellMarket FLUX balance < ' . $cost);
                     return false;
                 }
             }
         }
 
-        if (!$this->sellMarketOrderBook['bidPrice'] >= $opportunity->getSellPrice()) {
-            $this->trace('ERROR: sellMarketOrderBook bidPrice < sellPrice');
+        if (!($this->sellMarketOrderBook['askSize'] >= floatval($opportunity->getSellPrice()))) {
+            $this->trace('ERROR: sellMarketOrderBook askSize < sellPrice');
             return false;
         }
-        $this->trace('OK: sellMarketOrderBook bidPrice >= sellPrice');
+        $this->trace('OK: sellMarketOrderBook askSize >= sellPrice');
 
-        if (!$this->sellMarketOrderBook['bidSize'] >= $orderSize) {
-            $this->trace('ERROR: sellMarketOrderBook bidSize < orderSize');
+        if (!($this->sellMarketOrderBook['askSize'] >= $orderSize)) {
+            $this->trace('ERROR: sellMarketOrderBook askSize < orderSize');
             return false;
         }
-        $this->trace('OK: sellMarketOrderBook bidSize >= orderSize');
+        $this->trace('OK: sellMarketOrderBook askSize >= orderSize');
         return true;
     }
 

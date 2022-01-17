@@ -22,10 +22,12 @@
                                 <th scope="col">{{ knp_pagination_sortable(opportunities, 'Sell market', 'sellMarket.name') }}</th>
                                 <th scope="col">{{ knp_pagination_sortable(opportunities, 'Sell price', 'o.sellPrice') }}</th>
                                 <th scope="col">{{ knp_pagination_sortable(opportunities, 'Size', 'o.size') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Created', 'o.created') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Buy order', 'o.buyOrder') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Sell Order', 'o.sellOrder') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Logs', 'o.logs') }}</th>
                             </tr>
                             </thead>
-                            <tbody>
+                            <tbody data-controller="opportunity-log">
                             {% for opportunity in opportunities %}
                                 <tr>
                                     <th scope="row">{{ opportunity.id }}</th>
@@ -38,7 +40,19 @@
                                     <td>{{ opportunity.sellMarket.name }}</td>
                                     <td>{{ opportunity.sellPrice }}</td>
                                     <td>{{ opportunity.size }}</td>
-                                    <td>{{ opportunity.created|date('d/m/Y H:i:s') }}</td>
+                                    <td>
+                                        {% if opportunity.buyOrder %}
+                                            <a href="{{ path('order_show', {'id': opportunity.buyOrder.id}) }}">#{{ opportunity.buyOrder.id }}</a>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if opportunity.sellOrder %}
+                                            <a href="{{ path('order_show', {'id': opportunity.sellOrder.id}) }}">#{{ opportunity.sellOrder.id }}</a>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity-log#log" data-opportunity-log-id="{{ opportunity.id }}"><i class="bi bi-journal-text"></i></button>
+                                    </td>
                                 </tr>
                             {% endfor %}
                             </tbody>
@@ -52,4 +66,17 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="logModal" tabindex="-1" data-bs-keyboard="false" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white py-2 px-4">
+                    <h5 class="modal-title"></h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body mb-2"><small><samp></samp></small></div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}

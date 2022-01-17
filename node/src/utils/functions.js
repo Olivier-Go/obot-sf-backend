@@ -17,8 +17,8 @@ export const startTime = () => {
   const date = `${twoDigit(today.getDate())}/${twoDigit(today.getMonth()+1)}/${today.getFullYear()}`;
   const time = `${twoDigit(today.getHours())}:${twoDigit(today.getMinutes())}:${twoDigit(today.getSeconds())}`;
   let since = new Date(timeAgo(state.startTime) * 1000).toISOString();
-  const days = new Date(timeAgo(state.startTime) * 1000).toISOString().substring(8, 2);
-  const hours = new Date(timeAgo(state.startTime) * 1000).toISOString().substring(11, 8);
+  const days = new Date(timeAgo(state.startTime) * 1000).toISOString().substring(8, 10);
+  const hours = new Date(timeAgo(state.startTime) * 1000).toISOString().substring(11, 19);
   since = `${Number(days) - 1}D-${hours}`
   return {
     date,

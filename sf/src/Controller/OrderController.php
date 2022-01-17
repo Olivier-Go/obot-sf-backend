@@ -2,11 +2,8 @@
 
 namespace App\Controller;
 
-use App\Form\OrderType;
-use App\Repository\MarketRepository;
+use App\Entity\Order;
 use App\Repository\OrderRepository;
-use App\Repository\TickerRepository;
-use App\Service\CcxtService;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -20,30 +17,26 @@ class OrderController extends AbstractController
 {
     /**
      * @Route("/", name="order_index")
+     * @Route("/{id}", name="order_show")
      */
-    public function index(Request $request, OrderRepository $orderRepository, PaginatorInterface $paginator, MarketRepository $marketRepository, TickerRepository $tickerRepository, CcxtService $ccxtService): Response
+    public function index(Request $request, OrderRepository $orderRepository, PaginatorInterface $paginator, ?Order $order): Response
     {
         $page = $request->query->getInt('page', 1);
         $maxItemPerPage = !empty($request->query->getInt('maxItemPerPage')) ? $request->query->getInt('maxItemPerPage') : 20;
 
-        $ordersQuery = $orderRepository->findAllQB();
+        $ordersQuery = $orderRepository->findQB($order);
         $paginatedOrders = $paginator->paginate(
             $ordersQuery,
             $page,
             $maxItemPerPage
         );
 
-        $market = $marketRepository->find(3);
-        $ticker = $tickerRepository->find(5);
-
-        //dd($ccxtService->sendLimitSellOrder($market, $ticker, 10, 1.958));
-
-        //dd($ccxtService->cancelOrders($market));
-
         return $this->render('order/index.html.twig', [
-            'orders' => $paginatedOrders
+            'orders' => $paginatedOrders,
+            'order' => $order
         ]);
     }
+
 
     /**
      * @Route("/{id}/edit", name="order_edit", methods={"GET", "POST"})
