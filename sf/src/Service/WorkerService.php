@@ -261,11 +261,11 @@ class WorkerService
         }
         $this->trace('OK: buyMarketOrderBook bidPrice <= buyPrice');
 
-        if (!($this->buyMarketOrderBook['bidPrice'] >= $orderSize)) {
-            $this->trace('ERROR: buyMarketOrderBook bidPrice < orderSize');
+        if (!($this->buyMarketOrderBook['bidSize'] >= $orderSize)) {
+            $this->trace('ERROR: buyMarketOrderBook bidSize < orderSize');
             return false;
         }
-        $this->trace('OK: buyMarketOrderBook bidPrice >= orderSize');
+        $this->trace('OK: buyMarketOrderBook bidSize >= orderSize');
         return true;
     }
 
@@ -285,11 +285,11 @@ class WorkerService
             }
         }
 
-        if (!($this->sellMarketOrderBook['askSize'] >= floatval($opportunity->getSellPrice()))) {
-            $this->trace('ERROR: sellMarketOrderBook askSize < sellPrice');
+        if (!($this->sellMarketOrderBook['askPrice'] >= floatval($opportunity->getSellPrice()))) {
+            $this->trace('ERROR: sellMarketOrderBook askPrice < sellPrice');
             return false;
         }
-        $this->trace('OK: sellMarketOrderBook askSize >= sellPrice');
+        $this->trace('OK: sellMarketOrderBook askPrice >= sellPrice');
 
         if (!($this->sellMarketOrderBook['askSize'] >= $orderSize)) {
             $this->trace('ERROR: sellMarketOrderBook askSize < orderSize');
