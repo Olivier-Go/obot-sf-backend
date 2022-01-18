@@ -29,8 +29,8 @@ export const ws = {
       ws.filteredSellOrders = [];
     });
     kucoinClient.on("l2update", ({ asks, bids }, market) => {
-      ws.buyOrders = updateOrdersArr(ws.buyOrders, bids);
-      ws.sellOrders = updateOrdersArr(ws.sellOrders, asks, false);
+      ws.buyOrders = updateOrdersArr(ws.buyOrders, asks);
+      ws.sellOrders = updateOrdersArr(ws.sellOrders, bids, false);
       ws.filteredBuyOrders = drawOrdersArr(ws.buyOrders);
       ws.filteredSellOrders = drawOrdersArr(ws.sellOrders);
     });

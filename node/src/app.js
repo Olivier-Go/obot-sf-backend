@@ -32,19 +32,19 @@ export const app = {
 
   printBuySellDiff: () => {
     console.log(`          DIFF  :   BUY ${process.env.EXCHANGE1} / SELL ${process.env.EXCHANGE2}                   `);
-    state.buySellDiff1To2 = updateBuySellDiff(exchange1Ws.sellOrders, exchange2Ws.buyOrders, state.orderSize);
+    state.buySellDiff1To2 = updateBuySellDiff(exchange2Ws.sellOrders, exchange1Ws.buyOrders, state.orderSize);
     console.table(drawOrdersArr(state.buySellDiff1To2.diff));
     console.log(`          DIFF  :   BUY ${process.env.EXCHANGE2} / SELL ${process.env.EXCHANGE1}                   `);
-    state.buySellDiff2To1 = updateBuySellDiff(exchange2Ws.sellOrders, exchange1Ws.buyOrders, state.orderSize);
+    state.buySellDiff2To1 = updateBuySellDiff(exchange1Ws.sellOrders, exchange2Ws.buyOrders, state.orderSize);
     console.table(drawOrdersArr(state.buySellDiff2To1.diff));
   },
 
   printSellBuyDiff: () => {
     console.log(`          DIFF  :   SELL ${process.env.EXCHANGE1} / BUY ${process.env.EXCHANGE2}                    `);
-    state.sellBuyDiff1To2 = updateSellBuyDiff(exchange1Ws.buyOrders, exchange2Ws.sellOrders, state.orderSize);
+    state.sellBuyDiff1To2 = updateSellBuyDiff(exchange2Ws.buyOrders, exchange1Ws.sellOrders, state.orderSize);
     console.table(drawOrdersArr(state.sellBuyDiff1To2.diff));
     console.log(`          DIFF  :   SELL ${process.env.EXCHANGE2}  / BUY ${process.env.EXCHANGE1}                   `);
-    state.sellBuyDiff2To1 = updateSellBuyDiff(exchange2Ws.buyOrders, exchange1Ws.sellOrders, state.orderSize);
+    state.sellBuyDiff2To1 = updateSellBuyDiff(exchange1Ws.buyOrders, exchange2Ws.sellOrders, state.orderSize);
     console.table(drawOrdersArr(state.sellBuyDiff2To1.diff));
   },
 

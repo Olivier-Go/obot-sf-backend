@@ -29,8 +29,8 @@ export const ws = {
       ws.filteredSellOrders = [];
     });
     bittrexClient.on("l2update", (l2update, market) => {
-      ws.buyOrders = updateOrdersArr(ws.buyOrders, l2update.bids);
-      ws.sellOrders = updateOrdersArr(ws.sellOrders, l2update.asks, false);
+      ws.buyOrders = updateOrdersArr(ws.buyOrders, l2update.asks);
+      ws.sellOrders = updateOrdersArr(ws.sellOrders, l2update.bids, false);
       ws.filteredBuyOrders = drawOrdersArr(ws.buyOrders);
       ws.filteredSellOrders = drawOrdersArr(ws.sellOrders);
     });

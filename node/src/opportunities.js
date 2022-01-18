@@ -6,18 +6,18 @@ export const updateBuySellDiff = (sellOrders, buyOrders, orderSize) => {
   let bestBuyOrder = {};
 
   sellOrders.forEach((order, index) => {
-    if (index === 0 && parseFloat(order.size) > parseFloat(orderSize)) {
+    if (index === 0 && (parseFloat(order.size) > parseFloat(orderSize))) {
       bestSellOrder = { ...order };
     }
   });
 
   buyOrders.forEach((order, index) => {
-    if (index === 0 && parseFloat(order.size) > parseFloat(orderSize)) {
+    if (index === 0 && (parseFloat(order.size) > parseFloat(orderSize))) {
       bestBuyOrder = { ...order };
     }
   });
 
-  const price = (bestSellOrder.price - bestBuyOrder.price).toFixed(4);
+  const price = (bestBuyOrder.price - bestSellOrder.price).toFixed(4);
   const size = bestSellOrder.size > bestBuyOrder.size ? bestBuyOrder.size : bestSellOrder.size;
   const datetime = bestSellOrder.datetime > bestBuyOrder.datetime ? bestBuyOrder.datetime : bestSellOrder.datetime;
   const received = bestSellOrder.received > bestBuyOrder.received ? bestBuyOrder.received : bestSellOrder.received;
@@ -77,7 +77,7 @@ export const updateBuySellOp = (buySellOp, buySellDiff, orderDiff, ticker = null
           if (ticker && buyMarket && sellMarket) {
             const order = {
               ticker,
-              'direction': 'Sell->Buy',
+              'direction': 'Buy->Sell',
               buyMarket,
               sellMarket,
               'buyPrice': buySellDiff.bestBuyOrder[0].price,
@@ -105,18 +105,18 @@ export const updateSellBuyDiff = (buyOrders, sellOrders, orderSize) => {
   let bestSellOrder = {};
 
   buyOrders.forEach((order, index) => {
-    if (index === 0 && parseFloat(order.size) > parseFloat(orderSize)) {
+    if (index === 0 && (parseFloat(order.size) > parseFloat(orderSize))) {
       bestBuyOrder = { ...order };
     }
   });
 
   sellOrders.forEach((order, index) => {
-    if (index === 0 && parseFloat(order.size) > parseFloat(orderSize)) {
+    if (index === 0 && (parseFloat(order.size) > parseFloat(orderSize))) {
       bestSellOrder = { ...order };
     }
   });
 
-  const price = (bestBuyOrder.price - bestSellOrder.price).toFixed(4);
+  const price = (bestSellOrder.price - bestBuyOrder.price).toFixed(4);
   const size = bestSellOrder.size < bestBuyOrder.size ? bestSellOrder.size : bestBuyOrder.size;
   const datetime = bestSellOrder.datetime > bestBuyOrder.datetime ? bestBuyOrder.datetime : bestSellOrder.datetime;
   const received = bestSellOrder.received > bestBuyOrder.received ? bestBuyOrder.received : bestSellOrder.received;
@@ -175,7 +175,7 @@ export const updateSellBuyOp = (sellBuyOp, sellBuyDiff, orderDiff, ticker = null
           if (ticker && buyMarket && sellMarket) {
             const order = {
               ticker,
-              'direction': 'Buy->Sell',
+              'direction': 'Sell->Buy',
               buyMarket,
               sellMarket,
               'buyPrice': sellBuyDiff.bestBuyOrder[0].price,

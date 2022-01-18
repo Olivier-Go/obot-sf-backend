@@ -255,17 +255,17 @@ class WorkerService
             }
         }
 
-        if (!($this->buyMarketOrderBook['bidPrice'] <= floatval($opportunity->getBuyPrice()))) {
-            $this->trace('ERROR: buyMarketOrderBook bidPrice > buyPrice');
+        if (!($this->buyMarketOrderBook['askPrice'] <= floatval($opportunity->getBuyPrice()))) {
+            $this->trace('ERROR: buyMarketOrderBook askPrice > buyPrice');
             return false;
         }
-        $this->trace('OK: buyMarketOrderBook bidPrice <= buyPrice');
+        $this->trace('OK: buyMarketOrderBook askPrice <= buyPrice');
 
-        if (!($this->buyMarketOrderBook['bidSize'] >= $orderSize)) {
-            $this->trace('ERROR: buyMarketOrderBook bidSize < orderSize');
+        if (!($this->buyMarketOrderBook['askSize'] >= $orderSize)) {
+            $this->trace('ERROR: buyMarketOrderBook askSize < orderSize');
             return false;
         }
-        $this->trace('OK: buyMarketOrderBook bidSize >= orderSize');
+        $this->trace('OK: buyMarketOrderBook askSize >= orderSize');
         return true;
     }
 
@@ -285,17 +285,17 @@ class WorkerService
             }
         }
 
-        if (!($this->sellMarketOrderBook['askPrice'] >= floatval($opportunity->getSellPrice()))) {
-            $this->trace('ERROR: sellMarketOrderBook askPrice < sellPrice');
+        if (!($this->sellMarketOrderBook['bidPrice'] >= floatval($opportunity->getSellPrice()))) {
+            $this->trace('ERROR: sellMarketOrderBook bidPrice < sellPrice');
             return false;
         }
-        $this->trace('OK: sellMarketOrderBook askPrice >= sellPrice');
+        $this->trace('OK: sellMarketOrderBook bidPrice >= sellPrice');
 
-        if (!($this->sellMarketOrderBook['askSize'] >= $orderSize)) {
-            $this->trace('ERROR: sellMarketOrderBook askSize < orderSize');
+        if (!($this->sellMarketOrderBook['bidSize'] >= $orderSize)) {
+            $this->trace('ERROR: sellMarketOrderBook bidSize < orderSize');
             return false;
         }
-        $this->trace('OK: sellMarketOrderBook askSize >= orderSize');
+        $this->trace('OK: sellMarketOrderBook bidSize >= orderSize');
         return true;
     }
 

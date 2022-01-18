@@ -46,9 +46,9 @@ export const updateOrdersArr = (arr, changes, buy = true) => {
 
   result = result.filter(({ size }) => size > 0);
   result = buy ?
-      result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price))
+      result.sort((a, b) => parseFloat(a.price) - parseFloat(b.price))
       :
-      result.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+      result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
 
   return result;
 };
