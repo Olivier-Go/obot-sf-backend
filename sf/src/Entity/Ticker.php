@@ -36,11 +36,6 @@ class Ticker
     private $market;
 
     /**
-     * @ORM\OneToMany(targetEntity=Order::class, mappedBy="ticker")
-     */
-    private $orders;
-
-    /**
      * @ORM\OneToMany(targetEntity=Balance::class, mappedBy="ticker")
      */
     private $balances;
@@ -83,7 +78,6 @@ class Ticker
 
     public function __construct()
     {
-        $this->orders = new ArrayCollection();
         $this->balances = new ArrayCollection();
     }
 
@@ -124,36 +118,6 @@ class Ticker
     public function setMarket(?Market $market): self
     {
         $this->market = $market;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection|Order[]
-     */
-    public function getOrders(): Collection
-    {
-        return $this->orders;
-    }
-
-    public function addOrder(Order $order): self
-    {
-        if (!$this->orders->contains($order)) {
-            $this->orders[] = $order;
-            $order->setTicker($this);
-        }
-
-        return $this;
-    }
-
-    public function removeOrder(Order $order): self
-    {
-        if ($this->orders->removeElement($order)) {
-            // set the owning side to null (unless already changed)
-            if ($order->getTicker() === $this) {
-                $order->setTicker(null);
-            }
-        }
 
         return $this;
     }

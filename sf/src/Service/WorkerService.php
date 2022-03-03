@@ -16,6 +16,7 @@ class WorkerService
     private CcxtService $ccxtService;
     private BalanceRepository $balanceRepository;
     private OrderRepository $orderRepository;
+    private OrderService $orderService;
     private ManagerRegistry $doctrine;
     private string $logs;
     private string $startTime;
@@ -27,12 +28,13 @@ class WorkerService
     private ?array $sellOrder;
 
 
-    public function __construct(ContainerBagInterface $params, CcxtService $ccxtService, BalanceRepository $balanceRepository, OrderRepository $orderRepository, ManagerRegistry $doctrine)
+    public function __construct(ContainerBagInterface $params, CcxtService $ccxtService, BalanceRepository $balanceRepository, OrderRepository $orderRepository, OrderService $orderService, ManagerRegistry $doctrine)
     {
         $this->params = $params;
         $this->ccxtService = $ccxtService;
         $this->balanceRepository = $balanceRepository;
         $this->orderRepository = $orderRepository;
+        $this->orderService = $orderService;
         $this->doctrine = $doctrine;
         $this->logs = '=================== Worker start ===================' . PHP_EOL;
         $this->startTime = microtime(true);
@@ -71,11 +73,11 @@ class WorkerService
                     return $this->exit($opportunity);
                 if (!$this->checkSellMarketConditions($opportunity, $orderSize))
                     return $this->exit($opportunity);
-                if (!$sendOrder) {
+                if ($sendOrder) {
                     $this->trace('OK: send Order ' . $opportunity->getDirection());
                     $this->printExecTime();
                     $this->updateBalances();
-                    break;
+                    return $this->exit($opportunity);
                 }
                 if (!$this->sendBuyOrder($buyMarket, $ticker, $orderSize))
                     return $this->exit($opportunity);
@@ -96,12 +98,12 @@ class WorkerService
                     return $this->exit($opportunity);
                 if (!$this->checkBuyMarketConditions($opportunity, $orderSize))
                     return $this->exit($opportunity);
-                    if (!$sendOrder) {
-                        $this->trace('OK: send Order ' . $opportunity->getDirection());
-                        $this->printExecTime();
-                        $this->updateBalances();
-                        break;
-                    }
+                if ($sendOrder) {
+                    $this->trace('OK: send Order ' . $opportunity->getDirection());
+                    $this->printExecTime();
+                    $this->updateBalances();
+                    return $this->exit($opportunity);
+                }
                 if (!$this->sendSellOrder($sellMarket, $ticker, $orderSize))
                     return $this->exit($opportunity);
                 if (!$this->sendBuyOrder($buyMarket, $ticker, $orderSize))
@@ -138,8 +140,8 @@ class WorkerService
     {
         $timeElapsedMs = intval((microtime(true) - $this->startTime) * 1000);
         $this->trace('=============== Worker end in ' . $timeElapsedMs . 'ms ================');
-        $opportunity->setBuyOrder($this->buyOrder ? $this->orderRepository->findOneBy($this->buyOrder['orderId']) : null);
-        $opportunity->setSellOrder($this->sellOrder ? $this->orderRepository->findOneBy($this->sellOrder['orderId']) : null);
+        $opportunity->setBuyOrder($this->buyOrder ? $this->orderRepository->find($this->buyOrder['orderId']) : null);
+        $opportunity->setSellOrder($this->sellOrder ? $this->orderRepository->find($this->sellOrder['orderId']) : null);
         $opportunity->setLogs($this->logs);
         return $opportunity;
     }
@@ -340,7 +342,7 @@ class WorkerService
         if (!$newOrder instanceof Order) {
             $this->trace('ERROR: createOrder ' . strtoupper($market->getName()) . ' [' . $newOrder['field'] . ' | ' . $newOrder['message'] . ']');
         }
-        else $this->orderService->createOrder($order);
+        else $this->orderService->createOrder($newOrder);
 
         if ($newOrder->getStatus() !== 'closed') {
             $this->trace('ERROR: validateOrder ' . strtoupper($market->getName()) . ' [Order status ' . $newOrder->getStatus() . ']');

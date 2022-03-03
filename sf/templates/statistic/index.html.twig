@@ -1,0 +1,40 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Statistiques{% endblock %}
+
+{% block body %}
+    <div class="container-fluid mb-auto">
+        <div class="row">
+            <div class="col p-3">
+                <h1 class="h2 text-primary text-center mb-3">Statistiques</h1>
+                <div class="row">
+                    <div class="col-12 col-md-6">
+                        <p class="h4 text-center">Opportunités</p>
+                        <div class="card border-primary border-rounder-full bg-light h-100">
+                            <div class="card-header-rounder-2">
+                                {{ form_start(statOpportunityForm, {'attr': {'class': 'row p-2'}}) }}
+                                    <div class="col-12 col-md-3">{{ form_widget(statOpportunityForm.display) }}</div>
+                                    <div class="col-8 col-md-4 offset-2 offset-md-1 mt-2 mt-md-1 mb-4 px-1">
+                                        <div class="multi-range-slider">
+                                            <label class="range-slider-min-value"></label>
+                                            <input class="form-range range-slider range-slider-min-input" type="range" min="0" max="50" value="5">
+                                            <input class="form-range range-slider range-slider-max-input" type="range" min="0" max="50" value="45">
+                                            <label class="range-slider-max-value"></label>
+                                        </div>
+                                    </div>
+                                {{ form_rest(statOpportunityForm) }}
+                                {{ form_end(statOpportunityForm) }}
+                            </div>
+                            <div class="card-body bg-light opacity-10 overflow-hidden h-100 p-2 position-relative">
+                                {{ render_chart(opportunitiesChart, {'data-controller': 'stacked-bar-chartjs'}) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

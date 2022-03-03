@@ -4,7 +4,6 @@ namespace App\Service;
 
 use App\Entity\Order;
 use App\Repository\MarketRepository;
-use App\Repository\OrderRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -53,7 +52,7 @@ class OrderService
         return $order;
     }
 
-    public function updateOrder(array $order): ?Order
+    public function updateOrder(Order $order): ?Order
     {
         $em = $this->doctrine->getManager();
         $order = $em->getRepository(Order::class)->findOneBy(['orderId' => $order['orderId']]);

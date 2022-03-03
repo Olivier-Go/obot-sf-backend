@@ -17,7 +17,7 @@
                                 <th scope="col">{{ knp_pagination_sortable(orders, 'Opened', 'o.opened') }}</th>
                                 <th scope="col">{{ knp_pagination_sortable(orders, 'Last Trade', 'o.lastTrade') }}</th>
                                 <th scope="col">{{ knp_pagination_sortable(orders, 'Status', 'o.status') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(orders, 'Ticker', 'ticker.name') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(orders, 'Ticker', 'ticker') }}</th>
                                 <th scope="col">{{ knp_pagination_sortable(orders, 'Market', 'market.name') }}</th>
                                 <th scope="col">{{ knp_pagination_sortable(orders, 'Type', 'o.type') }}</th>
                                 <th scope="col">{{ knp_pagination_sortable(orders, 'Side', 'o.side') }}</th>
@@ -38,7 +38,7 @@
                                     <td>{{ order.opened|date('d/m/Y H:i:s') }}</td>
                                     <td>{{ order.lastTrade|date('d/m/Y H:i:s') }}</td>
                                     <td class="table-{{ order.status != 'closed' ? 'secondary' }}">{{ order.status }}</td>
-                                    <td>{{ order.ticker.name }}</td>
+                                    <td>{{ order.ticker }}</td>
                                     <td>{{ order.market.name }}</td>
                                     <td>{{ order.type }}</td>
                                     <td><span class="text-{{ order.side == 'buy' ? 'danger' : 'success' }}">{{ order.side }}</span></td>

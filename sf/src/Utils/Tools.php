@@ -25,7 +25,7 @@ abstract class Tools
 
     /**
      * Convert timestamp in ms to date format
-     * @param String $msTimestamp
+     * @param string|null $msTimestamp
      * @return string
      */
     protected function convertTimestampMs(?string $msTimestamp): ?string

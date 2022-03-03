@@ -30,6 +30,46 @@ class OpportunityRepository extends ServiceEntityRepository
             ;
     }
 
+    public function findChartStatByDay(): array
+    {
+        return $this->createQueryBuilder('o')
+            ->select("o.received HIDDEN, DATE_FORMAT(o.received, '%Y-%m-%d') AS x")
+            ->addGroupBy('x')
+            ->addSelect('COUNT(o.received) AS y')
+            ->orderBy('x', 'ASC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
+    /*public function findChartStatByMonth(): array
+    {
+        $qb = $this->createQueryBuilder('o')
+            ->select("o.received HIDDEN, DATE_FORMAT(o.received, '%d/%m/%Y') AS date, MONTH(o.received) AS month")
+            ->addGroupBy('date')
+            ->addSelect('COUNT(o.received) AS opportunity')
+            ->orderBy('month', 'ASC')
+            ->addOrderBy('o.received', 'ASC')
+            ->getQuery()
+        ;
+
+        $labels = [];
+        $data = [];
+        dd($qb->getResult());
+        foreach ($qb->getResult() as $result) {
+            $labels[$result['month']] = $result['month'];
+            $data[$result['month']][] = [
+                'label' => $result['date'],
+                'data' => $result['opportunity']
+            ];
+        }
+
+        return [
+            'labels' => $labels,
+            'data' => $data
+        ];
+    }*/
+
     // /**
     //  * @return Opportunity[] Returns an array of Opportunity objects
     //  */

@@ -38,7 +38,6 @@ class OpportunityController extends AbstractController
 
     /**
      * @Route("/log", name="opportunity_log", methods={"POST"})
-     * @throws Exception
      */
     public function log(Request $request, OpportunityRepository $opportunityRepository): Response
     {

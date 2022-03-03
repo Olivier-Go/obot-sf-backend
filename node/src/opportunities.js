@@ -17,7 +17,7 @@ export const updateBuySellDiff = (sellOrders, buyOrders, orderSize) => {
     }
   });
 
-  const price = (bestBuyOrder.price - bestSellOrder.price).toFixed(4);
+  const price = (bestSellOrder.price - bestBuyOrder.price).toFixed(4);
   const size = bestSellOrder.size > bestBuyOrder.size ? bestBuyOrder.size : bestSellOrder.size;
   const datetime = bestSellOrder.datetime > bestBuyOrder.datetime ? bestBuyOrder.datetime : bestSellOrder.datetime;
   const received = bestSellOrder.received > bestBuyOrder.received ? bestBuyOrder.received : bestSellOrder.received;
@@ -116,7 +116,7 @@ export const updateSellBuyDiff = (buyOrders, sellOrders, orderSize) => {
     }
   });
 
-  const price = (bestSellOrder.price - bestBuyOrder.price).toFixed(4);
+  const price = (bestBuyOrder.price - bestSellOrder.price).toFixed(4);
   const size = bestSellOrder.size < bestBuyOrder.size ? bestSellOrder.size : bestBuyOrder.size;
   const datetime = bestSellOrder.datetime > bestBuyOrder.datetime ? bestBuyOrder.datetime : bestSellOrder.datetime;
   const received = bestSellOrder.received > bestBuyOrder.received ? bestBuyOrder.received : bestSellOrder.received;
