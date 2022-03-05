@@ -22,9 +22,15 @@
                             Veuilez entrer une adresse email valide
                         </div>
                     </div>
-                    <div class="form-floating my-3">
+                    <div class="form-floating">
                         <input type="password" class="form-control" id="password" name="_password" required data-action="focus->field-validation#validate">
                         <label for="password">Mot de passe:</label>
+                    </div>
+                    <div class="form-floating mb-2">
+                        <div class="form-check form-switch d-flex justify-content-start">
+                            <input class="form-check-input" type="checkbox" name="_remember_me" id="remember_me" checked>
+                            <label class="form-check-label text-primary h6 mx-2 mb-0 mt-1 lh-1" for="remember_me">Se souvenir de moi</label>
+                        </div>
                     </div>
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
                     {# If you want to control the URL the user is redirected to on success
