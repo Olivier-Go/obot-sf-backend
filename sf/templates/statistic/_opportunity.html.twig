@@ -1,0 +1,33 @@
+<div class="card border-primary border-rounder-full bg-light h-100" data-controller="stat-search">
+    <div class="card-header-rounder-2">
+        <p class="bg-primary text-white text-center h5 pt-1 pb-2 mb-0">Opportunités</p>
+        {{ form_start(statOpportunityForm, {'attr': {'class': 'row p-2', 'data-stat-search-target': 'form' }}) }}
+        <div class="col-12 col-md-3 pe-md-0">
+            {{ form_widget(statOpportunityForm.display) }}
+        </div>
+        <div class="col-12 col-md-9 mt-1 mt-md-0">
+            <div class="d-flex"
+                 data-controller="litepicker"
+                 data-litepicker-source-value="stat_opportunity_form"
+                 data-litepicker-target-value="statistic-opportunity-chart"
+            >
+                <div class="form-group me-2">
+                    <div class="row align-items-center">
+                        <div class="col-6 pe-0">
+                            {{ form_row(statOpportunityForm.dateStart) }}
+                        </div>
+                        <div class="col-6">
+                            {{ form_row(statOpportunityForm.dateEnd) }}
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-primary litepicker-clear" data-bs-toggle="tooltip" title="Effacer la période"><i class="bi bi-eraser-fill"></i></button>
+            </div>
+        </div>
+        {{ form_rest(statOpportunityForm) }}
+        {{ form_end(statOpportunityForm) }}
+    </div>
+    <div id="statistic-opportunity-chart" data-stat-search-target="chart">
+        {{ include('statistic/_chart.html.twig', {chart: opportunitiesChart}) }}
+    </div>
+</div>

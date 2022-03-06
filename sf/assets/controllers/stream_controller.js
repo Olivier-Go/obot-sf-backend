@@ -1,8 +1,6 @@
 import { Controller } from 'stimulus';
 // import { connectStreamSource, disconnectStreamSource } from '@hotwired/turbo';
 
-
-
 export default class extends Controller {
     connect() {
         const url = this.element.getAttribute('data-stream-source');

@@ -115,3 +115,15 @@ button.navbar-toggler, button.navbar-brand {
 ::-webkit-scrollbar-thumb {
   background: $secondary;
 }
+
+/* Litepicker Styling */
+.litepicker .container__months .month-item-header div {
+  & >select.month-item-name {
+    margin-right: 5px;
+    border: none;
+  }
+  & >select.month-item-year {
+    padding-right: 15px;
+    border: none;
+  }
+}

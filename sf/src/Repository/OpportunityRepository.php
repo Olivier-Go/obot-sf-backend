@@ -30,10 +30,17 @@ class OpportunityRepository extends ServiceEntityRepository
             ;
     }
 
-    public function findChartStatByDay(): array
+    public function findChartStat(?string $format = '%Y-%m', ?\DateTime $dateStart = null, ?\DateTime $dateEnd = null): array
     {
+        $dateStart = $dateStart ?? new \DateTime('first day of january this year');
+        $dateEnd = $dateEnd ? $dateEnd->modify('+ 1 day') : new \DateTime('first day of january next year');
+
         return $this->createQueryBuilder('o')
-            ->select("o.received HIDDEN, DATE_FORMAT(o.received, '%Y-%m-%d') AS x")
+            ->select("o.received HIDDEN, DATE_FORMAT(o.received, :format) AS x")
+            ->andWhere('o.received BETWEEN :dateStart AND :dateEnd')
+            ->setParameter('format', $format)
+            ->setParameter('dateStart', $dateStart)
+            ->setParameter('dateEnd', $dateEnd)
             ->addGroupBy('x')
             ->addSelect('COUNT(o.received) AS y')
             ->orderBy('x', 'ASC')
@@ -41,34 +48,6 @@ class OpportunityRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
-
-    /*public function findChartStatByMonth(): array
-    {
-        $qb = $this->createQueryBuilder('o')
-            ->select("o.received HIDDEN, DATE_FORMAT(o.received, '%d/%m/%Y') AS date, MONTH(o.received) AS month")
-            ->addGroupBy('date')
-            ->addSelect('COUNT(o.received) AS opportunity')
-            ->orderBy('month', 'ASC')
-            ->addOrderBy('o.received', 'ASC')
-            ->getQuery()
-        ;
-
-        $labels = [];
-        $data = [];
-        dd($qb->getResult());
-        foreach ($qb->getResult() as $result) {
-            $labels[$result['month']] = $result['month'];
-            $data[$result['month']][] = [
-                'label' => $result['date'],
-                'data' => $result['opportunity']
-            ];
-        }
-
-        return [
-            'labels' => $labels,
-            'data' => $data
-        ];
-    }*/
 
     // /**
     //  * @return Opportunity[] Returns an array of Opportunity objects

@@ -12,8 +12,6 @@ export default class extends Controller {
         const title = modalEl.querySelector('.modal-title');
         const content = modalEl.querySelector('div.modal-body small samp');
 
-        console.log(modalEl.children)
-
         fetch('/opportunity/log', {
             method: 'post',
             headers: {

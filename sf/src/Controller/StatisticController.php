@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Form\StatOpportunityFormType;
 use App\Repository\OpportunityRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\UX\Chartjs\Builder\ChartBuilderInterface;
@@ -28,9 +29,11 @@ class StatisticController extends AbstractController
      */
     public function index(OpportunityRepository $opportunityRepository): Response
     {
-        $data = $opportunityRepository->findChartStatByDay();
-        $opportunitiesChart = $this->createOpportunityChart('Opportunités', $data);
-        $statOpportunityForm = $this->createForm(StatOpportunityFormType::class);
+        $data = $opportunityRepository->findChartStat();
+        $opportunitiesChart = $this->createDateChart('Opportunités', $data);
+        $statOpportunityForm = $this->createForm(StatOpportunityFormType::class, null, [
+            'action' => $this->generateUrl('statistic_opportunity_filter'),
+        ]);
 
         return $this->render('statistic/index.html.twig', [
             'opportunitiesChart' => $opportunitiesChart,
@@ -38,9 +41,47 @@ class StatisticController extends AbstractController
         ]);
     }
 
-    private function createOpportunityChart(string $label, array $data): Chart
+    /**
+     * @Route("/opportunity/filter", name="statistic_opportunity_filter", methods={"POST"})
+     */
+    public function opportunityFilter(Request $request, OpportunityRepository $opportunityRepository): Response
     {
-        $chart = $this->chartBuilder->createChart(Chart::TYPE_BAR);
+        $statOpportunityForm = $this->createForm(StatOpportunityFormType::class);
+        $data = json_decode($request->getContent(), true);
+        $statOpportunityForm->submit($data, false);
+        $response = [];
+
+        if ($statOpportunityForm->isSubmitted() && $statOpportunityForm->isValid()) {
+            $formData = $statOpportunityForm->getData();
+            switch ($formData['display']) {
+                case 'day':
+                    $format = '%Y-%m-%d';
+                    break;
+                case 'month':
+                    $format = '%Y-%m';
+                    break;
+                case 'year':
+                    $format = '%Y';
+                    break;
+                default:
+                    $format = null;
+            }
+            $chartData = $opportunityRepository->findChartStat($format, $formData['dateStart'], $formData['dateEnd']);
+            $opportunitiesChart = $this->createDateChart('Opportunités', $chartData, $formData['display']);
+            $response = $this->render('statistic/_chart.html.twig', ['chart' => $opportunitiesChart]);
+        }
+
+        return $this->json($response, Response::HTTP_OK);
+    }
+
+
+    private function createDateChart(string $label, array $data, ?string $unit = 'month'): Chart
+    {
+        $displayFormats = [
+            'year' => 'YYYY',
+            'month' => 'MMM YYYY',
+            'day' => 'DD/MM/YYYY'
+        ];
         $color = RandomColor::one([
             'luminosity' => 'light',
             'hue' => 'purple',
@@ -57,27 +98,44 @@ class StatisticController extends AbstractController
             ];
         }
 
+        $chart = $this->chartBuilder->createChart(Chart::TYPE_BAR);
         $chart->setData([
             'datasets' => $datasets
         ]);
 
         $chart->setOptions([
             'responsive' => true,
-            'locale' => 'fr-FR',
             'scales' => [
                 'x' => [
                     'type' => 'time',
                     'time' => [
-                        'unit' => 'day',
-                        'tooltipFormat' => 'dd/MM/yyyy',
-                        'displayFormats' => ['day' => 'dd/MM/yyyy'],
-                    ],
+                        'unit' => $unit,
+                        'isoWeekday' => true,
+                        'tooltipFormat' => $displayFormats[$unit],
+                        'displayFormats' => $displayFormats,
+                    ]
                 ],
-                'y' => ['beginAtZero' => true]
+                'y' => ['beginAtZero' => true],
+            ],
+            'interaction' => [
+                'intersect' => false,
             ],
             'plugins' => [
                 'tooltip' => ['enable' => true],
-                'legend' => ['display' => false]
+                'legend' => ['display' => false],
+                'zoom' => [
+                    'pan' => [
+                        'enabled' => true,
+                        'mode' => 'x',
+                        'speed' => 20,
+                    ],
+                    'zoom' => [
+                        'wheel' => ['enabled' => true],
+                        'pinch' => ['enabled' => true],
+                        'mode' => 'x',
+                        'sensitivity' => 3,
+                    ]
+                ],
             ]
         ]);
 
