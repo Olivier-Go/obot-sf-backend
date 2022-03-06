@@ -16,14 +16,14 @@
 
                 <form class="row g-3 needs-validation {% if error %}was-validated{% endif %}" data-controller="field-validation" data-field-validation-target="form" action="{{ path('login') }}" method="post" novalidate>
                     <div class="form-floating">
-                        <input type="email" class="form-control" id="username" name="_username" value="{{ last_username }}" required data-action="focus->field-validation#validate">
+                        <input type="email" class="form-control" id="username" name="_username" value="{{ last_username }}" required data-action="input->field-validation#validate">
                         <label class="form-label" for="username">Email:</label>
                         <div class="invalid-feedback">
                             Veuilez entrer une adresse email valide
                         </div>
                     </div>
                     <div class="form-floating">
-                        <input type="password" class="form-control" id="password" name="_password" required data-action="focus->field-validation#validate">
+                        <input type="password" class="form-control" id="password" name="_password" required data-action="input->field-validation#validate">
                         <label for="password">Mot de passe:</label>
                     </div>
                     <div class="form-floating mb-2">

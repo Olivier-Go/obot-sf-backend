@@ -39,6 +39,17 @@ export const jsonSubmitFormData = async (form) => {
  * @return Bool true/false if valid email
  */
 export const validateEmail = (email) => (
-    // eslint-disable-next-line no-useless-escape
     /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(email)
+);
+
+/**
+ * Validate Password fields
+ * @param {String} password
+ * @return Bool true/false if valid password with conditions :
+ * - Min eight characters
+ * - at least one lowercase letter
+ * - at least one number
+ */
+export const validatePassword = (password) => (
+    /^(?=.*\d)(?=.*[a-z])[0-9a-z]{8,}$/.test(password)
 );

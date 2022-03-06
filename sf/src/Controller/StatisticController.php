@@ -105,6 +105,7 @@ class StatisticController extends AbstractController
 
         $chart->setOptions([
             'responsive' => true,
+            'aspectRatio' => 1.5,
             'scales' => [
                 'x' => [
                     'type' => 'time',
