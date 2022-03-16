@@ -1,34 +1,37 @@
-{% extends 'base.html.twig' %}
+{% extends export is defined ? 'pdf/base.html.twig' : 'base.html.twig' %}
 
 {% block title %}Opportunités d'arbitrage{% endblock %}
 
 {% block body %}
-    <div class="container-fluid mb-auto">
+    <div id="print-content" class="container-fluid mb-auto">
         <div class="row">
             <div class="col p-3">
                 <h2 class="text-primary text-center mb-3">Opportunités d'arbitrage</h2>
+                {% if export is not defined %}
+                    {{ include('_part/_list-controls.html.twig') }}
+                {% endif %}
                 <div class="card border-primary overflow-hidden">
-                    <div class="table-responsive">
+                    <div class="table-responsive d-print-block">
                         <table class="table table-light table-striped table-bordered border-secondary mb-0 fs-small">
                             <thead class="table-secondary">
                             <tr>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, '#', 'o.id') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Received', 'o.received') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Ticker', 'o.ticker') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Direction', 'o.direction') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Price diff', 'o.priceDiff') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Buy market', 'buyMarket.name') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Buy price', 'o.buyPrice') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Sell market', 'sellMarket.name') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Sell price', 'o.sellPrice') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Size', 'o.size') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Buy order', 'o.buyOrder') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Sell Order', 'o.sellOrder') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(opportunities, 'Logs', 'o.logs') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(pagination, '#', 'o.id') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Received', 'o.received') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Ticker', 'o.ticker') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Direction', 'o.direction') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Price diff', 'o.priceDiff') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Buy market', 'buyMarket.name') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Buy price', 'o.buyPrice') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Sell market', 'sellMarket.name') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Sell price', 'o.sellPrice') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Size', 'o.size') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Buy order', 'o.buyOrder') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Sell Order', 'o.sellOrder') }}</th>
+                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Logs', 'o.logs') }}</th>
                             </tr>
                             </thead>
                             <tbody data-controller="opportunity-log">
-                            {% for opportunity in opportunities %}
+                            {% for opportunity in pagination %}
                                 <tr>
                                     <th scope="row">{{ opportunity.id }}</th>
                                     <td>{{ opportunity.received|date('d/m/Y H:i:s') }}</td>
@@ -59,9 +62,8 @@
                         </table>
                     </div>
                 </div>
-                <small class="ms-1">Nombre d'opérations: <strong>{{ opportunities.getTotalItemCount }}</strong></small>
                 <div class="navigation d-flex justify-content-center my-3">
-                    {{ knp_pagination_render(opportunities) }}
+                    {{ knp_pagination_render(pagination) }}
                 </div>
             </div>
         </div>

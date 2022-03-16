@@ -1,0 +1,13 @@
+knp_snappy:
+    temporary_folder: "%kernel.cache_dir%/snappy"
+    process_timeout: 20 # In seconds
+    pdf:
+        enabled: true
+        binary: '%env(WKHTMLTOPDF_PATH)%'
+        options:
+            footer-right: '[page]/[toPage]'
+            footer-font-size: 9
+    image:
+        enabled: true
+        binary: '%env(WKHTMLTOIMAGE_PATH)%'
+        options: []

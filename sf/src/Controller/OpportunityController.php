@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Opportunity;
 use App\Repository\OpportunityRepository;
+use App\Service\ExportService;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -15,6 +16,13 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class OpportunityController extends AbstractController
 {
+    private ExportService $exportService;
+
+    public function __construct(ExportService $exportService)
+    {
+        $this->exportService = $exportService;
+    }
+
     /**
      * @Route("/", name="opportunity_index")
      */
@@ -23,15 +31,29 @@ class OpportunityController extends AbstractController
         $page = $request->query->getInt('page', 1);
         $maxItemPerPage = !empty($request->query->getInt('maxItemPerPage')) ? $request->query->getInt('maxItemPerPage') : 20;
 
-        $opportunitiesQuery = $opportunityRepository->findAllQB();
-        $paginatedOpportunities = $paginator->paginate(
-            $opportunitiesQuery,
+        $query = $opportunityRepository->findAllQB();
+
+        // Export
+        $export = $request->get('export');
+        if ($export === 'pdf') {
+            $params['name'] = 'opportunites';
+            $params['template'] = 'opportunity/index.html.twig';
+            $params['pagination'] = $paginator->paginate(
+                $query,
+                1,
+                $query->getMaxResults()
+            );
+            return $this->exportService->exportpdf($params);
+        }
+
+        $pagination = $paginator->paginate(
+            $query,
             $page,
             $maxItemPerPage
         );
 
         return $this->render('opportunity/index.html.twig', [
-            'opportunities' => $paginatedOpportunities
+            'pagination' => $pagination
         ]);
     }
 

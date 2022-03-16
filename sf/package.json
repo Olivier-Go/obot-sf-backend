@@ -16,6 +16,7 @@
         "file-loader": "^6.2.0",
         "litepicker": "^2.0.12",
         "moment": "^2.29.1",
+        "print-js": "^1.6.0",
         "regenerator-runtime": "^0.13.2",
         "sass": "^1.44.0",
         "sass-loader": "^12.3.0",

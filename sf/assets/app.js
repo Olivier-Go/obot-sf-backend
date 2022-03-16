@@ -12,7 +12,7 @@ import './styles/app.scss';
 import './bootstrap';
 
 // Bootstrap
-require('bootstrap');
+import 'bootstrap';
 
 // PWA Service Worker
 if ('serviceWorker' in navigator) {

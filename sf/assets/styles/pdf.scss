@@ -1,0 +1,27 @@
+/* wkhtmltopdf fix */
+.row {
+  display: -webkit-box; /* wkhtmltopdf uses this one */
+  -webkit-box-pack: start; /* wkhtmltopdf uses this one */
+  & > div {
+    -webkit-box-flex: 1;
+    -webkit-flex: 1;
+    flex: 1;
+  }
+  & > div:last-child {
+    margin-right: 0;
+  }
+}
+
+/* Page Breaks */
+.pb_before { page-break-before:always !important; }
+.page  { page-break-after:always !important; }
+.page { page-break-inside:avoid !important; }
+table { page-break-inside:auto; }
+tr    { page-break-inside:avoid; page-break-after:auto; }
+thead { display:table-header-group; }
+tfoot { display:table-footer-group; }
+
+body {
+  font-family: sans-serif;
+  background-color: white;
+}
