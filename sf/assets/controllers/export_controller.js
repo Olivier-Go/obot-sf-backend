@@ -15,7 +15,7 @@ export default class extends Controller {
             .join('\n')
         ;
 
-        styles = orientation === 'landscape' ? '@page { size: Letter landscape; }' + styles : styles;
+        styles = orientation === 'landscape' ? '@page { size: Letter landscape; margin: 15mm 0mm; }' + styles : styles;
 
         printJS({
             printable: 'print-content',
@@ -23,13 +23,13 @@ export default class extends Controller {
             type: 'html',
             scanStyles: false,
             style: styles,
-            maxWidth: 1000
+            maxWidth: 1200
         });
     }
 
     pdf(event) {
         window.open(
-            `${window.location.href}?export=pdf`,
+            `${window.location.origin}${window.location.pathname}?export=pdf`,
             '_blank'
         );
     }

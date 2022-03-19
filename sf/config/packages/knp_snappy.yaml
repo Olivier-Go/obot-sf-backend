@@ -5,6 +5,8 @@ knp_snappy:
         enabled: true
         binary: '%env(WKHTMLTOPDF_PATH)%'
         options:
+            margin-top: 15
+            margin-bottom: 15
             footer-right: '[page]/[toPage]'
             footer-font-size: 9
     image:

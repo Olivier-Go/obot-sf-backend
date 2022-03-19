@@ -4,6 +4,7 @@ namespace App\Repository;
 
 use App\Entity\Order;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -19,7 +20,7 @@ class OrderRepository extends ServiceEntityRepository
         parent::__construct($registry, Order::class);
     }
 
-    public function findQB(?Order $order)
+    public function findQB(?Order $order): Query
     {
         $qb = $this->createQueryBuilder('o')
             ->leftJoin('o.market', 'market');
@@ -30,11 +31,9 @@ class OrderRepository extends ServiceEntityRepository
                 ->setParameter('param', $order->getId());
         }
         
-        $qb
-            ->addOrderBy('o.updated', 'ASC')
-            ->getQuery();
+        $qb->addOrderBy('o.updated', 'ASC');
 
-        return $qb;
+        return $qb->getQuery();
     }
 
     // /**

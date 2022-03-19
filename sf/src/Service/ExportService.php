@@ -25,10 +25,11 @@ class ExportService
             'pagination' => $params['pagination']
         ]);
 
-        $this->knpSnappyPdf->setOption('title', $filename);
-
         return new PdfResponse(
-            $this->knpSnappyPdf->getOutputFromHtml($html),
+            $this->knpSnappyPdf->getOutputFromHtml($html, [
+                'title' => $filename,
+                'orientation' => 'Landscape',
+            ]),
             $filename,
             'application/pdf',
             'inline'
