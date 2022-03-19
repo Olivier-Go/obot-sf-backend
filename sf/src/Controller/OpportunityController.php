@@ -41,7 +41,7 @@ class OpportunityController extends AbstractController
             $params['pagination'] = $paginator->paginate(
                 $query,
                 1,
-                count($query->getResult())
+                count($query->getResult()) > 0 ? count($query->getResult()) : 1
             );
             return $this->exportService->exportpdf($params);
         }
