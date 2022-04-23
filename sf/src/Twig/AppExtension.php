@@ -3,6 +3,9 @@
 namespace App\Twig;
 
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
@@ -11,17 +14,22 @@ class AppExtension extends AbstractExtension
 {
     private RequestStack $requestStack;
     private AuthorizationCheckerInterface $authorizationChecker;
+    private HubInterface $hub;
+    private FlashBagInterface $flash;
 
-    public function __construct(RequestStack $requestStack, AuthorizationCheckerInterface $authorizationChecker)
+    public function __construct(RequestStack $requestStack, AuthorizationCheckerInterface $authorizationChecker, HubInterface $hub, FlashBagInterface $flash)
     {
         $this->requestStack = $requestStack;
         $this->authorizationChecker = $authorizationChecker;
+        $this->hub = $hub;
+        $this->flash = $flash;
     }
 
     public function getFunctions(): array
     {
         return [
             new TwigFunction('ws_stream_key', [$this, 'getWsStreamKey']),
+            new TwigFunction('mercure_hub_run', [$this, 'isMercureHubRun']),
         ];
     }
 
@@ -34,4 +42,14 @@ class AppExtension extends AbstractExtension
         return null;
     }
 
+    public function isMercureHubRun(): bool
+    {
+        try {
+            $this->hub->publish(new Update('notification'));
+            return true;
+        } catch(\Throwable $exception) {
+            $this->flash->set('danger', 'Erreur Turbo Broadcast: ' . $exception->getPrevious()->getMessage());
+        }
+        return false;
+    }
 }

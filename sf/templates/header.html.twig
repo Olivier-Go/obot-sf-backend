@@ -36,24 +36,7 @@
                             <li class="nav-item">
                                 <a class="nav-link {% if app.request.get('_route') == 'node_console' %}active{% endif %}" href="{{ path('node_console') }}">Console</a>
                             </li>
-                            {#<li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    Dropdown
-                                </a>
-                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                    <li><a class="dropdown-item" href="#">Action</a></li>
-                                    <li><a class="dropdown-item" href="#">Another action</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="#">Something else here</a></li>
-                                </ul>
-                            </li>#}
                         </ul>
-                        {#<form class="d-flex">
-                            <div class="input-group input-group-sm">
-                                <input class="form-control" type="search" placeholder="Rechercher" aria-label="Rechercher" aria-describedby="search-form">
-                                <button class="btn btn-primary" type="submit" id="search-form"><i class="bi bi-search"></i></button>
-                            </div>
-                        </form>#}
                         <div class="text-center mb-lg-0 mb-5" data-bs-toggle="tooltip" title="Déconnexion" data-bs-placement="left">
                             <a class="btn btn-sm btn-danger d-inline-block ms-lg-2 mt-4 mt-lg-0" href="{{ path('logout') }}" role="button"><i class="bi bi-box-arrow-right text-whit h5"></i></a>
                         </div>

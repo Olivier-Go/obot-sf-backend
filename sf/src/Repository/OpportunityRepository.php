@@ -25,7 +25,7 @@ class OpportunityRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('o')
             ->leftJoin('o.buyMarket', 'buyMarket')
             ->leftJoin('o.sellMarket', 'sellMarket')
-            ->addOrderBy('o.received', 'DESC')
+            ->addOrderBy('o.created', 'DESC')
             ->getQuery()
             ;
     }

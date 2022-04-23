@@ -8,12 +8,6 @@
             <div class="col col-md-6 col-lg-4 my-auto text-center">
                 <img src="{{ asset('build/images/bot.svg') }}" width="60" height="60" alt="ccxt-quant-bot">
                 <h1 class="text-primary mb-4">Connexion</h1>
-
-                {# {% if error %}#}
-                {#   <div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>#}
-                {# {% endif %}#}
-                {{ include('_part/_flash_message.html.twig') }}
-
                 <form class="row g-3 needs-validation {% if error %}was-validated{% endif %}" data-controller="field-validation" data-field-validation-target="form" action="{{ path('login') }}" method="post" novalidate>
                     <div class="form-floating">
                         <input type="email" class="form-control" id="username" name="_username" value="{{ last_username }}" required data-action="input->field-validation#validate">
@@ -39,7 +33,6 @@
                         <button type="submit" class="btn btn-primary btn-lg">Connexion</button>
                     </div>
                 </form>
-
             </div>
         </div>
     </div>

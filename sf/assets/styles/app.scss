@@ -16,6 +16,10 @@ body {
   font-size: .8em;
 }
 
+.overflow-y-hidden {
+  overflow-y: hidden;
+}
+
 .card-header-rounder-2 {
   border-radius: 10px 0 0 10px;
 }
@@ -56,7 +60,6 @@ nav.navbar {
     border: none;
   }
 }
-
 
 button.navbar-toggler, button.navbar-brand {
   &:focus {
@@ -126,4 +129,14 @@ button.navbar-toggler, button.navbar-brand {
     padding-right: 15px;
     border: none;
   }
+}
+
+.toast-container {
+  z-index: 1001;
+  position: fixed;
+  bottom: 1.3rem;
+  right: 0;
+}
+.toast-body {
+  color: $gray-200;
 }

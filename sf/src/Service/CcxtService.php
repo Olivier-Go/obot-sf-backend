@@ -4,16 +4,24 @@ namespace App\Service;
 
 use App\Entity\Balance;
 use App\Entity\Market;
-use App\Entity\Ticker;
 use App\Utils\Tools;
 use ccxt\kucoin as Kucoin;
 use ccxt\bittrex as Bittrex;
 use ccxt\binance as Binance;
 use DateTime;
+use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 
 class CcxtService extends Tools
 {
+
+    private ManagerRegistry $doctrine;
+
+    public function __construct(ManagerRegistry $doctrine)
+    {
+        $this->doctrine = $doctrine;
+    }
+
     public function getExchangeInstance(Market $market)
     {
         if ($market->getId() === 1) {
@@ -42,22 +50,26 @@ class CcxtService extends Tools
         return null;
     }
 
-    public function fetchTickerInfos(Ticker $ticker): Ticker
+    public function fetchTickerInfos(Market $market): Market
     {
-        $exchange = $this->getExchangeInstance($ticker->getMarket());
-        $tickerInfos = $exchange->fetch_ticker($ticker->getName()) ?? [];
+        $exchange = $this->getExchangeInstance($market);
 
-        if (!empty($tickerInfos)) {
-            $ticker->setUpdated(new DateTime($this->convertTimestampMs($tickerInfos['timestamp'])));
-            $ticker->setVolume($tickerInfos['baseVolume']);
-            $ticker->setLast($tickerInfos['last']);
-            $ticker->setAverage($tickerInfos['average']);
-            $ticker->setLow($tickerInfos['low']);
-            $ticker->setHigh($tickerInfos['high']);
+        foreach ($market->getTickers() as $ticker) {
+            $tickerInfos = $exchange->fetch_ticker($ticker->getName()) ?? [];
+            if (!empty($tickerInfos)) {
+                $ticker->setUpdated(new DateTime($this->convertTimestampMs($tickerInfos['timestamp'])));
+                $ticker->setVolume($tickerInfos['baseVolume']);
+                $ticker->setLast($tickerInfos['last']);
+                $ticker->setAverage($tickerInfos['average']);
+                $ticker->setLow($tickerInfos['low']);
+                $ticker->setHigh($tickerInfos['high']);
+            }
+            $this->doctrine->getManager()->persist($ticker);
         }
 
-        return $ticker;
+        return $market;
     }
+
 
     public function fetchAccountBalance(Balance $balance): Balance
     {
@@ -66,17 +78,39 @@ class CcxtService extends Tools
         if ($exchange->checkRequiredCredentials()) {
             $exchangeBalances = $exchange->fetch_balance();
             if (isset($exchangeBalances)) {
-                foreach ($exchangeBalances as $symbol => $data) {
-                    if ($symbol === $balance->getCurrency()) {
-                        $balance->setTotal($data['total']);
-                        $balance->setAvailable($data['free']);
-                        $balance->setHold($data['total'] - $data['free']);
-                    }
-                }
+                $this->updateBalances($exchangeBalances, $balance);
             }
         }
 
         return $balance;
+    }
+
+    public function fetchAccountAllBalances(Market $market): Market
+    {
+        $exchange = $this->getExchangeInstance($market);
+
+        if ($exchange->checkRequiredCredentials()) {
+            $exchangeBalances = $exchange->fetch_balance();
+            if (isset($exchangeBalances)) {
+                foreach ($market->getBalances() as $balance) {
+                    $this->updateBalances($exchangeBalances, $balance);
+                    $this->doctrine->getManager()->persist($balance);
+                }
+            }
+        }
+
+        return $market;
+    }
+
+    private function updateBalances(array $exchangeBalances, Balance $balance): void
+    {
+        foreach ($exchangeBalances as $symbol => $data) {
+            if ($symbol === $balance->getCurrency()) {
+                $balance->setTotal($data['total']);
+                $balance->setAvailable($data['free']);
+                $balance->setHold($data['total'] - $data['free']);
+            }
+        }
     }
 
     public function fetchOrderBook(Market $market, string $ticker): ?array

@@ -29,3 +29,8 @@ bin/console doctrine:migrations:migrate
 # or
 bin/console d:m:m
 ```
+
+### Start Mercure Hub :
+```sh
+docker-compose up
+```

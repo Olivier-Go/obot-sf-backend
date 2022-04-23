@@ -11,8 +11,8 @@
                     {{ include('_part/_list-controls.html.twig') }}
                 {% endif %}
                 <div class="card border-primary overflow-hidden">
-                    <div class="table-responsive">
-                        <table class="table table-light table-striped table-bordered border-secondary mb-0 fs-small">
+                    <div class="table-responsive overflow-y-hidden">
+                        <table class="table table-light table-striped table-bordered border-secondary fs-small mb-0">
                             <thead class="table-secondary">
                             <tr>
                                 <th scope="col">{{ knp_pagination_sortable(pagination, '#', 'o.id') }}</th>
@@ -62,7 +62,7 @@
                         </table>
                     </div>
                 </div>
-                <div class="navigation d-flex justify-content-center my-3">
+                <div class="navigation d-flex justify-content-center my-3 d-print-none">
                     {{ knp_pagination_render(pagination) }}
                 </div>
             </div>

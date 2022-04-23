@@ -32,3 +32,7 @@ services:
         arguments: [ '@request_stack' ]
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_decoded, method: onJWTDecoded }
+
+    turbo.custom_turbo_broadcaster:
+        class: App\Turbo\CustomTurboBroadcaster
+        tags: [ turbo.broadcaster ]

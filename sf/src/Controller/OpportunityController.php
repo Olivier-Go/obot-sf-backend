@@ -5,7 +5,7 @@ namespace App\Controller;
 use App\Entity\Opportunity;
 use App\Repository\OpportunityRepository;
 use App\Service\ExportService;
-use Knp\Component\Pager\PaginatorInterface;
+use App\Service\OpportunityService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,46 +17,38 @@ use Symfony\Component\Routing\Annotation\Route;
 class OpportunityController extends AbstractController
 {
     private ExportService $exportService;
+    private OpportunityService $opportunityService;
 
-    public function __construct(ExportService $exportService)
+    public function __construct(ExportService $exportService, OpportunityService $opportunityService)
     {
         $this->exportService = $exportService;
+        $this->opportunityService = $opportunityService;
     }
 
     /**
      * @Route("/", name="opportunity_index")
      */
-    public function index(Request $request, OpportunityRepository $opportunityRepository, PaginatorInterface $paginator): Response
+    public function index(Request $request)
     {
         $page = $request->query->getInt('page', 1);
         $maxItemPerPage = !empty($request->query->getInt('maxItemPerPage')) ? $request->query->getInt('maxItemPerPage') : 20;
-
-        $query = $opportunityRepository->findAllQB();
 
         // Export
         $export = $request->get('export');
         if ($export === 'pdf') {
             $params['name'] = 'opportunites';
             $params['template'] = 'opportunity/index.html.twig';
-            $params['pagination'] = $paginator->paginate(
-                $query,
+            $params['pagination'] = $this->opportunityService->paginateOpportunities(
                 1,
-                count($query->getResult()) > 0 ? count($query->getResult()) : 1
+                0
             );
             return $this->exportService->exportpdf($params);
         }
 
-        $pagination = $paginator->paginate(
-            $query,
-            $page,
-            $maxItemPerPage
-        );
-
         return $this->render('opportunity/index.html.twig', [
-            'pagination' => $pagination
+            'pagination' => $this->opportunityService->paginateOpportunities($page, $maxItemPerPage)
         ]);
     }
-
 
     /**
      * @Route("/log", name="opportunity_log", methods={"POST"})

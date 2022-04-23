@@ -11,7 +11,7 @@
                 class="form-select form-select-sm py-0 me-1"
                 name="maxItemPerPage" id="maxItemPerPage"
                 data-controller="pagination"
-                data-pagination-url-value="{{ path(app.request.attributes.get('_route'), {'maxItemPerPage' : '_itemNum'}) }}"
+                data-pagination-url-value="{{ path(pagination.route, {'maxItemPerPage' : '_itemNum'}) }}"
                 data-action="pagination#change"
         >
             <option value="20" {% if pagination.getItemNumberPerPage == 20 %}selected="selected"{% endif %}>20</option>

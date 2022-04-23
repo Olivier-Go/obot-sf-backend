@@ -13,12 +13,14 @@
     </symbol>
 </svg>
 
-{% for type, messages in app.flashes %}
-    {% for message in messages %}
-        <div class="alert alert-{{ type }} alert-dismissible text-center mb-0 py-2" role="alert">
-            <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img"><use xlink:href="#{{ type }}"/></svg>
-            {{ message }}
-            <button type="button" class="btn-close btn-flash-close h-100 py-0 p-2" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    {% endfor %}
-{% endfor %}
+<div class="toast align-items-center bg-{{ type }} border-0" role="alert" aria-live="assertive" aria-atomic="true" {{ stimulus_controller('toast') }} data-bs-delay="8000">
+    <div class="toast-header bg-dark px-3">
+        <img src="{{ asset('build/images/bot.svg') }}" width="20" height="20" alt="ccxt-quant-bot">
+        <strong class="ms-2 me-auto">0Bot</strong>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+    </div>
+    <div class="toast-body d-flex py-2 px-3">
+        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img"><use xlink:href="#{{ type }}"/></svg>
+        <p class="mb-1">{{ message }}</p>
+    </div>
+</div>

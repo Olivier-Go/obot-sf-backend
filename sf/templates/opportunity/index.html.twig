@@ -7,63 +7,8 @@
         <div class="row">
             <div class="col p-3">
                 <h2 class="text-primary text-center mb-3">Opportunités d'arbitrage</h2>
-                {% if export is not defined %}
-                    {{ include('_part/_list-controls.html.twig') }}
-                {% endif %}
-                <div class="card border-primary overflow-hidden">
-                    <div class="table-responsive">
-                        <table class="table table-light table-striped table-bordered border-secondary mb-0 fs-small">
-                            <thead class="table-secondary">
-                            <tr>
-                                <th scope="col">{{ knp_pagination_sortable(pagination, '#', 'o.id') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Received', 'o.received') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Ticker', 'o.ticker') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Direction', 'o.direction') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Price diff', 'o.priceDiff') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Buy market', 'buyMarket.name') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Buy price', 'o.buyPrice') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Sell market', 'sellMarket.name') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Sell price', 'o.sellPrice') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Size', 'o.size') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Buy order', 'o.buyOrder') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Sell Order', 'o.sellOrder') }}</th>
-                                <th scope="col">{{ knp_pagination_sortable(pagination, 'Logs', 'o.logs') }}</th>
-                            </tr>
-                            </thead>
-                            <tbody data-controller="opportunity-log">
-                            {% for opportunity in pagination %}
-                                <tr>
-                                    <th scope="row">{{ opportunity.id }}</th>
-                                    <td>{{ opportunity.received|date('d/m/Y H:i:s') }}</td>
-                                    <td>{{ opportunity.ticker }}</td>
-                                    <td><span class="text-{{ opportunity.direction == 'Sell->Buy' ? 'danger' : 'success' }}">{{ opportunity.direction }}</span></td>
-                                    <td>{{ opportunity.priceDiff }}</td>
-                                    <td>{{ opportunity.buyMarket.name }}</td>
-                                    <td>{{ opportunity.buyPrice }}</td>
-                                    <td>{{ opportunity.sellMarket.name }}</td>
-                                    <td>{{ opportunity.sellPrice }}</td>
-                                    <td>{{ opportunity.size }}</td>
-                                    <td>
-                                        {% if opportunity.buyOrder %}
-                                            <a href="{{ path('order_show', {'id': opportunity.buyOrder.id}) }}">#{{ opportunity.buyOrder.id }}</a>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% if opportunity.sellOrder %}
-                                            <a href="{{ path('order_show', {'id': opportunity.sellOrder.id}) }}">#{{ opportunity.sellOrder.id }}</a>
-                                        {% endif %}
-                                    </td>
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity-log#log" data-opportunity-log-id="{{ opportunity.id }}"><i class="bi bi-journal-text"></i></button>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="navigation d-flex justify-content-center my-3">
-                    {{ knp_pagination_render(pagination) }}
+                <div id="opportunities" {{ turbo_stream_listen('App\\Entity\\Opportunity') }}>
+                    {{ include('opportunity/_list.html.twig') }}
                 </div>
             </div>
         </div>

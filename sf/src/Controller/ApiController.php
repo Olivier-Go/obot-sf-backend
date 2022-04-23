@@ -44,7 +44,7 @@ class ApiController extends AbstractController
             return $this->json($opportunity, Response::HTTP_BAD_REQUEST);
         }
 
-        $opportunity = $this->workerService->execute($opportunity);
+        //$opportunity = $this->workerService->execute($opportunity);
 
         $this->opportunityService->createOpportunity($opportunity);
 

@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Balance;
 use App\Repository\BalanceRepository;
+use App\Repository\MarketRepository;
 use App\Repository\TickerRepository;
 use App\Service\CcxtService;
 use Doctrine\Persistence\ManagerRegistry;
@@ -28,12 +29,12 @@ class HomeController extends AbstractController
     /**
      * @Route("/tickers/data", name="tickers_data")
      */
-    public function tickersData(TickerRepository $tickerRepository, BalanceRepository $balanceRepository, CcxtService $ccxtService, ManagerRegistry $doctrine): Response
+    public function tickersData(TickerRepository $tickerRepository, MarketRepository $marketRepository, BalanceRepository $balanceRepository, CcxtService $ccxtService, ManagerRegistry $doctrine): Response
     {
         $tickers = $tickerRepository->findAll();
+        $markets = $marketRepository->findAll();
 
         foreach ($tickers as $ticker) {
-            $ticker = $ccxtService->fetchTickerInfos($ticker);
             $currencies = explode('/', $ticker->getName());
             foreach ($currencies as $currency) {
                 $balance = $balanceRepository->findOneBy(['market' => $ticker->getMarket(), 'currency' => $currency]);
@@ -42,12 +43,15 @@ class HomeController extends AbstractController
                     $balance->setMarket($ticker->getMarket());
                     $balance->setTicker($ticker);
                     $balance->setCurrency($currency);
+                    $doctrine->getManager()->persist($balance);
                 }
-                $balance = $ccxtService->fetchAccountBalance($balance);
-                $doctrine->getManager()->persist($balance);
             }
+        }
 
-            $doctrine->getManager()->persist($ticker);
+        foreach ($markets as $market) {
+            $market = $ccxtService->fetchTickerInfos($market);
+            $market = $ccxtService->fetchAccountAllBalances($market);
+            $doctrine->getManager()->persist($market);
         }
 
         $doctrine->getManager()->flush();
