@@ -57,8 +57,17 @@ server.listen(process.env.WS_PORT, () => console.log(JSON.stringify({
         if (request.headers['upgrade'] !== 'websocket') {
             return socket.end('HTTP/1.1 400 Bad Request');
         }
-        if (request.headers['cookie'] && (request.headers['cookie'].replace('PHPSESSID=','') !== queryObject.key)) {
-            return socket.end('HTTP/1.1 403 Forbidden');
+        if (request.headers['cookie']) {
+            let key;
+            const content = request.headers['cookie'].split(';')
+            content.forEach(str => {
+                if (str.includes('PHPSESSID')) {
+                    key = str.replace('PHPSESSID=','').trim();
+                }
+            });
+            if (key !== queryObject.key) {
+                return socket.end('HTTP/1.1 403 Forbidden');
+            }
         }
         return wss.handleUpgrade(request, socket, head, (ws) => {
             wss.emit('connection', ws, request);

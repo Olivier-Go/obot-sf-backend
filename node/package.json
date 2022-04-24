@@ -15,7 +15,7 @@
     "dotenv": "^10.0.0",
     "log-buffer": "^0.0.3",
     "mapsort": "^1.0.5",
-    "ws": "^8.4.0"
+    "ws": "^8.5.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.15"
