@@ -1,9 +1,72 @@
-{% extends 'base.html.twig' %}
-
-{% block title %}Ordre{% endblock %}
-
-{% block body %}
-    <h1>Ordre</h1>
-
-
-{% endblock %}
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <p><span class="h6 me-2">Market:</span> {{ order.market|upper }}</p>
+        </div>
+        <div class="col">
+            <p><span class="h6 me-2">Ticker:</span> {{ order.ticker }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <p><span class="h6 me-2">Side:</span> <span class="text-{{ order.side == 'buy' ? 'danger' : 'success' }}">{{ order.side|upper }}</span><small class="ms-1 text-muted">{{ order.type }}</small></p>
+        </div>
+        <div class="col">
+            <p><span class="h6 me-2">Status:</span> <span class="badge bg-secondary">{{ order.status }}</span></p>
+        </div>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col">
+            <p><span class="h6 me-2">Price:</span> {{ order.price }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <p><span class="h6 me-2">Average:</span> {{ order.average }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <p><span class="h6 me-2">Amount:</span> {{ order.amount }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <p><span class="h6 me-2">Filled:</span> {{ order.filled }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <p><span class="h6 me-2">Remaining:</span> {{ order.remaining }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <p><span class="h6 me-2">Cost:</span> {{ order.cost }}</p>
+        </div>
+    </div>
+    {% if order.fees is not empty and order.fees.currency is defined and order.fees.cost is defined %}
+        <div class="row">
+            <div class="col">
+                <p><span class="h6 me-2">Fees:</span> {{ order.fees.cost ~ ' ' ~ order.fees.currency }} {% if order.fees.rate is defined %}({{ order.fees.rate }}){% endif %}</p>
+            </div>
+        </div>
+    {% endif %}
+    <hr>
+    <div class="row">
+        <div class="col">
+            <p><span class="h6 me-2">Opened:</span> {{ order.opened|date('d/m/Y H:i:s') }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <p><span class="h6 me-2">Updated:</span> {{ order.updated|date('d/m/Y H:i:s') }}</p>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <p><span class="h6 me-2">LastTrade:</span> {{ order.lastTrade|date('d/m/Y H:i:s') }}</p>
+        </div>
+    </div>
+</div>

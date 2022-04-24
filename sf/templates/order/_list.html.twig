@@ -34,9 +34,9 @@
                         <td>{{ order.lastTrade|date('d/m/Y H:i:s') }}</td>
                         <td class="table-{{ order.status != 'closed' ? 'secondary' }}">{{ order.status }}</td>
                         <td>{{ order.ticker }}</td>
-                        <td>{{ order.market.name }}</td>
+                        <td>{{ order.market|upper }}</td>
                         <td>{{ order.type }}</td>
-                        <td><span class="text-{{ order.side == 'buy' ? 'danger' : 'success' }}">{{ order.side }}</span></td>
+                        <td><span class="text-{{ order.side == 'buy' ? 'danger' : 'success' }}">{{ order.side|upper }}</span></td>
                         <td>{{ order.price }}</td>
                         <td>{{ order.average }}</td>
                         <td>{{ order.amount }}</td>

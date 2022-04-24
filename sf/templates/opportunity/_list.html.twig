@@ -22,32 +22,32 @@
                     <th scope="col">{{ knp_pagination_sortable(pagination, 'Logs', 'o.logs') }}</th>
                 </tr>
                 </thead>
-                <tbody data-controller="opportunity-log">
+                <tbody data-controller="opportunity">
                 {% for opportunity in pagination %}
                     <tr>
                         <th scope="row">{{ opportunity.id }}</th>
                         <td>{{ opportunity.received|date('d/m/Y H:i:s') }}</td>
                         <td>{{ opportunity.ticker }}</td>
-                        <td><span class="text-{{ opportunity.direction == 'Sell->Buy' ? 'danger' : 'success' }}">{{ opportunity.direction }}</span></td>
+                        <td><span class="text-{{ opportunity.direction == 'Sell->Buy' ? 'danger' : 'success' }}">{{ opportunity.direction|upper }}</span></td>
                         <td>{{ opportunity.priceDiff|number_format(4, '.', ' ') }}</td>
-                        <td>{{ opportunity.buyMarket.name }}</td>
+                        <td>{{ opportunity.buyMarket|upper }}</td>
                         <td>{{ opportunity.buyPrice|number_format(4, '.', ' ') }}</td>
-                        <td>{{ opportunity.sellMarket.name }}</td>
+                        <td>{{ opportunity.sellMarket|upper }}</td>
                         <td>{{ opportunity.sellPrice|number_format(4, '.', ' ') }}</td>
                         <td>{{ opportunity.size|number_format(4, '.', ' ') }}</td>
-                        <td>
+                        <td class="text-center">
                             {% if opportunity.buyOrder %}
-                                <a href="{{ path('order_show', {'id': opportunity.buyOrder.id}) }}">#{{ opportunity.buyOrder.id }}</a>
+                                <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity#order" data-opportunity-order-id="{{ opportunity.buyOrder.id }}">#{{ opportunity.buyOrder.id }}</button>
                             {% endif %}
                         </td>
-                        <td>
+                        <td class="text-center">
                             {% if opportunity.sellOrder %}
-                                <a href="{{ path('order_show', {'id': opportunity.sellOrder.id}) }}">#{{ opportunity.sellOrder.id }}</a>
+                                <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity#order" data-opportunity-order-id="{{ opportunity.sellOrder.id }}">#{{ opportunity.sellOrder.id }}</button>
                             {% endif %}
                         </td>
                         <td class="text-center">
                             {% if opportunity.logs is not null %}
-                                <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity-log#log" data-opportunity-log-id="{{ opportunity.id }}"><i class="bi bi-journal-text"></i></button>
+                                <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity#log" data-opportunity-log-id="{{ opportunity.id }}"><i class="bi bi-journal-text"></i></button>
                             {% endif %}
                         </td>
                     </tr>

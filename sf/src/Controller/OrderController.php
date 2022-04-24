@@ -50,12 +50,13 @@ class OrderController extends AbstractController
     }
 
     /**
-     * @Route("/{id}", name="order_show")
+     * @Route("/{id}", name="order_show", methods={"POST"})
      */
     public function show(Order $order): Response
     {
-        return $this->render('order/show.html.twig', [
-            'order' => $order,
-        ]);
+        $response = [];
+        $response['opened'] = $order->getOpened()->format('d/m/Y H:i:s');
+        $response['html'] = $this->renderView('order/show.html.twig', ['order' => $order]);
+        return $this->json($response);
     }
 }

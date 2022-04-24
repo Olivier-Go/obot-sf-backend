@@ -29,4 +29,24 @@ export default class extends Controller {
                 }
             });
     }
+
+    order(event) {
+        const id = event.currentTarget.dataset.opportunityOrderId;
+        const modalEl = document.getElementById('orderModal');
+        const modal = Modal.getOrCreateInstance(modalEl);
+        const title = modalEl.querySelector('.modal-title');
+        const content = modalEl.querySelector('div.modal-body');
+
+        fetch(`/order/${id}`, {
+            method: 'post',
+        })
+            .then(response => response.json())
+            .then(responseJson => {
+                if (responseJson.html) {
+                    title.innerText = `Ordre n° ${id} du ${responseJson.opened}`;
+                    content.innerHTML = responseJson.html;
+                    modal.show();
+                }
+            });
+    }
 }
