@@ -1,0 +1,60 @@
+{% if pagination is defined %}
+    {% if export is not defined %}
+        {{ include('_part/_list-controls.html.twig') }}
+    {% endif %}
+    <div class="card border-primary overflow-hidden">
+        <div class="table-responsive overflow-y-hidden">
+            <table class="table table-light table-striped table-bordered border-secondary fs-small mb-0">
+                <thead class="table-secondary">
+                <tr>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, '#', 'o.id') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Updated', 'o.updated') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Opened', 'o.opened') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Last Trade', 'o.lastTrade') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Status', 'o.status') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Ticker', 'ticker') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Market', 'market.name') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Type', 'o.type') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Side', 'o.side') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Price', 'o.price') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Average', 'o.average') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Amount', 'o.amount') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Filled', 'o.filled') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Remaining', 'o.remaining') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Cost', 'o.cost') }}</th>
+                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Fees', 'o.fees') }}</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for order in pagination %}
+                    <tr>
+                        <th scope="row">{{ order.id }}</th>
+                        <td>{{ order.updated|date('d/m/Y H:i:s') }}</td>
+                        <td>{{ order.opened|date('d/m/Y H:i:s') }}</td>
+                        <td>{{ order.lastTrade|date('d/m/Y H:i:s') }}</td>
+                        <td class="table-{{ order.status != 'closed' ? 'secondary' }}">{{ order.status }}</td>
+                        <td>{{ order.ticker }}</td>
+                        <td>{{ order.market.name }}</td>
+                        <td>{{ order.type }}</td>
+                        <td><span class="text-{{ order.side == 'buy' ? 'danger' : 'success' }}">{{ order.side }}</span></td>
+                        <td>{{ order.price }}</td>
+                        <td>{{ order.average }}</td>
+                        <td>{{ order.amount }}</td>
+                        <td>{{ order.filled }}</td>
+                        <td>{{ order.remaining }}</td>
+                        <td>{{ order.cost }}</td>
+                        <td>
+                            {% if order.fees is not empty and order.fees.currency is defined and order.fees.cost is defined %}
+                                {{ order.fees.cost ~ ' ' ~ order.fees.currency }} {% if order.fees.rate is defined %}({{ order.fees.rate }}){% endif %}
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="navigation d-flex justify-content-center my-3 d-print-none">
+        {{ knp_pagination_render(pagination) }}
+    </div>
+{% endif %}

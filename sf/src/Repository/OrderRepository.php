@@ -20,6 +20,15 @@ class OrderRepository extends ServiceEntityRepository
         parent::__construct($registry, Order::class);
     }
 
+    public function findAllQB(): Query
+    {
+        return $this->createQueryBuilder('o')
+            ->leftJoin('o.market', 'market')
+            ->addOrderBy('o.created', 'DESC')
+            ->getQuery()
+            ;
+    }
+
     public function findQB(?Order $order): Query
     {
         $qb = $this->createQueryBuilder('o')

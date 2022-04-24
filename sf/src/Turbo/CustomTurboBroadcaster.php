@@ -3,7 +3,9 @@
 namespace App\Turbo;
 
 use App\Entity\Opportunity;
+use App\Entity\Order;
 use App\Service\OpportunityService;
+use App\Service\OrderService;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
@@ -19,13 +21,15 @@ class CustomTurboBroadcaster implements BroadcasterInterface
     private OpportunityService $opportunityService;
     private Environment $twig;
     private FlashBagInterface $flash;
+    private OrderService $orderService;
 
-    public function __construct(HubInterface $hub, OpportunityService $opportunityService, Environment $twig, FlashBagInterface $flash)
+    public function __construct(HubInterface $hub, OpportunityService $opportunityService, OrderService $orderService, Environment $twig, FlashBagInterface $flash)
     {
         $this->hub = $hub;
         $this->opportunityService = $opportunityService;
         $this->twig = $twig;
         $this->flash = $flash;
+        $this->orderService = $orderService;
     }
 
     public function broadcast(object $entity, string $action, array $options): void
@@ -53,6 +57,13 @@ class CustomTurboBroadcaster implements BroadcasterInterface
             $options['rendered_action'] = $template->renderBlock($action, ['pagination' => $pagination]);
         }
 
+        if ($entity instanceof Order) {
+            $pagination = $this->orderService->paginateOrders(1, 20);
+            $pagination->setUsedRoute('order_index');
+            $template = $this->twig->load('broadcast/Order.stream.html.twig');
+            $options['rendered_action'] = $template->renderBlock($action, ['pagination' => $pagination]);
+        }
+
         $update = new Update(
             $options['topics'],
             $options['rendered_action'],
@@ -64,7 +75,8 @@ class CustomTurboBroadcaster implements BroadcasterInterface
 
         try {
             $this->hub->publish($update);
-        } catch(\Throwable $exception) {
+        }
+        catch(\Throwable $exception) {
             $this->flash->set('danger', 'Erreur Turbo Broadcast: ' . $exception->getPrevious()->getMessage());
         }
 

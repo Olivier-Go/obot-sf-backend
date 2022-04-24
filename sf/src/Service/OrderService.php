@@ -4,9 +4,15 @@ namespace App\Service;
 
 use App\Entity\Order;
 use App\Repository\MarketRepository;
+use App\Repository\OrderRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Knp\Component\Pager\Pagination\PaginationInterface;
+use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Twig\Environment;
 
 class OrderService
 {
@@ -14,13 +20,21 @@ class OrderService
     private ValidatorInterface $validator;
     private MarketRepository $marketRepository;
     private ManagerRegistry $doctrine;
+    private OrderRepository $orderRepository;
+    private PaginatorInterface $paginator;
+    private HubInterface $hub;
+    private Environment $twig;
 
-    public function __construct(DenormalizerInterface $denormalizer, ValidatorInterface $validator, MarketRepository $marketRepository, ManagerRegistry $doctrine)
+    public function __construct(DenormalizerInterface $denormalizer, ValidatorInterface $validator, MarketRepository $marketRepository, ManagerRegistry $doctrine, OrderRepository $orderRepository, PaginatorInterface $paginator, HubInterface $hub, Environment $twig)
     {
         $this->denormalizer = $denormalizer;
         $this->validator = $validator;
         $this->marketRepository = $marketRepository;
         $this->doctrine = $doctrine;
+        $this->orderRepository = $orderRepository;
+        $this->paginator = $paginator;
+        $this->hub = $hub;
+        $this->twig = $twig;
     }
 
     public function denormalizeOrder(array $orderArr)
@@ -49,6 +63,17 @@ class OrderService
         $em->persist($order);
         $em->flush();
 
+        $side = strtoupper($order->getSide());
+        $market = strtoupper($order->getMarket());
+
+        $this->hub->publish(new Update(
+            'notification',
+            $this->twig->render('broadcast/Notification.stream.html.twig', [
+                'type' => 'info',
+                'message' => "Nouvel ordre $side sur $market"
+            ])
+        ));
+
         return $order;
     }
 
@@ -64,6 +89,21 @@ class OrderService
         $em->flush();
 
         return $order;
+    }
+
+    public function paginateOrders(int $page, int $maxItemPerPage): PaginationInterface
+    {
+        $query = $this->orderRepository->findAllQB();
+        $limit = $maxItemPerPage;
+        if ($maxItemPerPage === 0) {
+            $limit = count($query->getResult()) > 0 ? count($query->getResult()) : 20;
+        }
+
+        return $this->paginator->paginate(
+            $query,
+            $page,
+            $limit
+        );
     }
 
 }

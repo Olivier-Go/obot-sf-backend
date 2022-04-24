@@ -3,12 +3,14 @@
 namespace App\Controller;
 
 use App\Entity\Opportunity;
+use App\Entity\Order;
 use App\Repository\MarketRepository;
 use App\Service\CcxtService;
 use App\Service\OpportunityService;
 use App\Service\OrderService;
 use App\Service\WorkerService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,16 +22,19 @@ class ApiController extends AbstractController
 {
     private CcxtService $ccxtService;
     private OpportunityService $opportunityService;
+    private OrderService $orderService;
     private WorkerService $workerService;
     private MarketRepository $marketRepository;
+    private ContainerBagInterface $params;
 
-    public function __construct(CcxtService $ccxtService, OpportunityService $opportunityService, OrderService $orderService, WorkerService $workerService, MarketRepository $marketRepository)
+    public function __construct(CcxtService $ccxtService, OpportunityService $opportunityService, OrderService $orderService, WorkerService $workerService, MarketRepository $marketRepository, ContainerBagInterface $params)
     {
         $this->ccxtService = $ccxtService;
         $this->opportunityService = $opportunityService;
         $this->orderService = $orderService;
         $this->workerService = $workerService;
         $this->marketRepository = $marketRepository;
+        $this->params = $params;
     }
 
     /**
@@ -55,10 +60,41 @@ class ApiController extends AbstractController
 
     /** ================> TEST ================> */
     /**
+     * @Route("/order/new", methods="POST")
+     */
+    public function newOrder(Request $request): Response
+    {
+        if ($this->params->get('app_env') === 'prod') {
+            return $this->json([
+                'message' => 'Access denied.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $order = $this->orderService->denormalizeOrder($data);
+
+        if (!$order instanceof Order) {
+            return $this->json($order, Response::HTTP_BAD_REQUEST);
+        }
+
+        $this->orderService->createOrder($order);
+
+        return $this->json([
+            'message' => 'Order ' . $order->getId() . ' created.',
+        ], Response::HTTP_CREATED);
+    }
+
+    /**
      * @Route("/ccxt/order/send", methods={"POST"})
      */
     public function ccxtSendOrder(Request $request)
     {
+        if ($this->params->get('app_env') === 'prod') {
+            return $this->json([
+                'message' => 'Access denied.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $data = json_decode($request->getContent());
         $ticker = $data->ticker;
         $amount = $data->amount;
@@ -78,6 +114,12 @@ class ApiController extends AbstractController
      */
     public function ccxtOrders(Request $request): Response
     {
+        if ($this->params->get('app_env') === 'prod') {
+            return $this->json([
+                'message' => 'Access denied.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $data = json_decode($request->getContent());
         $market = $this->marketRepository->find($data->market);
 
@@ -89,6 +131,12 @@ class ApiController extends AbstractController
      */
     public function ccxtFetchOrder(Request $request): Response
     {
+        if ($this->params->get('app_env') === 'prod') {
+            return $this->json([
+                'message' => 'Access denied.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $data = json_decode($request->getContent());
         $market = $this->marketRepository->find($data->market);
         $ticker = $data->ticker;
@@ -102,6 +150,12 @@ class ApiController extends AbstractController
      */
     public function ccxtCancelOrder(Request $request): Response
     {
+        if ($this->params->get('app_env') === 'prod') {
+            return $this->json([
+                'message' => 'Access denied.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
         $data = json_decode($request->getContent());
         $market = $this->marketRepository->find($data->market);
         $ticker = $data->ticker;

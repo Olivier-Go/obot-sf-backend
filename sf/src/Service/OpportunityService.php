@@ -9,8 +9,11 @@ use App\Utils\Tools;
 use Doctrine\Persistence\ManagerRegistry;
 use Knp\Component\Pager\Pagination\PaginationInterface;
 use Knp\Component\Pager\PaginatorInterface;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\Serializer\Normalizer\DenormalizerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Twig\Environment;
 
 class OpportunityService extends Tools
 {
@@ -20,8 +23,10 @@ class OpportunityService extends Tools
     private MarketRepository $marketRepository;
     private ManagerRegistry $doctrine;
     private PaginatorInterface $paginator;
+    private HubInterface $hub;
+    private Environment $twig;
 
-    public function __construct(DenormalizerInterface $denormalizer, ValidatorInterface $validator, OpportunityRepository $opportunityRepository, MarketRepository $marketRepository, ManagerRegistry $doctrine, PaginatorInterface $paginator)
+    public function __construct(DenormalizerInterface $denormalizer, ValidatorInterface $validator, OpportunityRepository $opportunityRepository, MarketRepository $marketRepository, ManagerRegistry $doctrine, PaginatorInterface $paginator, HubInterface $hub, Environment $twig)
     {
         $this->denormalizer = $denormalizer;
         $this->validator = $validator;
@@ -29,6 +34,8 @@ class OpportunityService extends Tools
         $this->marketRepository = $marketRepository;
         $this->doctrine = $doctrine;
         $this->paginator = $paginator;
+        $this->hub = $hub;
+        $this->twig = $twig;
     }
 
     public function denormalizeOpportunity(string $data)
@@ -61,6 +68,14 @@ class OpportunityService extends Tools
         $em->persist($opportunity);
         $em->flush();
 
+        $this->hub->publish(new Update(
+            'notification',
+            $this->twig->render('broadcast/Notification.stream.html.twig', [
+                'type' => 'info',
+                'message' => 'Nouvelle opportunité ' . $opportunity->getTicker()
+            ])
+        ));
+
         return $opportunity;
     }
 
@@ -73,7 +88,7 @@ class OpportunityService extends Tools
         }
 
         return $this->paginator->paginate(
-            $this->opportunityRepository->findAllQB(),
+            $query,
             $page,
             $limit
         );
