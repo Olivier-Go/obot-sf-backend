@@ -5,14 +5,15 @@ namespace App\Service;
 use App\Entity\Order;
 use App\Entity\Market;
 use App\Entity\Opportunity;
+use App\Entity\Parameter;
 use App\Repository\OrderRepository;
 use App\Repository\BalanceRepository;
+use App\Repository\ParameterRepository;
 use Doctrine\Persistence\ManagerRegistry;
-use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 
 class WorkerService
 {
-    private ContainerBagInterface $params;
+    private ParameterRepository $parameterRepository;
     private CcxtService $ccxtService;
     private BalanceRepository $balanceRepository;
     private OrderRepository $orderRepository;
@@ -28,9 +29,9 @@ class WorkerService
     private ?array $sellOrder;
 
 
-    public function __construct(ContainerBagInterface $params, CcxtService $ccxtService, BalanceRepository $balanceRepository, OrderRepository $orderRepository, OrderService $orderService, ManagerRegistry $doctrine)
+    public function __construct(ParameterRepository $parameterRepository, CcxtService $ccxtService, BalanceRepository $balanceRepository, OrderRepository $orderRepository, OrderService $orderService, ManagerRegistry $doctrine)
     {
-        $this->params = $params;
+        $this->parameterRepository = $parameterRepository;
         $this->ccxtService = $ccxtService;
         $this->balanceRepository = $balanceRepository;
         $this->orderRepository = $orderRepository;
@@ -45,9 +46,15 @@ class WorkerService
 
     public function execute(Opportunity $opportunity)
     {
-        $sendOrder = $this->params->get('worker_send_order');
-        $priceDiff = $this->params->get('worker_order_diff');
-        $orderSize = $this->params->get('worker_order_size');
+        $parameter = $this->parameterRepository->findFirst();
+        if (!$parameter instanceof Parameter) {
+            $this->trace('ERROR: Undefined parameters');
+            return $this->exit($opportunity);
+        }
+
+        $sendOrder = $parameter->getWorkerSendOrder();
+        $priceDiff = $parameter->getWorkerOrderDiff();
+        $orderSize = $parameter->getWorkerOrderSize();
         $ticker = $opportunity->getTicker();
         $buyMarket = $opportunity->getBuyMarket();
         $sellMarket = $opportunity->getSellMarket();
@@ -73,8 +80,8 @@ class WorkerService
                     return $this->exit($opportunity);
                 if (!$this->checkSellMarketConditions($opportunity, $orderSize))
                     return $this->exit($opportunity);
-                if ($sendOrder) {
-                    $this->trace('OK: send Order ' . $opportunity->getDirection());
+                if (!$sendOrder) {
+                    $this->trace('TEST_MODE: send Order ' . $opportunity->getDirection());
                     $this->printExecTime();
                     $this->updateBalances();
                     return $this->exit($opportunity);
@@ -98,8 +105,8 @@ class WorkerService
                     return $this->exit($opportunity);
                 if (!$this->checkBuyMarketConditions($opportunity, $orderSize))
                     return $this->exit($opportunity);
-                if ($sendOrder) {
-                    $this->trace('OK: send Order ' . $opportunity->getDirection());
+                if (!$sendOrder) {
+                    $this->trace('TEST_MODE: send Order ' . $opportunity->getDirection());
                     $this->printExecTime();
                     $this->updateBalances();
                     return $this->exit($opportunity);

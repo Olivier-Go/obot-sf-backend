@@ -15,7 +15,7 @@
 
 {% for type, messages in app.flashes %}
     {% for message in messages %}
-        <div class="alert alert-{{ type }} alert-dismissible text-center mb-0 py-2" role="alert">
+        <div class="alert alert-{{ type }} alert-dismissible flash-alert text-center mb-0 py-2" role="alert">
             <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img"><use xlink:href="#{{ type }}"/></svg>
             {{ message }}
             <button type="button" class="btn-close btn-flash-close h-100 py-0 p-2" data-bs-dismiss="alert" aria-label="Close"></button>

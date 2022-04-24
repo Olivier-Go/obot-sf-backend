@@ -1,16 +1,21 @@
 <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark py-0">
     <div class="container-fluid">
         {% if is_granted('ROLE_USER') %}
-            <button type="button"
-                    class="btn btn-sm btn-link navbar-brand py-0"
-                    data-bs-toggle="modal"
-                    data-bs-target="#nodeModal"
-                    data-controller="stream"
-                    data-stream-source="{{ node_ws_url }}"
-                    data-stream-key="{{ ws_stream_key() }}"
-            >
-                <i id="robot" class="bi bi-robot text-primary"></i>
-            </button>
+            <span class="me-2" data-bs-toggle="tooltip" title="Node Server" data-bs-placement="right">
+                <button type="button"
+                        class="btn btn-sm btn-link navbar-brand position-relative py-0 me-0"
+                        data-bs-toggle="modal"
+                        data-bs-target="#nodeModal"
+                        data-controller="stream"
+                        data-stream-source="{{ node_ws_url }}"
+                        data-stream-key="{{ ws_stream_key() }}"
+                >
+                    <i id="robot" class="bi bi-robot text-primary"></i>
+                    {% if not worker_send_order() %}
+                        <span class="position-absolute top-0 start-100 badge badge-test rounded-pill bg-info">TEST</span>
+                    {% endif %}
+                </button>
+            </span>
             <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -37,8 +42,13 @@
                                 <a class="nav-link {% if app.request.get('_route') == 'node_console' %}active{% endif %}" href="{{ path('node_console') }}">Console</a>
                             </li>
                         </ul>
-                        <div class="text-center mb-lg-0 mb-5" data-bs-toggle="tooltip" title="Déconnexion" data-bs-placement="left">
-                            <a class="btn btn-sm btn-danger d-inline-block ms-lg-2 mt-4 mt-lg-0" href="{{ path('logout') }}" role="button"><i class="bi bi-box-arrow-right text-whit h5"></i></a>
+                        <div class="d-lg-flex justify-content-center align-items-center text-center pb-lg-0 mb-lg-0 pb-2 mb-5">
+                            <ul class="navbar-nav text-center mb-2 mb-lg-0">
+                                <li class="nav-item">
+                                    <a class="nav-link {% if app.request.get('_route') == 'parameter_index' %}active{% endif %}" href="{{ path('parameter_index') }}" role="button" data-bs-toggle="tooltip" title="Paramètres" data-bs-placement="left"><i class="bi bi-sliders2-vertical h4"></i></a>
+                                </li>
+                            </ul>
+                            <a class="btn btn-sm btn-danger d-inline-block ms-lg-3 mt-4 mt-lg-0" href="{{ path('logout') }}" role="button" data-bs-toggle="tooltip" title="Déconnexion" data-bs-placement="left"><i class="bi bi-box-arrow-right text-white h5"></i></a>
                         </div>
                     </div>
                 </div>

@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Paramètres{% endblock %}
+
+{% block body %}
+    <div class="container-fluid mb-auto">
+        <div class="row">
+            <div class="col p-3">
+                <h2 class="text-primary text-center mb-3">Paramètres</h2>
+                <div class="card border-primary border-rounder-full bg-light col col-md-6 mx-auto">
+                    <div class="card-body">
+                        {{ include('parameter/_form.html.twig') }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

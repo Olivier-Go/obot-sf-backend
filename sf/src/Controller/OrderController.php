@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Order;
 use App\Service\ExportService;
 use App\Service\OrderService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -48,25 +49,13 @@ class OrderController extends AbstractController
         ]);
     }
 
-
     /**
-     * @Route("/{id}/edit", name="order_edit", methods={"GET", "POST"})
+     * @Route("/{id}", name="order_show")
      */
-    /*public function edit(Request $request, Order $order, EntityManagerInterface $entityManager): Response
+    public function show(Order $order): Response
     {
-        $form = $this->createForm(OrderType::class, $order);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('order_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->renderForm('order/edit.html.twig', [
+        return $this->render('order/show.html.twig', [
             'order' => $order,
-            'form' => $form,
         ]);
-    }*/
-
+    }
 }
