@@ -14,6 +14,7 @@ export const apiFetchConnection = () => (
   })
       .then((response) => {
         state.apiToken = response.data.token;
+        apiFetchParameters();
         app.init();
         app.run();
       })
@@ -22,6 +23,26 @@ export const apiFetchConnection = () => (
       })
       .finally(() => {
       })
+);
+
+const apiFetchParameters = () => (
+    axios({
+        method: 'get',
+        url: `${process.env.API_URL}/api/parameters`,
+        headers: {'Authorization': `Bearer ${state.apiToken}`},
+    })
+        .then((response) => {
+            console.log(response.data);
+            if (response.status === 200) {
+                state.orderDiff = response.data.worker_order_diff;
+                state.orderSize = response.data.worker_order_size;
+            }
+        })
+        .catch((error) => {
+            console.warn(error.response.data);
+        })
+        .finally(() => {
+        })
 );
 
 export const apiAddOpportunity = (op) => {

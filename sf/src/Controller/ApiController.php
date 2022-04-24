@@ -4,7 +4,9 @@ namespace App\Controller;
 
 use App\Entity\Opportunity;
 use App\Entity\Order;
+use App\Entity\Parameter;
 use App\Repository\MarketRepository;
+use App\Repository\ParameterRepository;
 use App\Service\CcxtService;
 use App\Service\OpportunityService;
 use App\Service\OrderService;
@@ -26,8 +28,9 @@ class ApiController extends AbstractController
     private WorkerService $workerService;
     private MarketRepository $marketRepository;
     private ContainerBagInterface $params;
+    private ParameterRepository $parameterRepository;
 
-    public function __construct(CcxtService $ccxtService, OpportunityService $opportunityService, OrderService $orderService, WorkerService $workerService, MarketRepository $marketRepository, ContainerBagInterface $params)
+    public function __construct(CcxtService $ccxtService, OpportunityService $opportunityService, OrderService $orderService, WorkerService $workerService, MarketRepository $marketRepository, ContainerBagInterface $params, ParameterRepository $parameterRepository)
     {
         $this->ccxtService = $ccxtService;
         $this->opportunityService = $opportunityService;
@@ -35,7 +38,27 @@ class ApiController extends AbstractController
         $this->workerService = $workerService;
         $this->marketRepository = $marketRepository;
         $this->params = $params;
+        $this->parameterRepository = $parameterRepository;
     }
+
+    /**
+     * @Route("/parameters", name="api_parameters", methods="GET")
+     */
+    public function parameters(): Response
+    {
+        $parameter = $this->parameterRepository->findFirst();
+        if (!$parameter instanceof Parameter) {
+            return $this->json([
+                'message' => 'Undefined parameters.'
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+        return $this->json([
+            'worker_order_diff' => $parameter->getWorkerOrderDiff(),
+            'worker_order_size' => $parameter->getWorkerOrderSize()
+        ], Response::HTTP_OK);
+    }
+
 
     /**
      * @Route("/opportunity/new", name="api_opportunity_new", methods="POST")
