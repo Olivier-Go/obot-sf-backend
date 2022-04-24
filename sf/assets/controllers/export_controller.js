@@ -1,4 +1,4 @@
-import { Controller } from 'stimulus';
+import { Controller } from '@hotwired/stimulus';
 import printJS from 'print-js';
 
 export default class extends Controller {

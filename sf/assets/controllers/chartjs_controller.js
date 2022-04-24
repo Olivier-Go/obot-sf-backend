@@ -1,4 +1,4 @@
-import { Controller } from 'stimulus';
+import { Controller } from '@hotwired/stimulus';
 import { Chart } from 'chart.js';
 import moment from 'moment';
 import 'chartjs-adapter-moment';

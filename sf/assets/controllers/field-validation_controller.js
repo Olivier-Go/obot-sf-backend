@@ -1,4 +1,4 @@
-import { Controller } from 'stimulus';
+import { Controller } from '@hotwired/stimulus';
 import { validateEmail, validatePassword } from "../js/utils/functions";
 
 export default class extends Controller {

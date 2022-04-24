@@ -1,4 +1,4 @@
-import { Controller } from 'stimulus';
+import { Controller } from '@hotwired/stimulus';
 require('/assets/js/tradingview');
 
 export default class extends Controller {
