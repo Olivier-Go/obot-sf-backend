@@ -126,7 +126,7 @@ Encore
             filename: "manifest.webmanifest",
             name: '0Bot',
             short_name: '0Bot',
-            description: '© 2021 0Bot',
+            description: '© 2022 0Bot',
             background_color: '#212529',
             inject: true,
             fingerprints: true,
@@ -141,6 +141,16 @@ Encore
             },
             crossorigin: null, //can be null, use-credentials or anonymous
             icons: [
+                {
+                    src: './assets/images/bot192.png',
+                    size: '96x96',
+                    type: "image/png"
+                },
+                {
+                    src: './assets/images/bot192.png',
+                    size: '128x128',
+                    type: "image/png"
+                },
                 {
                     src: './assets/images/bot192.png',
                     size: '192x192',
