@@ -27,7 +27,7 @@ export default class extends Controller {
 
             this.es.onopen = (event) => {
                 // console.log('Opened Websocket Connexion')
-                robot.classList.remove('text-primary', 'text-error');
+                robot.classList.remove('text-primary', 'text-danger');
                 robot.classList.add('text-success');
                 startBtn.setAttribute('disabled', true);
                 stopBtn.removeAttribute('disabled');
@@ -41,7 +41,7 @@ export default class extends Controller {
                 if (consoleTab) consoleTab.innerText = message.data;
             };
             this.es.onclose = (event) => {
-                robot.classList.remove('text-success', 'text-error');
+                robot.classList.remove('text-success', 'text-danger');
                 robot.classList.add('text-primary');
             };
         }
