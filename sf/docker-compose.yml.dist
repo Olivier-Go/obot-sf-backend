@@ -7,14 +7,17 @@ services:
     restart: unless-stopped
     environment:
       # Uncomment the following line to disable HTTPS
-      #SERVER_NAME: ':80'
+      SERVER_NAME: ':80'
       MERCURE_PUBLISHER_JWT_KEY: '!ChangeMe!'
       MERCURE_SUBSCRIBER_JWT_KEY: '!ChangeMe!'
       # Set the URL of your Symfony project (without trailing slash!) as value of the cors_origins directive
       MERCURE_EXTRA_DIRECTIVES: |
-        cors_origins http://127.0.0.1:8000
+        anonymous
+        auto_https off
+        cors_origins http://localhost:8000
+        publish_origins *
     # Uncomment the following line to enable the development mode
-    command: /usr/bin/caddy run -config /etc/caddy/Caddyfile.dev
+    # command: /usr/bin/caddy run -config /etc/caddy/Caddyfile.dev
     ports:
       - '3000:80'
       - '3001:443'
