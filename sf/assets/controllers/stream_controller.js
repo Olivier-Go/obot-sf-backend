@@ -3,16 +3,17 @@ import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
     connect() {
-        const btn = document.getElementById('btn-node-server');
-        const url = btn.dataset.streamSource;
-        const key = btn.dataset.streamKey;
+        const url = this.element.getAttribute('data-stream-source');
+        const key = this.element.getAttribute('data-stream-key');
         const robot = document.getElementById('robot');
         const startBtn = document.getElementById('startRobot');
         const stopBtn = document.getElementById('stopRobot');
         const consoleTab = document.getElementById('console');
 
-        if (!url || !key) {
-            console.log(`Stream controller connected without ${!url ? 'stream source' : ''} ${!key ? 'stream key' : ''}.`);
+        if (!key) setTimeout(() => location.reload(), 500);
+
+        if (!url) {
+            console.log('Stream controller connected without stream source.');
             robot.classList.remove('text-success', 'text-primary');
             robot.classList.add('text-danger');
             startBtn.setAttribute('disabled', true);
