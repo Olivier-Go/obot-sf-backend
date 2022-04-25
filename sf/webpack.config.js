@@ -153,12 +153,27 @@ Encore
                 },
                 {
                     src: './assets/images/bot192.png',
+                    size: '180x180',
+                    type: "image/png"
+                },
+                {
+                    src: './assets/images/bot192.png',
                     size: '192x192',
                     type: "image/png"
                 },
                 {
                     src: './assets/images/bot256.png',
                     size: '256x256',
+                    type: "image/png"
+                },
+                {
+                    src: './assets/images/bot256.png',
+                    size: '270x270',
+                    type: "image/png"
+                },
+                {
+                    src: './assets/images/bot256.png',
+                    size: '384x384',
                     type: "image/png"
                 },
                 {
