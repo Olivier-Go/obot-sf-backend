@@ -1,6 +1,15 @@
 {{ form_start(form) }}
-    {{ form_widget(form) }}
-    <div class="d-flex justify-content-center mt-3 mb-2">
+    {{ form_row(form.workerOrderDiff) }}
+    {{ form_row(form.workerOrderSize) }}
+    <div class="border-rounder-full shadow-sm w-100 mt-4">
+        <div class="card-header d-flex justify-content-between bg-info">
+            <p class="h6 text-white mb-0">TEST</p>
+        </div>
+        <div class="card-body">
+            {{ form_row(form.workerSendOrder) }}
+        </div>
+    </div>
+    <div class="d-flex justify-content-center mt-4 mb-2">
         <button type="submit" class="btn btn-primary mx-auto">Enregistrer <i class="bi bi-save ms-1"></i></button>
     </div>
 {{ form_rest(form) }}

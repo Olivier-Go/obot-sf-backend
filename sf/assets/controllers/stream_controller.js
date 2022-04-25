@@ -3,8 +3,9 @@ import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
     connect() {
-        const url = this.element.getAttribute('data-stream-source');
-        const key = this.element.getAttribute('data-stream-key');
+        const btn = document.getElementById('btn-node-server');
+        const url = btn.dataset.streamSource;
+        const key = btn.dataset.streamKey;
         const robot = document.getElementById('robot');
         const startBtn = document.getElementById('startRobot');
         const stopBtn = document.getElementById('stopRobot');

@@ -1,5 +1,4 @@
 import { Controller } from '@hotwired/stimulus';
-require('/assets/js/tradingview');
 
 export default class extends Controller {
     static targets = [ 'result' ]
@@ -94,11 +93,11 @@ export default class extends Controller {
                 }
                 if (responseJson.app && responseJson.server) {
                     if (responseJson.app.state === 'running' && responseJson.server.state === 'listening') {
-                        startBtn.setAttribute('disabled', true);
+                        startBtn.setAttribute('disabled', 'disabled');
                         stopBtn.removeAttribute('disabled');
                     } else {
                         startBtn.removeAttribute('disabled');
-                        stopBtn.setAttribute('disabled', true);
+                        stopBtn.setAttribute('disabled', 'disabled');
                     }
                 }
                 this.resultTarget.innerHTML = html;
