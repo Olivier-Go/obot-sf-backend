@@ -10,6 +10,10 @@ use App\Repository\OrderRepository;
 use App\Repository\BalanceRepository;
 use App\Repository\ParameterRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Exception;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
+use Twig\Environment;
 
 class WorkerService
 {
@@ -19,6 +23,10 @@ class WorkerService
     private OrderRepository $orderRepository;
     private OrderService $orderService;
     private ManagerRegistry $doctrine;
+    private OpportunityService $opportunityService;
+    private NodeService $nodeService;
+    private HubInterface $hub;
+    private Environment $twig;
     private string $logs;
     private string $startTime;
     private array $buyMarketBalances;
@@ -29,7 +37,7 @@ class WorkerService
     private ?array $sellOrder;
 
 
-    public function __construct(ParameterRepository $parameterRepository, CcxtService $ccxtService, BalanceRepository $balanceRepository, OrderRepository $orderRepository, OrderService $orderService, ManagerRegistry $doctrine)
+    public function __construct(ParameterRepository $parameterRepository, CcxtService $ccxtService, BalanceRepository $balanceRepository, OrderRepository $orderRepository, OrderService $orderService, ManagerRegistry $doctrine, OpportunityService $opportunityService, NodeService $nodeService, HubInterface $hub, Environment $twig)
     {
         $this->parameterRepository = $parameterRepository;
         $this->ccxtService = $ccxtService;
@@ -37,6 +45,10 @@ class WorkerService
         $this->orderRepository = $orderRepository;
         $this->orderService = $orderService;
         $this->doctrine = $doctrine;
+        $this->opportunityService = $opportunityService;
+        $this->nodeService = $nodeService;
+        $this->hub = $hub;
+        $this->twig = $twig;
         $this->logs = '=================== Worker start ===================' . PHP_EOL;
         $this->startTime = microtime(true);
         $this->buyOrder = null;
@@ -44,7 +56,10 @@ class WorkerService
     }
 
 
-    public function execute(Opportunity $opportunity)
+    /**
+     * @throws Exception
+     */
+    public function execute(Opportunity $opportunity): Opportunity
     {
         $parameter = $this->parameterRepository->findFirst();
         if (!$parameter instanceof Parameter) {
@@ -52,7 +67,8 @@ class WorkerService
             return $this->exit($opportunity);
         }
 
-        $sendOrder = $parameter->getWorkerSendOrder();
+        $notSendOrder = $parameter->getWorkerNotSendOrder();
+        $stopFirstTransaction = $parameter->getWorkerStopAfterTransaction();
         $priceDiff = $parameter->getWorkerOrderDiff();
         $orderSize = $parameter->getWorkerOrderSize();
         $ticker = $opportunity->getTicker();
@@ -80,11 +96,11 @@ class WorkerService
                     return $this->exit($opportunity);
                 if (!$this->checkSellMarketConditions($opportunity, $orderSize))
                     return $this->exit($opportunity);
-                if (!$sendOrder) {
-                    $this->trace('TEST_MODE: send Order ' . $opportunity->getDirection());
+                if ($notSendOrder) {
+                    $this->trace('TEST_MODE: Not send orders ' . $opportunity->getDirection());
                     $this->printExecTime();
                     $this->updateBalances();
-                    return $this->exit($opportunity);
+                    break;
                 }
                 if (!$this->sendBuyOrder($buyMarket, $ticker, $orderSize))
                     return $this->exit($opportunity);
@@ -94,9 +110,6 @@ class WorkerService
                     $this->cancelOrder($buyMarket, $ticker, $this->buyOrder);
                 if (!$this->validateOrder($sellMarket, $ticker, $this->sellOrder)) 
                     $this->cancelOrder($sellMarket, $ticker, $this->sellOrder);
-                // Update Balances
-                $this->printExecTime();
-                $this->updateBalances();
                 break;
 
             case 'Sell->Buy':
@@ -105,11 +118,9 @@ class WorkerService
                     return $this->exit($opportunity);
                 if (!$this->checkBuyMarketConditions($opportunity, $orderSize))
                     return $this->exit($opportunity);
-                if (!$sendOrder) {
-                    $this->trace('TEST_MODE: send Order ' . $opportunity->getDirection());
-                    $this->printExecTime();
-                    $this->updateBalances();
-                    return $this->exit($opportunity);
+                if ($notSendOrder) {
+                    $this->trace('TEST_MODE: Not send orders ' . $opportunity->getDirection());
+                    break;
                 }
                 if (!$this->sendSellOrder($sellMarket, $ticker, $orderSize))
                     return $this->exit($opportunity);
@@ -119,14 +130,27 @@ class WorkerService
                     $this->cancelOrder($sellMarket, $ticker, $this->sellOrder);
                 if (!$this->validateOrder($buyMarket, $ticker, $this->buyOrder))
                     $this->cancelOrder($buyMarket, $ticker, $this->buyOrder);
-                // Update Balances
-                $this->printExecTime();
-                $this->updateBalances();
                 break;
 
             default:
                 $this->trace('ERROR: invalid direction');
         }
+
+        if ($stopFirstTransaction) {
+            $this->nodeService->command('stop');
+            $this->hub->publish(new Update(
+                'notification',
+                $this->twig->render('broadcast/Notification.stream.html.twig', [
+                    'type' => 'info',
+                    'message' => 'Node Server stoppé après première transaction'
+                ])
+            ));
+            $this->trace('TEST_MODE: Node Server stopped after 1st transaction');
+        }
+
+        // Update Balances
+        $this->printExecTime();
+        $this->updateBalances();
 
         return $this->exit($opportunity);
     }
@@ -150,7 +174,7 @@ class WorkerService
         $opportunity->setBuyOrder($this->buyOrder ? $this->orderRepository->find($this->buyOrder['orderId']) : null);
         $opportunity->setSellOrder($this->sellOrder ? $this->orderRepository->find($this->sellOrder['orderId']) : null);
         $opportunity->setLogs($this->logs);
-        return $opportunity;
+        return $this->opportunityService->createOpportunity($opportunity);
     }
 
 

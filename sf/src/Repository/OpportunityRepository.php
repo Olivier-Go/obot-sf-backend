@@ -30,10 +30,25 @@ class OpportunityRepository extends ServiceEntityRepository
             ;
     }
 
-    public function findChartStat(?string $format = '%Y-%m', ?\DateTime $dateStart = null, ?\DateTime $dateEnd = null): array
+    public function findChartStat(?string $format = null, ?\DateTime $dateStart = null, ?\DateTime $dateEnd = null): array
     {
-        $dateStart = $dateStart ?? new \DateTime('first day of january this year');
-        $dateEnd = $dateEnd ? $dateEnd->modify('+ 1 day') : new \DateTime('first day of january next year');
+        switch ($format) {
+            case 'year':
+                $format = '%Y';
+                $dateStart = $dateStart ?? new \DateTime('first day of january previous year');
+                $dateEnd = $dateEnd ? $dateEnd->modify('+ 1 day') : new \DateTime('first day of january next year');
+                break;
+            case 'month':
+                $format = '%Y-%m';
+                $dateStart = $dateStart ?? new \DateTime('first day of january this year');
+                $dateEnd = $dateEnd ? $dateEnd->modify('+ 1 day') : new \DateTime('first day of january next year');
+                break;
+            case 'day':
+            default:
+                $format = '%Y-%m-%d';
+                $dateStart = $dateStart ?? new \DateTime('first day of previous month');
+                $dateEnd = $dateEnd ? $dateEnd->modify('+ 1 day') : new \DateTime('last day of this month');
+        }
 
         return $this->createQueryBuilder('o')
             ->select("o.received HIDDEN, DATE_FORMAT(o.received, :format) AS x")

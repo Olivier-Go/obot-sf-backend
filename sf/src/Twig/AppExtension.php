@@ -62,7 +62,7 @@ class AppExtension extends AbstractExtension
     {
         $parameter = $this->parameterRepository->findFirst();
         if ($parameter instanceof Parameter) {
-            return $parameter->getWorkerSendOrder();
+            return !$parameter->getWorkerNotSendOrder() && !$parameter->getWorkerStopAfterTransaction();
         }
 
         $this->flash->set('danger', 'Paramètres non définis');

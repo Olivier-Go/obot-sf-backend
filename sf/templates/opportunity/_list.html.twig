@@ -5,21 +5,21 @@
     <div class="card border-primary overflow-hidden">
         <div class="table-responsive overflow-y-hidden">
             <table class="table table-light table-striped table-bordered border-secondary fs-small mb-0">
-                <thead class="table-secondary">
+                <thead class="table-secondary text-nowrap">
                 <tr>
-                    <th scope="col">{{ knp_pagination_sortable(pagination, '#', 'o.id') }}</th>
-                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Received', 'o.received') }}</th>
-                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Ticker', 'o.ticker') }}</th>
-                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Direction', 'o.direction') }}</th>
-                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Price diff', 'o.priceDiff') }}</th>
-                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Buy market', 'buyMarket.name') }}</th>
-                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Buy price', 'o.buyPrice') }}</th>
-                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Sell market', 'sellMarket.name') }}</th>
-                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Sell price', 'o.sellPrice') }}</th>
-                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Size', 'o.size') }}</th>
-                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Buy order', 'o.buyOrder') }}</th>
-                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Sell Order', 'o.sellOrder') }}</th>
-                    <th scope="col">{{ knp_pagination_sortable(pagination, 'Logs', 'o.logs') }}</th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, '#', 'o.id') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Received', 'o.received') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Ticker', 'o.ticker') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Direction', 'o.direction') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Price diff', 'o.priceDiff') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Buy market', 'buyMarket.name') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Buy price', 'o.buyPrice') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Sell market', 'sellMarket.name') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Sell price', 'o.sellPrice') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Size', 'o.size') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Buy order', 'o.buyOrder') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Sell Order', 'o.sellOrder') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Logs', 'o.logs') }}</span></th>
                 </tr>
                 </thead>
                 <tbody data-controller="opportunity">
@@ -45,9 +45,15 @@
                                 <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity#order" data-opportunity-order-id="{{ opportunity.sellOrder.id }}">#{{ opportunity.sellOrder.id }}</button>
                             {% endif %}
                         </td>
-                        <td class="text-center">
+                        <td class="text-center align-middle py-0">
                             {% if opportunity.logs is not null %}
-                                <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity#log" data-opportunity-log-id="{{ opportunity.id }}"><i class="bi bi-journal-text"></i></button>
+                                {% set logColor = 'text-success' %}
+                                {% if 'ERROR' in opportunity.logs %}
+                                    {% set logColor = 'text-danger' %}
+                                {% elseif 'TEST_MODE' in opportunity.logs %}
+                                    {% set logColor = 'text-info' %}
+                                {% endif %}
+                                <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity#log" data-opportunity-log-id="{{ opportunity.id }}"><i class="bi bi-file-text-fill h5 {{  logColor }}"></i></button>
                             {% endif %}
                         </td>
                     </tr>

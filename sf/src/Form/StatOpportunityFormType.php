@@ -20,7 +20,7 @@ class StatOpportunityFormType extends AbstractType
                     'Mois' => 'month',
                     'Années' => 'year',
                 ],
-                'data' => 'month',
+                'data' => 'day',
                 'attr' => [
                     'class' => 'form-select-sm',
                     'data-action' => 'stat-search#change'

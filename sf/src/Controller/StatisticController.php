@@ -53,20 +53,7 @@ class StatisticController extends AbstractController
 
         if ($statOpportunityForm->isSubmitted() && $statOpportunityForm->isValid()) {
             $formData = $statOpportunityForm->getData();
-            switch ($formData['display']) {
-                case 'day':
-                    $format = '%Y-%m-%d';
-                    break;
-                case 'month':
-                    $format = '%Y-%m';
-                    break;
-                case 'year':
-                    $format = '%Y';
-                    break;
-                default:
-                    $format = null;
-            }
-            $chartData = $opportunityRepository->findChartStat($format, $formData['dateStart'], $formData['dateEnd']);
+            $chartData = $opportunityRepository->findChartStat($formData['display'], $formData['dateStart'], $formData['dateEnd']);
             $opportunitiesChart = $this->createDateChart('Opportunités', $chartData, $formData['display']);
             $response = $this->render('statistic/_chart.html.twig', ['chart' => $opportunitiesChart]);
         }
@@ -75,7 +62,7 @@ class StatisticController extends AbstractController
     }
 
 
-    private function createDateChart(string $label, array $data, ?string $unit = 'month'): Chart
+    private function createDateChart(string $label, array $data, ?string $unit = 'day'): Chart
     {
         $displayFormats = [
             'year' => 'YYYY',

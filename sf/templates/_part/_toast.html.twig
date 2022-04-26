@@ -10,16 +10,13 @@
     </symbol>
 </svg>
 
-{% set color = type == 'info' ? 'text-primary' %}
-{% set bg = type == 'info' ? 'light' : type %}
-
-<div class="toast align-items-center bg-{{ bg }} border-0" role="alert" aria-live="assertive" aria-atomic="true" {{ stimulus_controller('toast') }} data-bs-delay="8000">
+<div class="toast align-items-center bg-{{ type }} border-0" role="alert" aria-live="assertive" aria-atomic="true" {{ stimulus_controller('toast') }} data-bs-delay="8000">
     <div class="toast-header bg-dark px-3">
         <img src="{{ asset('build/images/bot.svg') }}" width="20" height="20" alt="ccxt-quant-bot">
         <strong class="ms-2 me-auto">0Bot</strong>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
     </div>
-    <div class="toast-body d-flex py-2 px-3 {{ color }}">
+    <div class="toast-body d-flex py-2 px-3 {{ type }}">
         <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img"><use xlink:href="#{{ type }}"/></svg>
         <p class="mb-1">{{ message }}</p>
     </div>

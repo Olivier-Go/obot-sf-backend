@@ -3,7 +3,6 @@ import { Toast } from 'bootstrap';
 
 export default class extends Controller {
     connect() {
-        console.log('connect')
         const toastContainer = document.getElementById('notifications');
         if (this.element.parentNode !== toastContainer) {
             toastContainer.appendChild(this.element);

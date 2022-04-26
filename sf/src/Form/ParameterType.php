@@ -32,9 +32,16 @@ class ParameterType extends AbstractType
                     'step' => '1'
                 ]
             ])
-            ->add('workerSendOrder', CheckboxType::class, [
+            ->add('workerNotSendOrder', CheckboxType::class, [
                 'required' => false,
-                'label' => 'Envoi des ordres aux exchanges',
+                'label' => 'Bloquer envoi des ordres aux exchanges',
+                'row_attr' => [
+                    'class' => 'form-switch ps-3 pt-2'
+                ]
+            ])
+            ->add('workerStopAfterTransaction', CheckboxType::class, [
+                'required' => false,
+                'label' => 'Arrêt Node Server après première transaction',
                 'row_attr' => [
                     'class' => 'form-switch ps-3 pt-2'
                 ]

@@ -30,7 +30,12 @@ class Parameter
     /**
      * @ORM\Column(type="boolean")
      */
-    private $workerSendOrder;
+    private $workerNotSendOrder;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $workerStopAfterTransaction;
 
 
     public function getId(): ?int
@@ -62,14 +67,26 @@ class Parameter
         return $this;
     }
 
-    public function getWorkerSendOrder(): ?bool
+    public function getWorkerNotSendOrder(): ?bool
     {
-        return $this->workerSendOrder;
+        return $this->workerNotSendOrder;
     }
 
-    public function setWorkerSendOrder(bool $workerSendOrder): self
+    public function setWorkerNotSendOrder(bool $workerNotSendOrder): self
     {
-        $this->workerSendOrder = $workerSendOrder;
+        $this->workerNotSendOrder = $workerNotSendOrder;
+
+        return $this;
+    }
+
+    public function getWorkerStopAfterTransaction(): ?bool
+    {
+        return $this->workerStopAfterTransaction;
+    }
+
+    public function setWorkerStopAfterTransaction(bool $workerStopAfterTransaction): self
+    {
+        $this->workerStopAfterTransaction = $workerStopAfterTransaction;
 
         return $this;
     }
