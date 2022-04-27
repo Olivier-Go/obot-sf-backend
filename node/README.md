@@ -8,6 +8,9 @@ yarn
 Rename `.env.dist` to `.env`.
 
 ```sh
+# debug worker 
+yarn app
+
 # launch dev server
 yarn start
 

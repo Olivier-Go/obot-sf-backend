@@ -4,25 +4,25 @@ import { state } from "./state.js";
 import axios from "axios";
 
 export const apiFetchConnection = () => (
-  axios({
-    method: 'post',
-    url: `${process.env.API_URL}/api/login_check`,
-    data: {
-      'username': process.env.API_USERNAME,
-      'password': process.env.API_PASSWORD,
-    },
-  })
-      .then((response) => {
-        state.apiToken = response.data.token;
-        apiFetchParameters();
-        app.init();
-        app.run();
-      })
-      .catch((error) => {
-        console.warn(error.response.data);
-      })
-      .finally(() => {
-      })
+    axios({
+        method: 'post',
+        url: `${process.env.API_URL}/api/login_check`,
+        data: {
+            'username': process.env.API_USERNAME,
+            'password': process.env.API_PASSWORD,
+        },
+    })
+        .then((response) => {
+            state.apiToken = response.data.token;
+            apiFetchParameters();
+            app.init();
+            app.run();
+        })
+        .catch((error) => {
+            console.warn(`${error.code}: ${error.address}:${error.port}`);
+        })
+        .finally(() => {
+        })
 );
 
 const apiFetchParameters = () => (
@@ -39,7 +39,7 @@ const apiFetchParameters = () => (
             }
         })
         .catch((error) => {
-            console.warn(error.response.data);
+            console.warn(`${error.code}: ${error.address}:${error.port}`);
         })
         .finally(() => {
         })
@@ -60,7 +60,7 @@ export const apiAddOpportunity = (op) => {
             }
         })
         .catch((error) => {
-            console.warn(error.response.data);
+            console.warn(`${error.code}: ${error.address}:${error.port}`);
         })
         .finally(() => {
         });

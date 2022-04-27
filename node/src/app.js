@@ -135,7 +135,7 @@ export const app = {
         app.run();
         break;
       default:
-        console.log(`Variable API_STATE non definie !`);
+        console.warn(`Variable API_STATE non definie !`);
         process.exit(1);
     }
   },

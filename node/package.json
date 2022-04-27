@@ -12,7 +12,7 @@
   "dependencies": {
     "axios": "^0.24.0",
     "ccxws": "^0.47.0",
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.0.0",
     "log-buffer": "^0.0.3",
     "mapsort": "^1.0.5",
     "ws": "^8.5.0"
