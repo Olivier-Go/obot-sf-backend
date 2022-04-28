@@ -17,7 +17,7 @@ export const updateBuySellDiff = (sellOrders, buyOrders, orderSize) => {
     }
   });
 
-  const price = (bestBuyOrder.price - bestSellOrder.price).toFixed(4);
+  const price = (bestSellOrder.price - bestBuyOrder.price).toFixed(4);
   const size = parseFloat(bestSellOrder.size) > parseFloat(bestBuyOrder.size) ? bestBuyOrder.size : bestSellOrder.size;
   const datetime = bestSellOrder.datetime > bestBuyOrder.datetime ? bestBuyOrder.datetime : bestSellOrder.datetime;
   const received = bestSellOrder.received > bestBuyOrder.received ? bestBuyOrder.received : bestSellOrder.received;
