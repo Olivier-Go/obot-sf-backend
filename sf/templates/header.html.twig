@@ -1,77 +1,76 @@
-<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark py-0">
-    <div class="container-fluid">
-        {% if is_granted('ROLE_USER') %}
-            <span class="me-2" data-bs-toggle="tooltip" title="Node Server" data-bs-placement="right">
-                <button type="button"
-                        class="btn btn-sm btn-link navbar-brand position-relative py-0 me-0"
-                        data-bs-toggle="modal"
-                        data-bs-target="#nodeModal"
-                        data-controller="stream"
-                        data-stream-source="{{ node_ws_url }}"
-                        data-stream-key="{{ ws_stream_key() }}"
-                >
+<div data-controller="stream"
+     data-stream-ws-url-value="{{ node_ws_url }}"
+     data-stream-ws-key-value="{{ ws_stream_key() }}"
+     data-stream-command-url-value="{{ absolute_url(path('node')) }}"
+>
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark py-0">
+        <div class="container-fluid">
+            {% if is_granted('ROLE_USER') %}
+                <span class="me-2" data-bs-toggle="tooltip" title="Node Server" data-bs-placement="right">
+                <button type="button" class="btn btn-sm btn-link navbar-brand position-relative py-0 me-0" data-bs-toggle="modal" data-bs-target="#nodeModal">
                     <i id="robot" class="bi bi-robot text-primary"></i>
                     {% if not worker_send_order() %}
                         <span class="position-absolute top-0 start-100 badge badge-test rounded-pill bg-info">TEST</span>
                     {% endif %}
                 </button>
             </span>
-            <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-                <div class="offcanvas-header justify-content-end pb-0">
-                    <button type="button" class="btn btn-dark" data-bs-dismiss="offcanvas" aria-label="Close"><i class="bi bi-x-lg h5"></i></button>
-                </div>
-                <div class="offcanvas-body">
-                    <div class="d-lg-flex flex-grow-1 align-items-center">
-                        <ul class="navbar-nav text-center me-auto mb-2 mb-lg-0">
-                            <li class="nav-item">
-                                <a class="nav-link {% if app.request.get('_route') == 'home' %}active{% endif %}" href="{{ path('home') }}">Marchés</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if app.request.get('_route') == 'statistic_index' %}active{% endif %}" href="{{ path('statistic_index') }}">Statistiques</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if app.request.get('_route') == 'opportunity_index' %}active{% endif %}" href="{{ path('opportunity_index') }}">Opportunités</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if app.request.get('_route') == 'order_index' %}active{% endif %}" href="{{ path('order_index') }}">Ordres</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {% if app.request.get('_route') == 'node_console' %}active{% endif %}" href="{{ path('node_console') }}">Console</a>
-                            </li>
-                        </ul>
-                        <div class="d-lg-flex justify-content-center align-items-center text-center pb-lg-0 mb-lg-0 pb-2 mb-5">
-                            <ul class="navbar-nav text-center mb-2 mb-lg-0">
+                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="offcanvas offcanvas-top" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+                    <div class="offcanvas-header justify-content-end pb-0">
+                        <button type="button" class="btn btn-dark" data-bs-dismiss="offcanvas" aria-label="Close"><i class="bi bi-x-lg h5"></i></button>
+                    </div>
+                    <div class="offcanvas-body">
+                        <div class="d-lg-flex flex-grow-1 align-items-center">
+                            <ul class="navbar-nav text-center me-auto mb-2 mb-lg-0">
                                 <li class="nav-item">
-                                    <a class="nav-link {% if app.request.get('_route') == 'parameter_index' %}active{% endif %}" href="{{ path('parameter_index') }}" role="button" data-bs-toggle="tooltip" title="Paramètres" data-bs-placement="left"><i class="bi bi-sliders2-vertical h4"></i></a>
+                                    <a class="nav-link {% if app.request.get('_route') == 'home' %}active{% endif %}" href="{{ path('home') }}">Marchés</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if app.request.get('_route') == 'statistic_index' %}active{% endif %}" href="{{ path('statistic_index') }}">Statistiques</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if app.request.get('_route') == 'opportunity_index' %}active{% endif %}" href="{{ path('opportunity_index') }}">Opportunités</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if app.request.get('_route') == 'order_index' %}active{% endif %}" href="{{ path('order_index') }}">Ordres</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link {% if app.request.get('_route') == 'node_console' %}active{% endif %}" href="{{ path('node_console') }}">Console</a>
                                 </li>
                             </ul>
-                            <a class="btn btn-sm btn-danger d-inline-block ms-lg-3 mt-4 mt-lg-0" href="{{ path('logout') }}" role="button" data-bs-toggle="tooltip" title="Déconnexion" data-bs-placement="left"><i class="bi bi-box-arrow-right text-white h5"></i></a>
+                            <div class="d-lg-flex justify-content-center align-items-center text-center pb-lg-0 mb-lg-0 pb-2 mb-5">
+                                <ul class="navbar-nav text-center mb-2 mb-lg-0">
+                                    <li class="nav-item">
+                                        <a class="nav-link {% if app.request.get('_route') == 'parameter_index' %}active{% endif %}" href="{{ path('parameter_index') }}" role="button" data-bs-toggle="tooltip" title="Paramètres" data-bs-placement="left"><i class="bi bi-sliders2-vertical h4"></i></a>
+                                    </li>
+                                </ul>
+                                <a class="btn btn-sm btn-danger d-inline-block ms-lg-3 mt-4 mt-lg-0" href="{{ path('logout') }}" role="button" data-bs-toggle="tooltip" title="Déconnexion" data-bs-placement="left"><i class="bi bi-box-arrow-right text-white h5"></i></a>
+                            </div>
                         </div>
                     </div>
                 </div>
+            {% else %}
+                <i id="robot" class="bi bi-robot text-primary"></i>
+            {% endif %}
+        </div>
+    </nav>
+    <div class="mb-5"></div>
+    <div class="modal fade" id="nodeModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content bg-light">
+                <div class="modal-header py-1 px-4">
+                    <i id="robot" class="bi bi-robot text-primary me-2"></i>
+                    <h5 class="modal-title">Node server</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body row justify-content-between mx-2">
+                    <button type="button" id="startRobot" class="btn btn-success col-5" data-action="stream#command" data-stream-command="start"><i class="bi bi-activity"></i> Start</button>
+                    <button type="button" id="stopRobot" class="btn btn-danger col-5" data-action="stream#command" data-stream-command="stop"><i class="bi bi-dash-lg"></i> Stop</button>
+                </div>
+                <div class="modal-footer m-2" data-stream-target="result"></div>
             </div>
-        {% else %}
-            <i id="robot" class="bi bi-robot text-primary"></i>
-        {% endif %}
-    </div>
-</nav>
-<div class="mb-5"></div>
-<div class="modal fade" id="nodeModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content bg-light" data-controller="node-ws" data-node-ws-url-value="{{ absolute_url(path('node')) }}">
-            <div class="modal-header py-1 px-4">
-                <i id="robot" class="bi bi-robot text-primary me-2"></i>
-                <h5 class="modal-title">Node server</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" data-action="node-ws#reload" aria-label="Close"></button>
-            </div>
-            <div class="modal-body row justify-content-between mx-2">
-                <button type="button" id="startRobot" class="btn btn-success col-5" data-action="node-ws#clic" data-node-ws-command="start"><i class="bi bi-activity"></i> Start</button>
-                <button type="button" id="stopRobot" class="btn btn-danger col-5" data-action="node-ws#clic" data-node-ws-command="stop"><i class="bi bi-dash-lg"></i> Stop</button>
-            </div>
-            <div class="modal-footer m-2" data-node-ws-target="result"></div>
         </div>
     </div>
 </div>
