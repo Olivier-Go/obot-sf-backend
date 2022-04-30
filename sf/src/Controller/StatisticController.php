@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Form\StatOpportunityFormType;
+use App\Repository\BalanceRepository;
 use App\Repository\OpportunityRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,15 +28,16 @@ class StatisticController extends AbstractController
     /**
      * @Route("/", name="statistic_index")
      */
-    public function index(OpportunityRepository $opportunityRepository): Response
+    public function index(OpportunityRepository $opportunityRepository, BalanceRepository $balanceRepository): Response
     {
-        $data = $opportunityRepository->findChartStat();
-        $opportunitiesChart = $this->createDateChart('Opportunités', $data);
+        $assetsChart = $this->createDoughnutChart($balanceRepository->findChartStat());
+        $opportunitiesChart = $this->createDateChart('Opportunités', $opportunityRepository->findChartStat());
         $statOpportunityForm = $this->createForm(StatOpportunityFormType::class, null, [
             'action' => $this->generateUrl('statistic_opportunity_filter'),
         ]);
 
         return $this->render('statistic/index.html.twig', [
+            'assetsChart' => $assetsChart,
             'opportunitiesChart' => $opportunitiesChart,
             'statOpportunityForm' => $statOpportunityForm->createView()
         ]);
@@ -61,7 +63,6 @@ class StatisticController extends AbstractController
         return $this->json($response, Response::HTTP_OK);
     }
 
-
     private function createDateChart(string $label, array $data, ?string $unit = 'day'): Chart
     {
         $displayFormats = [
@@ -69,18 +70,13 @@ class StatisticController extends AbstractController
             'month' => 'MMM YYYY',
             'day' => 'DD/MM/YYYY'
         ];
-        $color = RandomColor::one([
-            'luminosity' => 'light',
-            'hue' => 'purple',
-            'format' => 'hslCss'
-        ]);
+        $color = RandomColor::randomOne();
 
         $datasets = [];
         foreach ($data as $element) {
             $datasets[] = [
                 'label' => $label,
                 'backgroundColor' => $color,
-                'borderColor' => $color,
                 'data' => [$element],
             ];
         }
@@ -125,6 +121,50 @@ class StatisticController extends AbstractController
                     ]
                 ],
             ]
+        ]);
+
+        return $chart;
+    }
+
+    private function createDoughnutChart(array $data): Chart
+    {
+        $colors = RandomColor::randomPair(2);
+
+        $labels = [];
+        $seriesData = [];
+        foreach ($data as $key => $value) {
+            $labels[] = $key;
+            $seriesData[] = $value;
+        }
+
+        $total = array_reduce($seriesData, function($a, $v) {
+            return $a + $v;
+        });
+        $inPercent = array_map(function($v) use ($total) {
+            return $v > 0 ? max($v / $total * 100, 1) : 0;
+        }, $seriesData);
+
+
+        $chart = $this->chartBuilder->createChart(Chart::TYPE_DOUGHNUT);
+        $chart->setData([
+            'labels' => $labels,
+            'datasets' => [
+                [
+                    'label' => null,
+                    'backgroundColor' => $colors,
+                    'data' => $inPercent,
+                    'rawData' => $seriesData,
+                    'borderWidth' => 1
+                ],
+            ],
+        ]);
+
+        $chart->setOptions([
+            'responsive' => true,
+            'spacing' => 1,
+            'plugins' => [
+                'tooltip' => ['enable' => true],
+            ],
         ]);
 
         return $chart;

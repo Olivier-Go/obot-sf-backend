@@ -17,8 +17,6 @@ export default class extends Controller {
         const stopBtn = document.getElementById('stopRobot');
         const consoleTab = document.getElementById('console');
 
-        if (!this.wsKeyValue) setTimeout(() => location.reload(), 500);
-
         if (!this.wsUrlValue) {
             console.log('Stream controller connected without stream source.');
             robot.classList.remove('text-success', 'text-primary');
@@ -29,30 +27,32 @@ export default class extends Controller {
         }
 
         if (this.wsUrlValue.startsWith('ws')) {
-            this.es = new WebSocket(`${this.wsUrlValue}?key=${this.wsKeyValue}`);
-            console.log('Established WebSocket stream source at url:', this.wsUrlValue);
-            stopBtn.setAttribute('disabled', 'disabled');
+            if (this.wsKeyValue) {
+                this.es = new WebSocket(`${this.wsUrlValue}?key=${this.wsKeyValue}`);
+                console.log('Established WebSocket stream source at url:', this.wsUrlValue);
+                stopBtn.setAttribute('disabled', 'disabled');
 
-            this.es.onopen = (event) => {
-                // console.log('Opened Websocket Connexion')
-                robot.classList.remove('text-primary', 'text-danger');
-                robot.classList.add('text-success');
-                startBtn.setAttribute('disabled', 'disabled');
-                stopBtn.removeAttribute('disabled');
-                if (consoleTab) {
-                    this.es.send(JSON.stringify({
-                        cmd: 'console',
-                    }));
-                }
-            };
-            this.es.onmessage = function handleMessage(message) {
-                if (consoleTab) consoleTab.innerText = message.data;
-            };
-            this.es.onclose = (event) => {
-                robot.classList.remove('text-success', 'text-danger');
-                robot.classList.add('text-primary');
-                if (consoleTab) consoleTab.innerText = '_';
-            };
+                this.es.onopen = (event) => {
+                    // console.log('Opened Websocket Connexion')
+                    robot.classList.remove('text-primary', 'text-danger');
+                    robot.classList.add('text-success');
+                    startBtn.setAttribute('disabled', 'disabled');
+                    stopBtn.removeAttribute('disabled');
+                    if (consoleTab) {
+                        this.es.send(JSON.stringify({
+                            cmd: 'console',
+                        }));
+                    }
+                };
+                this.es.onmessage = function handleMessage(message) {
+                    if (consoleTab) consoleTab.innerText = message.data;
+                };
+                this.es.onclose = (event) => {
+                    robot.classList.remove('text-success', 'text-danger');
+                    robot.classList.add('text-primary');
+                    if (consoleTab) consoleTab.innerText = '_';
+                };
+            }
         }
         else {
             // server sent events (SSE, not WebSocket) endpoint
@@ -71,7 +71,9 @@ export default class extends Controller {
         //console.log('Disconnection stream source');
         // disconnectStreamSource(this.es);
         const robot = document.getElementById('robot');
-        this.es.close();
+        if (this.es) {
+            this.es.close();
+        }
         robot.classList.remove('text-success', 'text-error');
         robot.classList.add('text-primary');
     }

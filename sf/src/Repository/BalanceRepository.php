@@ -34,6 +34,26 @@ class BalanceRepository extends ServiceEntityRepository
             ;
     }
 
+    public function findChartStat(): array
+    {
+        $assets = $this->createQueryBuilder('b')
+            ->select('b.currency AS currency')
+            ->addSelect('SUM(b.available) AS available')
+            ->addSelect('SUM(b.hold) AS hold')
+            ->addGroupBy('currency')
+            ->getQuery()
+            ->getResult()
+            ;
+
+        $data = [];
+        foreach ($assets as $asset) {
+            $data[$asset['currency'] .' (available)'] = $asset['available'];
+            $data[$asset['currency'] .' (hold)'] = $asset['hold'];
+        }
+
+        return $data;
+    }
+
     // /**
     //  * @return Balance[] Returns an array of Balance objects
     //  */

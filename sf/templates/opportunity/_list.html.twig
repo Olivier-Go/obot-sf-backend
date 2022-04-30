@@ -34,7 +34,7 @@
                         <td>{{ opportunity.buyPrice|number_format(4, '.', ' ') }}</td>
                         <td>{{ opportunity.sellMarket|upper }}</td>
                         <td>{{ opportunity.sellPrice|number_format(4, '.', ' ') }}</td>
-                        <td>{{ opportunity.size|number_format(4, '.', ' ') }}</td>
+                        <td>{{ opportunity.size|number_format(2, '.', ' ') }}</td>
                         <td class="text-center">
                             {% if opportunity.buyOrder %}
                                 <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity#order" data-opportunity-order-id="{{ opportunity.buyOrder.id }}">#{{ opportunity.buyOrder.id }}</button>

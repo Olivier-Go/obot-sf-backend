@@ -31,46 +31,17 @@ export default class extends Controller {
         //     }
         // };
 
-        // Tooltip.positioners.bottom = function(items) {
-        //     const pos = Tooltip.positioners.average(items);
-        //     if (pos === false) {
-        //         return false;
-        //     }
-        //     const chart = this._chart;
-        //     return {
-        //         x: pos.x,
-        //         y: chart.chartArea.bottom,
-        //     };
-        // };
-        //
-        // event.detail.options.plugins.tooltip = {
-        //     position: 'bottom'
-        // }
-
-        // let total = 0;
-        // event.detail.options.plugins.tooltip = {
-        //     titleAlign: 'center',
-        //     footerAlign: 'center',
-        //     callbacks: {
-        //         label: (context) => {
-        //             const label = context.dataset.label;
-        //             console.log(context)
-        //             const value = context.parsed.y;
-        //             const datasets = context.parsed._stacks.y;
-        //             total = 0
-        //
-        //             for (const [key, value] of Object.entries(datasets)) {
-        //                 const dataset = parseInt(key);
-        //                 if (Number.isInteger(dataset)) {
-        //                     total += parseInt(value);
-        //                 }
-        //             }
-        //
-        //             return `${label}: ${value}`;
-        //         },
-        //         footer: () => `Total: ${total}`
-        //     }
-        // };
+        event.detail.options.plugins.tooltip = {
+            callbacks: {
+                label: (context) => {
+                    const label = context.dataset.label ?? context.label;
+                    let rawData = context.dataset.rawData;
+                    let value = context.parsed.y ?? context.formattedValue;
+                    if (rawData) value = rawData[context.dataIndex];
+                    return `${label}: ${value}`;
+                },
+            }
+        };
     }
 
     _onConnect(event) {
