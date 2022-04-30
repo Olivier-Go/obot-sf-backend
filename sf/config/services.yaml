@@ -6,6 +6,7 @@
 parameters:
     app_env: '%env(APP_ENV)%'
     node_working_dir: '%env(NODE_WORKING_DIR)%'
+    node_ob_url: '%env(NODE_OB_URL)%'
 
 services:
     # default configuration for services in *this* file

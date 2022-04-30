@@ -148,6 +148,24 @@ class ApiController extends AbstractController
     }
 
     /**
+     * @Route("/ccxt/orderbook/fetch", methods={"POST"})
+     */
+    public function ccxtFetchOrderbook(Request $request): Response
+    {
+        if ($this->params->get('app_env') === 'prod') {
+            return $this->json([
+                'message' => 'Access denied.',
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $data = json_decode($request->getContent());
+        $market = $this->marketRepository->find($data->market);
+        $ticker = $data->ticker;
+
+        dd($this->ccxtService->fetchOrderBook($market, $ticker));
+    }
+
+    /**
      * @Route("/ccxt/order/fetch", methods={"POST"})
      */
     public function ccxtFetchOrder(Request $request): Response

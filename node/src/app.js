@@ -3,19 +3,22 @@ import { flush } from "log-buffer";
 import { drawOrdersArr, isEmptyObj, startTime, memoryUsage } from "./utils/functions.js";
 import { updateBuySellDiff, updateSellBuyDiff, updateBuySellOp, updateSellBuyOp } from "./opportunities.js";
 import { apiFetchConnection, apiAddOpportunity } from "./requests.js";
-import { loadExchangeWs } from "./exchanges/exchange.js";
+import { exchange } from "./exchanges/exchange.js";
 import { state } from "./state.js";
 
-let exchange1Ws = null;
-let exchange2Ws = null;
+let exchange1Ws;
+let exchange2Ws;
 
 export const app = {
   init: () => {
     state.startTime = Date.now();
-    exchange1Ws = loadExchangeWs(1, process.env.EXCHANGE1);
-    exchange2Ws = loadExchangeWs(2, process.env.EXCHANGE2);
+    exchange1Ws = exchange.loadWebsocket(1, process.env.EXCHANGE1);
+    exchange2Ws = exchange.loadWebsocket(2, process.env.EXCHANGE2);
     exchange1Ws.run();
     exchange2Ws.run();
+    exchange.loadOrderbook(process.env.EXCHANGE1, exchange1Ws);
+    exchange.loadOrderbook(process.env.EXCHANGE2, exchange2Ws);
+    exchange.initOrderbook();
     setInterval(() => {
       state.resetTime += 1;
     }, 1000);

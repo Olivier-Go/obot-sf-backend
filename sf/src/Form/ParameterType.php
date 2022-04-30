@@ -19,9 +19,10 @@ class ParameterType extends AbstractType
                 'label' => 'Différence entre les ordres',
                 'help' => '(stablecoin)',
                 'html5' => true,
+                'scale' => 4,
                 'attr' => [
                     'min' => '0',
-                    'step' => '0.001'
+                    'step' => '0.0001'
                 ]
             ])
             ->add('workerOrderSize', IntegerType::class, [

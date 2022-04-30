@@ -11,12 +11,16 @@ use App\Repository\BalanceRepository;
 use App\Repository\ParameterRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
+use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
+use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Twig\Environment;
 
 class WorkerService
 {
+    private ContainerBagInterface $containerBag;
     private ParameterRepository $parameterRepository;
     private CcxtService $ccxtService;
     private BalanceRepository $balanceRepository;
@@ -27,6 +31,7 @@ class WorkerService
     private NodeService $nodeService;
     private HubInterface $hub;
     private Environment $twig;
+    private HttpClientInterface $client;
     private string $logs;
     private string $startTime;
     private array $buyMarketBalances;
@@ -37,8 +42,9 @@ class WorkerService
     private ?array $sellOrder;
 
 
-    public function __construct(ParameterRepository $parameterRepository, CcxtService $ccxtService, BalanceRepository $balanceRepository, OrderRepository $orderRepository, OrderService $orderService, ManagerRegistry $doctrine, OpportunityService $opportunityService, NodeService $nodeService, HubInterface $hub, Environment $twig)
+    public function __construct(ContainerBagInterface $containerBag, ParameterRepository $parameterRepository, CcxtService $ccxtService, BalanceRepository $balanceRepository, OrderRepository $orderRepository, OrderService $orderService, ManagerRegistry $doctrine, OpportunityService $opportunityService, NodeService $nodeService, HubInterface $hub, Environment $twig, HttpClientInterface $client)
     {
+        $this->containerBag = $containerBag;
         $this->parameterRepository = $parameterRepository;
         $this->ccxtService = $ccxtService;
         $this->balanceRepository = $balanceRepository;
@@ -49,6 +55,7 @@ class WorkerService
         $this->nodeService = $nodeService;
         $this->hub = $hub;
         $this->twig = $twig;
+        $this->client = $client;
         $this->logs = '=================== Worker start ===================' . PHP_EOL;
         $this->startTime = microtime(true);
         $this->buyOrder = null;
@@ -245,7 +252,8 @@ class WorkerService
 
     private function fetchOrderBooks(Market $buyMarket, Market $sellMarket, string $ticker): bool
     {
-        $this->buyMarketOrderBook = $this->ccxtService->fetchOrderBook($buyMarket, $ticker);
+        //$this->buyMarketOrderBook = $this->ccxtService->fetchOrderBook($buyMarket, $ticker);
+        $this->buyMarketOrderBook = $this->fetchNodeOb($buyMarket);
         if (!$this->buyMarketOrderBook) {
             $this->trace('ERROR: fetch buyMarketOrderBook');
             return false;
@@ -257,7 +265,8 @@ class WorkerService
         }
         $this->trace('==> OB Market: ' . strtoupper($buyMarket->getName()) . ' | ' . $buyMarketOBTrace);
 
-        $this->sellMarketOrderBook = $this->ccxtService->fetchOrderBook($sellMarket, $ticker);
+        //$this->sellMarketOrderBook = $this->ccxtService->fetchOrderBook($sellMarket, $ticker);
+        $this->sellMarketOrderBook = $this->fetchNodeOb($sellMarket);
         if (!$this->sellMarketOrderBook) {
             $this->trace('ERROR: fetch sellMarketOrderBook');
             return false;
@@ -407,6 +416,21 @@ class WorkerService
 
         $this->trace('OK: cancelOrder ' . strtoupper($market->getName()) . ' [Order ' . $updatedOrder->getOrderId() . ' canceled]');
         return true;
+    }
+
+
+    private function fetchNodeOb(Market $market): ?array
+    {
+        $nodeObUrl = $this->containerBag->get('node_ob_url');
+        try {
+            $response = $this->client->request('GET', $nodeObUrl . $market->getName());
+            if (200 === $response->getStatusCode()) {
+                return $response->toArray();
+            }
+        } catch (TransportExceptionInterface $e) {
+        }
+
+        return null;
     }
 
 }
