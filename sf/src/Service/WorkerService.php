@@ -337,7 +337,7 @@ class WorkerService
             $this->trace("ERROR: sellMarketOrderBook bidSize {$this->sellMarketOrderBook['bidSize']} < orderSize");
             return false;
         }
-        $this->trace("OK: sellMarketOrderBook bidSize $this->sellMarketOrderBook['bidSize'] >= orderSize");
+        $this->trace("OK: sellMarketOrderBook bidSize {$this->sellMarketOrderBook['bidSize']} >= orderSize");
         return true;
     }
 
