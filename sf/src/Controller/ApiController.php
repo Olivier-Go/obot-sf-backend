@@ -8,14 +8,19 @@ use App\Entity\Parameter;
 use App\Repository\MarketRepository;
 use App\Repository\ParameterRepository;
 use App\Service\CcxtService;
+use App\Service\NodeService;
 use App\Service\OpportunityService;
 use App\Service\OrderService;
 use App\Service\WorkerService;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
+use Twig\Environment;
 
 /**
  * @Route("/api")
@@ -29,8 +34,11 @@ class ApiController extends AbstractController
     private MarketRepository $marketRepository;
     private ContainerBagInterface $params;
     private ParameterRepository $parameterRepository;
+    private NodeService $nodeService;
+    private HubInterface $hub;
+    private Environment $twig;
 
-    public function __construct(CcxtService $ccxtService, OpportunityService $opportunityService, OrderService $orderService, WorkerService $workerService, MarketRepository $marketRepository, ContainerBagInterface $params, ParameterRepository $parameterRepository)
+    public function __construct(CcxtService $ccxtService, OpportunityService $opportunityService, OrderService $orderService, WorkerService $workerService, MarketRepository $marketRepository, ContainerBagInterface $params, ParameterRepository $parameterRepository, NodeService $nodeService, HubInterface $hub, Environment $twig)
     {
         $this->ccxtService = $ccxtService;
         $this->opportunityService = $opportunityService;
@@ -39,6 +47,9 @@ class ApiController extends AbstractController
         $this->marketRepository = $marketRepository;
         $this->params = $params;
         $this->parameterRepository = $parameterRepository;
+        $this->nodeService = $nodeService;
+        $this->hub = $hub;
+        $this->twig = $twig;
     }
 
     /**
@@ -62,6 +73,7 @@ class ApiController extends AbstractController
 
     /**
      * @Route("/opportunity/new", name="api_opportunity_new", methods="POST")
+     * @throws Exception
      */
     public function newOpportunity(Request $request): Response
     {
@@ -72,7 +84,25 @@ class ApiController extends AbstractController
             return $this->json($opportunity, Response::HTTP_BAD_REQUEST);
         }
 
-        $opportunity = $this->workerService->execute($opportunity);
+        $parameter = $this->parameterRepository->findFirst();
+        if (!$parameter instanceof Parameter) {
+            return $this->json([
+                'message' => 'Undefined parameters',
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($parameter->getWorkerStopAfterTransaction()) {
+            $this->nodeService->command('stop');
+            $this->hub->publish(new Update(
+                'notification',
+                $this->twig->render('broadcast/Notification.stream.html.twig', [
+                    'type' => 'info',
+                    'message' => 'Node Server stoppé après première transaction'
+                ])
+            ));
+        }
+
+        $opportunity = $this->workerService->execute($opportunity, $parameter);
 
         return $this->json([
             'message' => 'Opportunity ' . $opportunity->getId() . ' created.',

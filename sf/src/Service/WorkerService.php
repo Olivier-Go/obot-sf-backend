@@ -8,29 +8,21 @@ use App\Entity\Opportunity;
 use App\Entity\Parameter;
 use App\Repository\OrderRepository;
 use App\Repository\BalanceRepository;
-use App\Repository\ParameterRepository;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ContainerBagInterface;
-use Symfony\Component\Mercure\HubInterface;
-use Symfony\Component\Mercure\Update;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Twig\Environment;
 
 class WorkerService
 {
     private ContainerBagInterface $containerBag;
-    private ParameterRepository $parameterRepository;
     private CcxtService $ccxtService;
     private BalanceRepository $balanceRepository;
     private OrderRepository $orderRepository;
     private OrderService $orderService;
     private ManagerRegistry $doctrine;
     private OpportunityService $opportunityService;
-    private NodeService $nodeService;
-    private HubInterface $hub;
-    private Environment $twig;
     private HttpClientInterface $client;
     private string $logs;
     private string $startTime;
@@ -42,19 +34,15 @@ class WorkerService
     private ?array $sellOrder;
 
 
-    public function __construct(ContainerBagInterface $containerBag, ParameterRepository $parameterRepository, CcxtService $ccxtService, BalanceRepository $balanceRepository, OrderRepository $orderRepository, OrderService $orderService, ManagerRegistry $doctrine, OpportunityService $opportunityService, NodeService $nodeService, HubInterface $hub, Environment $twig, HttpClientInterface $client)
+    public function __construct(ContainerBagInterface $containerBag, CcxtService $ccxtService, BalanceRepository $balanceRepository, OrderRepository $orderRepository, OrderService $orderService, ManagerRegistry $doctrine, OpportunityService $opportunityService, HttpClientInterface $client)
     {
         $this->containerBag = $containerBag;
-        $this->parameterRepository = $parameterRepository;
         $this->ccxtService = $ccxtService;
         $this->balanceRepository = $balanceRepository;
         $this->orderRepository = $orderRepository;
         $this->orderService = $orderService;
         $this->doctrine = $doctrine;
         $this->opportunityService = $opportunityService;
-        $this->nodeService = $nodeService;
-        $this->hub = $hub;
-        $this->twig = $twig;
         $this->client = $client;
         $this->logs = '=================== Worker start ===================' . PHP_EOL;
         $this->startTime = microtime(true);
@@ -66,14 +54,8 @@ class WorkerService
     /**
      * @throws Exception
      */
-    public function execute(Opportunity $opportunity): Opportunity
+    public function execute(Opportunity $opportunity, Parameter $parameter): Opportunity
     {
-        $parameter = $this->parameterRepository->findFirst();
-        if (!$parameter instanceof Parameter) {
-            $this->trace('ERROR: Undefined parameters');
-            return $this->exit($opportunity);
-        }
-
         $notSendOrder = $parameter->getWorkerNotSendOrder();
         $stopFirstTransaction = $parameter->getWorkerStopAfterTransaction();
         $priceDiff = $parameter->getWorkerOrderDiff();
@@ -144,14 +126,6 @@ class WorkerService
         }
 
         if ($stopFirstTransaction) {
-            $this->nodeService->command('stop');
-            $this->hub->publish(new Update(
-                'notification',
-                $this->twig->render('broadcast/Notification.stream.html.twig', [
-                    'type' => 'info',
-                    'message' => 'Node Server stoppé après première transaction'
-                ])
-            ));
             $this->trace('TEST_MODE: Node Server stopped after 1st transaction');
         }
 
@@ -252,8 +226,8 @@ class WorkerService
 
     private function fetchOrderBooks(Market $buyMarket, Market $sellMarket, string $ticker): bool
     {
-        //$this->buyMarketOrderBook = $this->ccxtService->fetchOrderBook($buyMarket, $ticker);
-        $this->buyMarketOrderBook = $this->fetchNodeOb($buyMarket);
+        $this->buyMarketOrderBook = $this->ccxtService->fetchOrderBook($buyMarket, $ticker);
+        //$this->buyMarketOrderBook = $this->fetchNodeOb($buyMarket);
         if (!$this->buyMarketOrderBook) {
             $this->trace('ERROR: fetch buyMarketOrderBook');
             return false;
@@ -265,8 +239,8 @@ class WorkerService
         }
         $this->trace('==> OB Market: ' . strtoupper($buyMarket->getName()) . ' | ' . $buyMarketOBTrace);
 
-        //$this->sellMarketOrderBook = $this->ccxtService->fetchOrderBook($sellMarket, $ticker);
-        $this->sellMarketOrderBook = $this->fetchNodeOb($sellMarket);
+        $this->sellMarketOrderBook = $this->ccxtService->fetchOrderBook($sellMarket, $ticker);
+        //$this->sellMarketOrderBook = $this->fetchNodeOb($sellMarket);
         if (!$this->sellMarketOrderBook) {
             $this->trace('ERROR: fetch sellMarketOrderBook');
             return false;
