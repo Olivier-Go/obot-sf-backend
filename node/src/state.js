@@ -6,6 +6,7 @@ export const state = {
     startTime: 0,
     resetTime: 0,
     apiToken: null,
+    apiBusy: false,
     threshold: process.env.APP_THRESHOLD,
     orderSize: process.env.ORDER_SIZE,
     orderDiff: process.env.ORDER_DIFF,

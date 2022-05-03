@@ -33,6 +33,13 @@ class ParameterType extends AbstractType
                     'step' => '1'
                 ]
             ])
+            ->add('websocketOrderbook', CheckboxType::class, [
+                'required' => false,
+                'label' => 'Orderbook via websocket',
+                'row_attr' => [
+                    'class' => 'form-switch ps-3 pt-2'
+                ]
+            ])
             ->add('workerNotSendOrder', CheckboxType::class, [
                 'required' => false,
                 'label' => 'Bloquer envoi des ordres aux exchanges',

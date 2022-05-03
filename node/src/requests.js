@@ -46,22 +46,28 @@ const apiFetchParameters = () => (
 );
 
 export const apiAddOpportunity = (op) => {
-    app.stop();
-    axios({
-        method: 'post',
-        url: `${process.env.API_URL}/api/opportunity/new`,
-        headers: {'Authorization': `Bearer ${state.apiToken}`},
-        data: { ...op.order },
-    })
-        .then((response) => {
-            //console.log(response.data);
-            if (response.status === 201) {
-                app.run();
-            }
+    if (!state.apiBusy) {
+        app.stop();
+        state.apiBusy = true;
+        axios({
+            method: 'post',
+            url: `${process.env.API_URL}/api/opportunity/new`,
+            headers: {'Authorization': `Bearer ${state.apiToken}`},
+            data: { ...op.order },
         })
-        .catch((error) => {
-            console.warn(`${error.code}: ${error.address}:${error.port}`);
-        })
-        .finally(() => {
-        });
+            .then((response) => {
+                //console.log(response.data);
+                if (response.status === 201) {
+                    app.run();
+                    state.apiBusy = false;
+                }
+            })
+            .catch((error) => {
+                state.apiBusy = false;
+                console.warn(`${error.code}: ${error.address}:${error.port}`);
+            })
+            .finally(() => {
+            });
+    }
+
 };

@@ -37,6 +37,11 @@ class Parameter
      */
     private $workerStopAfterTransaction;
 
+    /**
+     * @ORM\Column(type="boolean", nullable=true)
+     */
+    private $websocketOrderbook;
+
 
     public function getId(): ?int
     {
@@ -87,6 +92,18 @@ class Parameter
     public function setWorkerStopAfterTransaction(bool $workerStopAfterTransaction): self
     {
         $this->workerStopAfterTransaction = $workerStopAfterTransaction;
+
+        return $this;
+    }
+
+    public function getWebsocketOrderbook(): ?bool
+    {
+        return $this->websocketOrderbook;
+    }
+
+    public function setWebsocketOrderbook(?bool $websocketOrderbook): self
+    {
+        $this->websocketOrderbook = $websocketOrderbook;
 
         return $this;
     }

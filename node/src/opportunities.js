@@ -39,10 +39,10 @@ export const updateBuySellDiff = (sellOrders, buyOrders, orderSize) => {
 };
 
 
-export const updateBuySellOp = (buySellOp, buySellDiff, orderDiff, ticker = null, buyMarket = null, sellMarket = null) => {
+export const updateBuySellOp = (buySellOp, buySellDiff, orderDiff, orderSize, ticker = null, buyMarket = null, sellMarket = null) => {
   if (!isEmptyObj(buySellDiff)) {
     buySellDiff.diff.forEach(tick => {
-      if (tick.price >= orderDiff) {
+      if (tick.price >= orderDiff && tick.size >= orderSize) {
         // Ne pas compter les opérations pour le même datetime
         let validOp = true;
         if (buySellOp.history.length) {
@@ -137,10 +137,10 @@ export const updateSellBuyDiff = (buyOrders, sellOrders, orderSize) => {
   }
 };
 
-export const updateSellBuyOp = (sellBuyOp, sellBuyDiff, orderDiff, ticker = null, buyMarket = null, sellMarket = null) => {
+export const updateSellBuyOp = (sellBuyOp, sellBuyDiff, orderDiff, orderSize, ticker = null, buyMarket = null, sellMarket = null) => {
   if (!isEmptyObj(sellBuyDiff)) {
     sellBuyDiff.diff.forEach(tick => {
-      if (tick.price >= orderDiff) {
+      if (tick.price >= orderDiff && tick.size >= orderSize) {
         // Ne pas compter les opérations pour le même datetime
         let validOp = true;
         if (sellBuyOp.history.length) {

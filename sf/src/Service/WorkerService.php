@@ -58,6 +58,7 @@ class WorkerService
     {
         $notSendOrder = $parameter->getWorkerNotSendOrder();
         $stopFirstTransaction = $parameter->getWorkerStopAfterTransaction();
+        $websocketOrderbook = $parameter->getWebsocketOrderbook();
         $priceDiff = $parameter->getWorkerOrderDiff();
         $orderSize = $parameter->getWorkerOrderSize();
         $ticker = $opportunity->getTicker();
@@ -73,7 +74,7 @@ class WorkerService
         if (!$this->getBalances($buyMarket, $sellMarket, $ticker))
             return $this->exit($opportunity);
 
-        if (!$this->fetchOrderBooks($buyMarket, $sellMarket, $ticker))
+        if (!$this->fetchOrderBooks($websocketOrderbook, $buyMarket, $sellMarket, $ticker))
             return $this->exit($opportunity);
 
         // Direction
@@ -224,10 +225,14 @@ class WorkerService
     }
 
 
-    private function fetchOrderBooks(Market $buyMarket, Market $sellMarket, string $ticker): bool
+    private function fetchOrderBooks(bool $websocketOrderbook, Market $buyMarket, Market $sellMarket, string $ticker): bool
     {
-        $this->buyMarketOrderBook = $this->ccxtService->fetchOrderBook($buyMarket, $ticker);
-        //$this->buyMarketOrderBook = $this->fetchNodeOb($buyMarket);
+        if ($websocketOrderbook) {
+            $this->buyMarketOrderBook = $this->fetchNodeOb($buyMarket);
+        } else {
+            $this->buyMarketOrderBook = $this->ccxtService->fetchOrderBook($buyMarket, $ticker);
+        }
+
         if (!$this->buyMarketOrderBook) {
             $this->trace('ERROR: fetch buyMarketOrderBook');
             return false;
@@ -239,8 +244,12 @@ class WorkerService
         }
         $this->trace('==> OB Market: ' . strtoupper($buyMarket->getName()) . ' | ' . $buyMarketOBTrace);
 
-        $this->sellMarketOrderBook = $this->ccxtService->fetchOrderBook($sellMarket, $ticker);
-        //$this->sellMarketOrderBook = $this->fetchNodeOb($sellMarket);
+        if ($websocketOrderbook) {
+            $this->sellMarketOrderBook = $this->fetchNodeOb($sellMarket);
+        } else {
+            $this->sellMarketOrderBook = $this->ccxtService->fetchOrderBook($sellMarket, $ticker);
+        }
+
         if (!$this->sellMarketOrderBook) {
             $this->trace('ERROR: fetch sellMarketOrderBook');
             return false;
