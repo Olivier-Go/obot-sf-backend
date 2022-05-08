@@ -1,6 +1,7 @@
 import { ws as binanceWs} from "./binance.js";
 import { ws as kucoinWs } from "./kucoin.js";
 import { ws as bittrexWs } from "./bittrex.js";
+import { ws as gateioWs } from "./gateio.js";
 import express from "express";
 
 export const exchange = {
@@ -14,6 +15,8 @@ export const exchange = {
                 return kucoinWs;
             case 'BITTREX':
                 return bittrexWs;
+            case 'GATEIO':
+                return gateioWs;
             default:
                 console.log(`Variable EXCHANGE ${exchangeNb} non definie !`);
                 process.exit(1);
