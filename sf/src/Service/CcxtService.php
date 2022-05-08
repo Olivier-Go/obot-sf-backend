@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Balance;
+use App\Entity\Log;
 use App\Entity\Market;
 use App\Utils\Tools;
 use ccxt\kucoin as Kucoin;
@@ -11,15 +12,18 @@ use ccxt\binance as Binance;
 use DateTime;
 use Doctrine\Persistence\ManagerRegistry;
 use Exception;
+use Symfony\Component\Serializer\Normalizer\NormalizerInterface;
 
 class CcxtService extends Tools
 {
 
     private ManagerRegistry $doctrine;
+    private NormalizerInterface $normalizer;
 
-    public function __construct(ManagerRegistry $doctrine)
+    public function __construct(ManagerRegistry $doctrine, NormalizerInterface $normalizer)
     {
         $this->doctrine = $doctrine;
+        $this->normalizer = $normalizer;
     }
 
     public function getExchangeInstance(Market $market)
@@ -109,6 +113,12 @@ class CcxtService extends Tools
                 $balance->setTotal($data['total']);
                 $balance->setAvailable($data['free']);
                 $balance->setHold($data['total'] - $data['free']);
+
+                $log = new Log();
+                $log->setEntityName('Balance');
+                $log->setEntityId($balance->getId());
+                $log->setContent($this->normalizer->normalize($balance, null, ['groups' => 'log']));
+                $this->doctrine->getManager()->persist($log);
             }
         }
     }
@@ -134,7 +144,7 @@ class CcxtService extends Tools
         return null;
     }
 
-    public function sendSellMarketOrder(Market $market, string $ticker, $amount)
+    public function sendSellMarketOrder(Market $market, string $ticker, $amount): ?string
     {
         $exchange = $this->getExchangeInstance($market);
 
@@ -160,7 +170,7 @@ class CcxtService extends Tools
         return null;
     }
 
-    public function sendBuyMarketOrder(Market $market, string $ticker, $amount)
+    public function sendBuyMarketOrder(Market $market, string $ticker, $amount): ?string
     {
         $exchange = $this->getExchangeInstance($market);
 
@@ -186,7 +196,7 @@ class CcxtService extends Tools
         return null;
     }
 
-    public function sendLimitSellOrder(Market $market, string $ticker, $amount, $price)
+    public function sendLimitSellOrder(Market $market, string $ticker, $amount, $price): ?string
     {
         $exchange = $this->getExchangeInstance($market);
 

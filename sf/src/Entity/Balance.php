@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\BalanceRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\UX\Turbo\Attribute\Broadcast;
 
 /**
@@ -17,50 +18,59 @@ class Balance
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"log"})
      */
     private $id;
 
     /**
      * @ORM\ManyToOne(targetEntity=Market::class, inversedBy="balances")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"log"})
      */
     private $market;
 
     /**
      * @ORM\ManyToOne(targetEntity=Ticker::class, inversedBy="balances")
      * @ORM\JoinColumn(nullable=false)
+     * @Groups({"log"})
      */
     private $ticker;
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Groups({"log"})
      */
     private $currency;
 
     /**
      * @ORM\Column(type="float", nullable=true)
+     * @Groups({"log"})
      */
     private $total;
 
     /**
      * @ORM\Column(type="float", nullable=true)
+     * @Groups({"log"})
      */
     private $available;
 
     /**
      * @ORM\Column(type="float", nullable=true)
+     * @Groups({"log"})
      */
     private $hold;
 
     /**
      * @Gedmo\Timestampable(on="create")
      * @ORM\Column(type="datetime")
+     * @Groups({"log"})
      */
     private $created;
 
     /**
      * @Gedmo\Timestampable(on="update")
      * @ORM\Column(type="datetime")
+     * @Groups({"log"})
      */
     private $updated;
 

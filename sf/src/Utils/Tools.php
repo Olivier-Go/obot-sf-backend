@@ -39,4 +39,19 @@ abstract class Tools
         }
         return $dateString;
     }
+
+    /**
+     * Search in multidimensional array for a given value and returns the first corresponding key if successful
+     * @param array $array
+     * @param string $field
+     * @param string $value
+     * @return false|int|string
+     */
+    public static function array_search_nested(array $array, string $field, string $value)
+    {
+        foreach($array as $key => $element) {
+            if (isset($element[$field]) && $element[$field] === $value) return $key;
+        }
+        return false;
+    }
 }

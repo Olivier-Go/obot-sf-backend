@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Form\StatOpportunityFormType;
 use App\Repository\BalanceRepository;
+use App\Repository\LogRepository;
 use App\Repository\OpportunityRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,9 +29,10 @@ class StatisticController extends AbstractController
     /**
      * @Route("/", name="statistic_index")
      */
-    public function index(OpportunityRepository $opportunityRepository, BalanceRepository $balanceRepository): Response
+    public function index(OpportunityRepository $opportunityRepository, BalanceRepository $balanceRepository, LogRepository $logRepository): Response
     {
         $assetsChart = $this->createDoughnutChart($balanceRepository->findChartStat());
+        $balancesChart = $this->createLineChart($logRepository->findChartStat('Balance'));
         $opportunitiesChart = $this->createDateChart('Opportunités', $opportunityRepository->findChartStat());
         $statOpportunityForm = $this->createForm(StatOpportunityFormType::class, null, [
             'action' => $this->generateUrl('statistic_opportunity_filter'),
@@ -38,6 +40,7 @@ class StatisticController extends AbstractController
 
         return $this->render('statistic/index.html.twig', [
             'assetsChart' => $assetsChart,
+            'balancesChart' => $balancesChart,
             'opportunitiesChart' => $opportunitiesChart,
             'statOpportunityForm' => $statOpportunityForm->createView()
         ]);
@@ -88,7 +91,8 @@ class StatisticController extends AbstractController
 
         $chart->setOptions([
             'responsive' => true,
-            'aspectRatio' => 1.5,
+            'aspectRatio' => 0.7,
+            'maintainAspectRatio' => false,
             'scales' => [
                 'x' => [
                     'type' => 'time',
@@ -113,12 +117,12 @@ class StatisticController extends AbstractController
                         'mode' => 'x',
                         'speed' => 20,
                     ],
-                    'zoom' => [
+                    /*'zoom' => [
                         'wheel' => ['enabled' => true],
                         'pinch' => ['enabled' => true],
                         'mode' => 'x',
                         'sensitivity' => 3,
-                    ]
+                    ]*/
                 ],
             ]
         ]);
@@ -161,9 +165,73 @@ class StatisticController extends AbstractController
 
         $chart->setOptions([
             'responsive' => true,
+            'aspectRatio' => 0.7,
+            'maintainAspectRatio' => false,
             'spacing' => 1,
             'plugins' => [
                 'tooltip' => ['enable' => true],
+            ],
+        ]);
+
+        return $chart;
+    }
+
+    private function createLineChart(array $data): Chart
+    {
+        $labels = [];
+        $datasets = [];
+        foreach ($data as $currency => $dataset) {
+            $datas = [];
+            $color = RandomColor::randomOne();
+            $label = $currency;
+
+            foreach ($dataset as $data) {
+                $labels[] = $data['label'];
+                $datas[] = $data['data'];
+            }
+            $datasets[] = [
+                'label' => $label,
+                'backgroundColor' => $color,
+                'borderColor' => $color,
+                'data' => $datas,
+            ];
+        }
+
+        $chart = $this->chartBuilder->createChart(Chart::TYPE_LINE);
+        $chart->setData([
+            'labels' => $labels,
+            'datasets' => $datasets
+        ]);
+
+        $chart->setOptions([
+            'responsive' => true,
+            'aspectRatio' => 0.7,
+            'maintainAspectRatio' => false,
+            'scales' => [
+                'x' => [
+                    'type' => 'time',
+                    'time' => [
+                        'unit' => 'day',
+                        'isoWeekday' => true,
+                        'tooltipFormat' => 'DD/MM/YYYY H:mm:ss',
+                    ]
+                ],
+                'y' => [
+                    'type' => 'logarithmic'
+                ]
+            ],
+            'interaction' => [
+                'intersect' => false,
+            ],
+            'plugins' => [
+                'tooltip' => ['enable' => true],
+                'zoom' => [
+                    'pan' => [
+                        'enabled' => true,
+                        'mode' => 'x',
+                        'speed' => 20,
+                    ],
+                ],
             ],
         ]);
 
