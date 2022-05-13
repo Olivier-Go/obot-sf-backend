@@ -78,11 +78,12 @@ class CcxtService extends Tools
     public function fetchAccountBalance(Balance $balance): Balance
     {
         $exchange = $this->getExchangeInstance($balance->getTicker()->getMarket());
+        $time = new DateTime();
 
         if ($exchange->checkRequiredCredentials()) {
             $exchangeBalances = $exchange->fetch_balance();
             if (isset($exchangeBalances)) {
-                $this->updateBalances($exchangeBalances, $balance);
+                $this->updateBalances($exchangeBalances, $balance, $time);
             }
         }
 
@@ -92,12 +93,13 @@ class CcxtService extends Tools
     public function fetchAccountAllBalances(Market $market): Market
     {
         $exchange = $this->getExchangeInstance($market);
+        $time = new DateTime();
 
         if ($exchange->checkRequiredCredentials()) {
             $exchangeBalances = $exchange->fetch_balance();
             if (isset($exchangeBalances)) {
                 foreach ($market->getBalances() as $balance) {
-                    $this->updateBalances($exchangeBalances, $balance);
+                    $this->updateBalances($exchangeBalances, $balance, $time);
                     $this->doctrine->getManager()->persist($balance);
                 }
             }
@@ -106,9 +108,8 @@ class CcxtService extends Tools
         return $market;
     }
 
-    private function updateBalances(array $exchangeBalances, Balance $balance): void
+    private function updateBalances(array $exchangeBalances, Balance $balance, DateTime $time): void
     {
-        $date = new DateTime();
         foreach ($exchangeBalances as $symbol => $data) {
             if ($symbol === $balance->getCurrency()) {
                 $balance->setTotal($data['total']);
@@ -119,7 +120,7 @@ class CcxtService extends Tools
                 $log->setEntityName('Balance');
                 $log->setEntityId($balance->getId());
                 $log->setContent($this->normalizer->normalize($balance, null, ['groups' => 'log']));
-                $log->setCreated($date);
+                $log->setCreated($time);
                 $this->doctrine->getManager()->persist($log);
             }
         }
