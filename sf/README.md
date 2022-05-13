@@ -34,3 +34,12 @@ bin/console d:m:m
 ```sh
 docker-compose up
 ```
+
+### Restart NodeWs command & cron (every 6 hours) :
+```sh
+# create symbolic link to symfony command (root)
+ln -s /data/web/sites/ccxt/ccxt-quant-bot/sf /usr/local/bin/ccxt-quant-bot
+
+# crontab -e
+0 */6 * * * ccxt-quant-bot app:node-ws --cmd=restart
+```
