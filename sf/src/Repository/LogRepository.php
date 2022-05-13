@@ -60,9 +60,9 @@ class LogRepository extends ServiceEntityRepository
 
         if ($entityName === 'Balance') {
             foreach ($logs as $log) {
+                $date = $log->getCreated()->format('Y-m-d H:i');
                 $balance = $this->normalizer->denormalize($log->getContent(), Balance::class);
-                if ($balance->getTotal() != 0) {
-                    $date = $log->getCreated()->format('Y-m-d H:i');
+                if ($balance instanceof Balance) {
                     $dateExistKey = isset($rtn[$balance->getCurrency()]) ? Tools::array_search_nested($rtn[$balance->getCurrency()], 'label', $date) : false;
                     if (is_int($dateExistKey)) {
                         $rtn[$balance->getCurrency()][$dateExistKey] = [
