@@ -7,9 +7,9 @@
             <table class="table table-light table-striped table-bordered border-secondary fs-small mb-0">
                 <thead class="table-secondary text-nowrap">
                 <tr>
-                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, '#', 'o.id') }}</span></th>
+                    <th scope="col" class="d-none d-md-table-cell"><span class="pe-3">{{ knp_pagination_sortable(pagination, '#', 'o.id') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Logs', 'o.logs') }}</span></th>
                     <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Created', 'o.created') }}</span></th>
-                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Received', 'o.received') }}</span></th>
                     <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Ticker', 'o.ticker') }}</span></th>
                     <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Direction', 'o.direction') }}</span></th>
                     <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Price diff', 'o.priceDiff') }}</span></th>
@@ -18,35 +18,15 @@
                     <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Sell market', 'sellMarket.name') }}</span></th>
                     <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Sell price', 'o.sellPrice') }}</span></th>
                     <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Size', 'o.size') }}</span></th>
-                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Buy order', 'o.buyOrder') }}</span></th>
-                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Sell Order', 'o.sellOrder') }}</span></th>
-                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Logs', 'o.logs') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Buy order', 'buyOrder.updated') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Sell Order', 'sellOrder.updated') }}</span></th>
+                    <th scope="col"><span class="pe-3">{{ knp_pagination_sortable(pagination, 'Received', 'o.received') }}</span></th>
                 </tr>
                 </thead>
                 <tbody data-controller="opportunity">
                 {% for opportunity in pagination %}
                     <tr>
-                        <th scope="row">{{ opportunity.id }}</th>
-                        <td>{{ opportunity.created|date('d/m/Y H:i:s') }}</td>
-                        <td>{{ opportunity.received|date('d/m/Y H:i:s') }}</td>
-                        <td>{{ opportunity.ticker }}</td>
-                        <td><span class="text-{{ opportunity.direction == 'Sell->Buy' ? 'danger' : 'success' }}">{{ opportunity.direction|upper }}</span></td>
-                        <td>{{ opportunity.priceDiff|number_format(4, '.', ' ') }}</td>
-                        <td>{{ opportunity.buyMarket|upper }}</td>
-                        <td>{{ opportunity.buyPrice|number_format(4, '.', ' ') }}</td>
-                        <td>{{ opportunity.sellMarket|upper }}</td>
-                        <td>{{ opportunity.sellPrice|number_format(4, '.', ' ') }}</td>
-                        <td>{{ opportunity.size|number_format(2, '.', ' ') }}</td>
-                        <td class="text-center">
-                            {% if opportunity.buyOrder %}
-                                <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity#order" data-opportunity-order-id="{{ opportunity.buyOrder.id }}">#{{ opportunity.buyOrder.id }}</button>
-                            {% endif %}
-                        </td>
-                        <td class="text-center">
-                            {% if opportunity.sellOrder %}
-                                <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity#order" data-opportunity-order-id="{{ opportunity.sellOrder.id }}">#{{ opportunity.sellOrder.id }}</button>
-                            {% endif %}
-                        </td>
+                        <th scope="row" class="d-none d-md-table-cell">{{ opportunity.id }}</th>
                         <td class="text-center align-middle py-0">
                             {% if opportunity.logs is not null %}
                                 {% set logColor = 'text-success' %}
@@ -58,6 +38,26 @@
                                 <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity#log" data-opportunity-log-id="{{ opportunity.id }}"><i class="bi bi-file-text-fill h5 {{  logColor }}"></i></button>
                             {% endif %}
                         </td>
+                        <td>{{ opportunity.created|date('d/m/Y H:i:s') }}</td>
+                        <td>{{ opportunity.ticker }}</td>
+                        <td><span class="text-{{ opportunity.direction == 'Sell->Buy' ? 'danger' : 'success' }}">{{ opportunity.direction|upper }}</span></td>
+                        <td>{{ opportunity.priceDiff|number_format(4, '.', ' ') }}</td>
+                        <td>{{ opportunity.buyMarket|upper }}</td>
+                        <td>{{ opportunity.buyPrice|number_format(4, '.', ' ') }}</td>
+                        <td>{{ opportunity.sellMarket|upper }}</td>
+                        <td>{{ opportunity.sellPrice|number_format(4, '.', ' ') }}</td>
+                        <td class="text-nowrap">{{ opportunity.size|number_format(2, '.', ' ') }}</td>
+                        <td class="text-center">
+                            {% if opportunity.buyOrder %}
+                                <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity#order" data-opportunity-order-id="{{ opportunity.buyOrder.id }}">#{{ opportunity.buyOrder.id }}</button>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if opportunity.sellOrder %}
+                                <button type="button" class="btn btn-sm btn-link py-0" data-action="opportunity#order" data-opportunity-order-id="{{ opportunity.sellOrder.id }}">#{{ opportunity.sellOrder.id }}</button>
+                            {% endif %}
+                        </td>
+                        <td>{{ opportunity.received|date('d/m/Y H:i:s') }}</td>
                     </tr>
                 {% endfor %}
                 </tbody>

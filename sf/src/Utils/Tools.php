@@ -17,7 +17,7 @@ abstract class Tools
         $dateString = null;
         if (!empty($timestamp)) {
             $date = DateTime::createFromFormat('U', $timestamp);
-            $date->add(new DateInterval('PT1H'));
+            $date->add(new DateInterval('PT2H'));
             $dateString = $date->format('m/d/Y H:i:s');
         }
         return $dateString;
@@ -34,7 +34,7 @@ abstract class Tools
         $timestampSec = number_format($msTimestamp / 1000, 0, ',', '');
         if (!empty($timestampSec)) {
             $date = DateTime::createFromFormat('U', $timestampSec);
-            $date->add(new DateInterval('PT1H'));
+            $date->add(new DateInterval('PT2H'));
             $dateString = $date->format('m/d/Y H:i:s');
         }
         return $dateString;
