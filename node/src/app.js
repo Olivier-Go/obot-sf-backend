@@ -117,7 +117,7 @@ export const app = {
 
   draw: () => {
     console.clear();
-    if (state.resetTime > 7200) app.reset(); // 2 heures
+    if (state.resetTime > 3600) app.reset(); // 1 heure
     app.printBanner();
     //exchange1Ws.printOrderBook();
     //exchange2Ws.printOrderBook();
