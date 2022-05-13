@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Repository\LogRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Gedmo\Mapping\Annotation as Gedmo;
 
 /**
  * @ORM\Entity(repositoryClass=LogRepository::class)
@@ -34,16 +33,9 @@ class Log
     private $content = [];
 
     /**
-     * @Gedmo\Timestampable(on="create")
      * @ORM\Column(type="datetime")
      */
     private $created;
-
-    /**
-     * @Gedmo\Timestampable(on="update")
-     * @ORM\Column(type="datetime")
-     */
-    private $updated;
 
 
     public function getId(): ?int
@@ -87,7 +79,7 @@ class Log
         return $this;
     }
 
-    public function getCreated(): ?\DateTimeInterface
+    public function getCreated(): \DateTimeInterface
     {
         return $this->created;
     }
@@ -95,18 +87,6 @@ class Log
     public function setCreated(\DateTimeInterface $created): self
     {
         $this->created = $created;
-
-        return $this;
-    }
-
-    public function getUpdated(): ?\DateTimeInterface
-    {
-        return $this->updated;
-    }
-
-    public function setUpdated(\DateTimeInterface $updated): self
-    {
-        $this->updated = $updated;
 
         return $this;
     }

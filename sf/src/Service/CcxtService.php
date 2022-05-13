@@ -108,6 +108,7 @@ class CcxtService extends Tools
 
     private function updateBalances(array $exchangeBalances, Balance $balance): void
     {
+        $date = new DateTime();
         foreach ($exchangeBalances as $symbol => $data) {
             if ($symbol === $balance->getCurrency()) {
                 $balance->setTotal($data['total']);
@@ -118,6 +119,7 @@ class CcxtService extends Tools
                 $log->setEntityName('Balance');
                 $log->setEntityId($balance->getId());
                 $log->setContent($this->normalizer->normalize($balance, null, ['groups' => 'log']));
+                $log->setCreated($date);
                 $this->doctrine->getManager()->persist($log);
             }
         }
