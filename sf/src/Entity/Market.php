@@ -80,6 +80,11 @@ class Market
         return $this->name;
     }
 
+    public function upperName(): ?string
+    {
+        return strtoupper($this->name);
+    }
+
     public function getId(): ?int
     {
         return $this->id;

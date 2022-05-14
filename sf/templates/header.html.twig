@@ -37,6 +37,9 @@
                                     <a class="nav-link {% if app.request.get('_route') == 'order_index' %}active{% endif %}" href="{{ path('order_index') }}">Ordres</a>
                                 </li>
                                 <li class="nav-item">
+                                    <a class="nav-link {% if app.request.get('_route') == 'trading_index' %}active{% endif %}" href="{{ path('trading_index') }}">Trading</a>
+                                </li>
+                                <li class="nav-item">
                                     <a class="nav-link {% if app.request.get('_route') == 'node_console' %}active{% endif %}" href="{{ path('node_console') }}">Console</a>
                                 </li>
                             </ul>
