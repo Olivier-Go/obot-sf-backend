@@ -66,6 +66,12 @@ class Market
      */
     private $balances;
 
+    /**
+     * @ORM\Column(type="string", length=255, nullable=true)
+     */
+    private $apiUrl;
+
+
     public function __construct()
     {
         $this->tickers = new ArrayCollection();
@@ -284,6 +290,18 @@ class Market
                 $balance->setMarket(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getApiUrl(): ?string
+    {
+        return $this->apiUrl;
+    }
+
+    public function setApiUrl(?string $apiUrl): self
+    {
+        $this->apiUrl = $apiUrl;
 
         return $this;
     }

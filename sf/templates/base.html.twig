@@ -6,6 +6,8 @@
         content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="turbo-visit-control" content="reload">
+        {% block meta %}{% endblock %}
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="manifest" href="{{ asset('manifest.webmanifest') }}">
         <link rel="icon" href="{{ asset('build/images/bot.svg') }}">

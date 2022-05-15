@@ -2,8 +2,10 @@
 
 namespace App\Repository;
 
+use App\Entity\Market;
 use App\Entity\Ticker;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
@@ -17,6 +19,14 @@ class TickerRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, Ticker::class);
+    }
+
+    public function findAllByMarketQB(?Market $market): QueryBuilder
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.market = :market')
+            ->setParameter('market', $market)
+            ;
     }
 
     // /**

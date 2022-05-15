@@ -1,1 +1,6 @@
 {{ form_row(form.buyMarket) }}
+{{ form_row(form.buyTicker) }}
+<div id="buyMarket-orderbook"
+     data-buy-market="{{ form.buyMarket.vars.value }}"
+     data-buy-ticker="{{ form.buyTicker.vars.value }}">
+</div>
