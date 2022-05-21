@@ -1,0 +1,38 @@
+{{ form_start(form, {'attr': {'class': 'px-0', 'data-controller': 'trading', 'data-trading-target': 'form'}}) }}
+<div class="col p-3 mb-3">
+    <h2 class="text-primary text-center mb-3">Trading</h2>
+    <div class="row">
+        <div class="col-12 col-md-6 mb-md-0 mb-3">
+            <div class="card border-primary border-rounder-full bg-light h-100">
+                <div class="card-header-rounder-2">
+                    <p class="bg-success text-white text-center h5 pt-1 pb-2 mb-0">Achat</p>
+                </div>
+                <div class="card-body">
+                    {{ form_row(form.buyMarket) }}
+                    {{ form_row(form.buyTicker) }}
+                    <div id="buyMarket-orderbook"
+                         data-buy-market="{{ form.buyMarket.vars.value }}"
+                         data-buy-ticker="{{ form.buyTicker.vars.value }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-12 col-md-6">
+            <div class="card border-primary border-rounder-full bg-light h-100">
+                <div class="card-header-rounder-2">
+                    <p class="bg-danger text-white text-center h5 pt-1 pb-2 mb-0">Vente</p>
+                </div>
+                <div class="card-body">
+                    {{ form_row(form.sellMarket) }}
+                    {{ form_row(form.sellTicker) }}
+                    <div id="sellMarket-orderbook"
+                         data-sell-market="{{ form.sellMarket.vars.value }}"
+                         data-sell-ticker="{{ form.sellTicker.vars.value }}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{{ form_rest(form) }}
+{{ form_end(form) }}

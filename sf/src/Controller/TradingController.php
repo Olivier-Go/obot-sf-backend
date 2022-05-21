@@ -11,8 +11,10 @@ use App\Service\SessionService;
 use DateTime;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\HttpClient\Exception\TransportExceptionInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
@@ -22,6 +24,13 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 class TradingController extends AbstractController
 {
+    private SessionService $sessionService;
+
+    public function __construct(SessionService $sessionService)
+    {
+        $this->sessionService = $sessionService;
+    }
+
     /**
      * @Route("/", name="trading_index")
      * @throws Exception
@@ -30,27 +39,30 @@ class TradingController extends AbstractController
     {
         $sessionKey = 'trading';
         $session = $request->getSession();
-        $params = $sessionService->sessionToForm($session, $sessionKey);
+        $form = $this->createFormFromSession($session, $sessionKey);
 
-        $form = $this->createForm(TradingType::class, $params);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
+        if ($request->isMethod('POST')) {
+            $form->submit($request->toArray());
             $sessionService->formToSession($form, $session, $sessionKey);
-//            if (TurboBundle::STREAM_FORMAT === $request->getPreferredFormat()) {
-//                $request->setRequestFormat(TurboBundle::STREAM_FORMAT);
-//                return $this->render('trading/_orderbook.stream.html.twig', [
-//                    'stream_target' => 'sellMarket-orderbook'
-//                ]);
-//            }
-            return $this->redirectToRoute('trading_index', [], Response::HTTP_SEE_OTHER);
+            $response = $this->renderForm("trading/_form.html.twig", [
+                'form' => $this->createFormFromSession($session, $sessionKey),
+            ]);
+            return $this->json($response, Response::HTTP_OK);
         }
 
-        return $this->renderForm('trading/index.html.twig', [
+        return $this->renderForm("trading/index.html.twig", [
             'form' => $form,
         ]);
     }
 
+    /**
+     * @throws Exception
+     */
+    private function createFormFromSession(SessionInterface $session, string $sessionKey): FormInterface
+    {
+        $params = $this->sessionService->sessionToForm($session, $sessionKey);
+        return $this->createForm(TradingType::class, $params);
+    }
 
     /**
      * @Route("/orderbook", name="trading_orderbook", methods={"POST"})

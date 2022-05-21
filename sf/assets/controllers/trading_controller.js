@@ -1,11 +1,27 @@
 import { Controller } from '@hotwired/stimulus';
-import { getExchangeWsData, subscribe } from "../js/websocket/utils";
+import { getExchangeWsData } from "../js/websocket/utils";
 import { KucoinWs } from "../js/websocket/kucoin";
+import { jsonSubmitFormData } from "../js/utils/functions";
 
 export default class extends Controller {
     static targets = [ "form" ]
 
     connect() {
+        this.init();
+    }
+
+    change() {
+        jsonSubmitFormData(this.formTarget)
+            .then(response => {
+                if (response.content) {
+                    this.formTarget.innerHTML = response.content;
+                    this.init();
+                }
+            });
+    }
+
+    init() {
+        this.closeExchangeWs();
         const buyMarketOB = document.getElementById('buyMarket-orderbook');
         const sellMarketOB = document.getElementById('sellMarket-orderbook');
         this.buyMarket = buyMarketOB.dataset.buyMarket;
@@ -27,18 +43,14 @@ export default class extends Controller {
         }
     }
 
-    setParams() {
-        this.disconnect();
-        this.formTarget.requestSubmit();
-    }
-
     loadBuyExchangeWs(exchange, endPoint, symbol) {
         switch (exchange) {
             case 'kucoin':
-                this.buyExchangeWs = KucoinWs.loadOrderBook(
+                KucoinWs.loadOrderBook(
                     endPoint,
                     symbol,
-                    (data) => {
+                    (w, data) => {
+                        this.buyExchangeWs = w;
                         this.drawBuyMarketOB(data)
                         if (this.buyMarket === this.sellMarket) {
                             this.drawSellMarketOB(data)
@@ -52,10 +64,11 @@ export default class extends Controller {
     loadSellExchangeWs(exchange, endPoint, symbol) {
         switch (exchange) {
             case 'kucoin':
-                this.sellExchangeWs = KucoinWs.loadOrderBook(
+                KucoinWs.loadOrderBook(
                     endPoint,
                     symbol,
-                    (data) => {
+                    (w, data) => {
+                        this.sellExchangeWs = w;
                         this.drawSellMarketOB(data)
                     }
                 );
@@ -71,12 +84,16 @@ export default class extends Controller {
         console.log(data)
     }
 
-    disconnect() {
+    closeExchangeWs() {
         if (this.buyExchangeWs) {
             this.buyExchangeWs.close();
         }
         if (this.sellExchangeWs) {
             this.sellExchangeWs.close();
         }
+    }
+
+    disconnect() {
+        this.closeExchangeWs();
     }
 }

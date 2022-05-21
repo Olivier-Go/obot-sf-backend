@@ -15,7 +15,7 @@ export const KucoinWs = {
                 w.send(subscribe('/market/level2:', symbol));
             }
             if (msg_data.type === 'message') {
-                callback(msg_data.data);
+                callback(w, msg_data.data);
             }
         }
         w.onclose = () => interval.clearAll();
