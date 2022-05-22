@@ -51,8 +51,11 @@ export default class extends Controller {
                     (w) => {
                         this.buyExchangeWs = w;
                     },
+                    (price) => {
+                        this.buyMarketPrice = price;
+                    },
                     (orderBook) => {
-                        this.drawMarketOrderbook(orderBook, this.buyMarketOB);
+                        this.drawMarketOrderbook(orderBook, this.buyMarketOB, symbol, this.buyMarketPrice);
                     }
                 );
                 break;
@@ -68,23 +71,41 @@ export default class extends Controller {
                     (w) => {
                         this.sellExchangeWs = w;
                     },
+                    (price) => {
+                        this.sellMarketPrice = price;
+                    },
                     (orderBook) => {
-                        this.drawMarketOrderbook(orderBook, this.sellMarketOB);
+                        this.drawMarketOrderbook(orderBook, this.sellMarketOB, symbol, this.sellMarketPrice);
                     }
                 );
                 break;
         }
     }
 
-    drawMarketOrderbook(exchangeOB, htmlOB) {
+    drawMarketOrderbook(exchangeOB, htmlOB, symbol, marketPrice) {
         htmlOB.innerHTML = '';
-        const clone = document.importNode(this.templateOB.content, true);
-        if (!isEmptyObj(exchangeOB)) {
-            let buyRows = clone.querySelector('.orders-buy');
-            let sellRows = clone.querySelector('.orders-sell');
-            buyRows.innerHTML = '';
-            sellRows.innerHTML = '';
+        let Node = {};
+        Node.clone = document.importNode(this.templateOB.content, true);
+        let headerRow = Node.clone.querySelector('.orderbook-title');
+        let priceRow = Node.clone.querySelector('.current-price');
+        let buyRows = Node.clone.querySelector('.orders-buy');
+        let sellRows = Node.clone.querySelector('.orders-sell');
+        headerRow.innerHTML = '';
+        priceRow.innerHTML = '';
+        buyRows.innerHTML = '';
+        sellRows.innerHTML = '';
 
+        const currency = symbol.split('-');
+        headerRow.innerHTML = `<tr>
+            <th class="orderbook-header" scope="col">Price(${currency[1]})</th>
+                <th class="orderbook-header" scope="col">Amount(${currency[0]})</th>
+                <th class="orderbook-header" scope="col">Total(${currency[1]})</th>
+            </tr>`;
+        if (marketPrice) {
+            priceRow.innerHTML = marketPrice;
+        }
+
+        if (!isEmptyObj(exchangeOB)) {
             exchangeOB.bids.forEach(element => {
                 buyRows.innerHTML += element;
             });
@@ -92,7 +113,8 @@ export default class extends Controller {
                 sellRows.innerHTML += element;
             });
         }
-        htmlOB.appendChild(clone);
+        htmlOB.appendChild(Node.clone);
+        delete Node.clone;
     }
 
     closeExchangeWs() {
