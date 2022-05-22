@@ -65,25 +65,6 @@ class TradingController extends AbstractController
     }
 
     /**
-     * @Route("/orderbook", name="trading_orderbook", methods={"POST"})
-     */
-    public function orderbook(Request $request): Response
-    {
-        $data = $request->toArray();
-        dd($data);
-        $form = $this->createForm(TradingType::class, null);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            dd($form);
-        }
-
-        return $this->renderForm('trading/index.html.twig', [
-            'form' => $form,
-        ]);
-    }
-
-    /**
      * @Route("/ws/data", name="trading_ws_data", methods={"POST"})
      */
     public function wsMarketData(Request $request, HttpClientInterface $client, MarketRepository $marketRepository, TickerRepository $tickerRepository): Response

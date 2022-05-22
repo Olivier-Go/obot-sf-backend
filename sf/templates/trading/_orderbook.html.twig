@@ -1,0 +1,34 @@
+<template id="orderbook-template">
+    <div class="orderbook card border-primary border-rounder-full my-3">
+        <table class="table table-sm table-dark mb-0">
+            <thead>
+            <tr>
+                <th class="orderbook-header" scope="col">Price(USDT)</th>
+                <th class="orderbook-header" scope="col">Amount(FLUX)</th>
+                <th class="orderbook-header" scope="col">Total(USDT)</th>
+            </tr>
+            </thead>
+        </table>
+        <table class="table table-sm table-dark mb-0">
+            <tbody class="orders-sell">
+            <tr>
+                <td class="price-sell"></td>
+                <td></td>
+                <td></td>
+            </tr>
+            </tbody>
+        </table>
+        <section class="divider">
+            <div class="current-price">715.00000</div>
+        </section>
+        <table class="table table-sm table-dark mb-0">
+            <tbody class="orders-buy">
+            <tr>
+                <td class="price-buy"></td>
+                <td></td>
+                <td></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</template>

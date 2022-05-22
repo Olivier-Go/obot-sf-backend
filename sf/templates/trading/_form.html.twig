@@ -13,6 +13,7 @@
                     <div id="buyMarket-orderbook"
                          data-buy-market="{{ form.buyMarket.vars.value }}"
                          data-buy-ticker="{{ form.buyTicker.vars.value }}">
+                        {{ include('trading/_orderbook.html.twig') }}
                     </div>
                 </div>
             </div>
@@ -28,6 +29,7 @@
                     <div id="sellMarket-orderbook"
                          data-sell-market="{{ form.sellMarket.vars.value }}"
                          data-sell-ticker="{{ form.sellTicker.vars.value }}">
+                        {{ include('trading/_orderbook.html.twig') }}
                     </div>
                 </div>
             </div>

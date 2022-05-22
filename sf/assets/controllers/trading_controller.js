@@ -1,7 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 import { getExchangeWsData } from "../js/websocket/utils";
 import { KucoinWs } from "../js/websocket/kucoin";
-import { jsonSubmitFormData } from "../js/utils/functions";
+import { isEmptyObj, jsonSubmitFormData} from "../js/utils/functions";
 
 export default class extends Controller {
     static targets = [ "form" ]
@@ -22,12 +22,13 @@ export default class extends Controller {
 
     init() {
         this.closeExchangeWs();
-        const buyMarketOB = document.getElementById('buyMarket-orderbook');
-        const sellMarketOB = document.getElementById('sellMarket-orderbook');
-        this.buyMarket = buyMarketOB.dataset.buyMarket;
-        this.sellMarket = sellMarketOB.dataset.sellMarket;
-        this.buyTicker = buyMarketOB.dataset.buyTicker;
-        this.sellTicker = sellMarketOB.dataset.sellTicker;
+        this.templateOB = document.getElementById('orderbook-template');
+        this.buyMarketOB = document.getElementById('buyMarket-orderbook');
+        this.sellMarketOB = document.getElementById('sellMarket-orderbook');
+        this.buyMarket = this.buyMarketOB.dataset.buyMarket;
+        this.sellMarket = this.sellMarketOB.dataset.sellMarket;
+        this.buyTicker = this.buyMarketOB.dataset.buyTicker;
+        this.sellTicker = this.sellMarketOB.dataset.sellTicker;
 
         if (this.buyMarket) {
             getExchangeWsData(this.buyMarket, this.buyTicker).then(response => {
@@ -36,9 +37,7 @@ export default class extends Controller {
         }
         if (this.sellMarket) {
             getExchangeWsData(this.sellMarket, this.sellTicker).then(response => {
-                if (this.buyMarket !== this.sellMarket) {
-                    this.loadSellExchangeWs(response.exchange, response.endpoint, response.symbol);
-                }
+                this.loadSellExchangeWs(response.exchange, response.endpoint, response.symbol);
             });
         }
     }
@@ -49,12 +48,11 @@ export default class extends Controller {
                 KucoinWs.loadOrderBook(
                     endPoint,
                     symbol,
-                    (w, data) => {
+                    (w) => {
                         this.buyExchangeWs = w;
-                        this.drawBuyMarketOB(data)
-                        if (this.buyMarket === this.sellMarket) {
-                            this.drawSellMarketOB(data)
-                        }
+                    },
+                    (orderBook) => {
+                        this.drawMarketOrderbook(orderBook, this.buyMarketOB);
                     }
                 );
                 break;
@@ -67,21 +65,34 @@ export default class extends Controller {
                 KucoinWs.loadOrderBook(
                     endPoint,
                     symbol,
-                    (w, data) => {
+                    (w) => {
                         this.sellExchangeWs = w;
-                        this.drawSellMarketOB(data)
+                    },
+                    (orderBook) => {
+                        this.drawMarketOrderbook(orderBook, this.sellMarketOB);
                     }
                 );
                 break;
         }
     }
 
-    drawBuyMarketOB(data) {
-        console.log(data)
-    }
+    drawMarketOrderbook(exchangeOB, htmlOB) {
+        htmlOB.innerHTML = '';
+        const clone = document.importNode(this.templateOB.content, true);
+        if (!isEmptyObj(exchangeOB)) {
+            let buyRows = clone.querySelector('.orders-buy');
+            let sellRows = clone.querySelector('.orders-sell');
+            buyRows.innerHTML = '';
+            sellRows.innerHTML = '';
 
-    drawSellMarketOB(data) {
-        console.log(data)
+            exchangeOB.bids.forEach(element => {
+                buyRows.innerHTML += element;
+            });
+            exchangeOB.asks.forEach(element => {
+                sellRows.innerHTML += element;
+            });
+        }
+        htmlOB.appendChild(clone);
     }
 
     closeExchangeWs() {

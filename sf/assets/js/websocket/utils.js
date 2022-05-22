@@ -50,3 +50,52 @@ export const getExchangeWsData = async (market, ticker) => {
     }
     return null;
 }
+
+export const updateOrdersArr = (arr, changes, buy = true) => {
+    let result = [...arr];
+
+    console.log(changes)
+
+    changes.forEach(element => {
+        console.log(element)
+        /*const change = {
+            price: element[0],
+            size: element[1],
+            received: element[2],
+        }
+        const existingOrder = result.find(({ price }) => price === change.price);
+        if (existingOrder) {
+            existingOrder.size = change.size;
+            existingOrder.received = Date.now();
+        } else {
+            result.push({ ...change, received: Date.now() });
+        }*/
+    })
+
+    result = result.filter(({ size }) => size > 0);
+    result = result.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+
+    return result;
+};
+
+export const drawOrderLine = (arr, buy = true, dept = 3) => {
+    let result = [];
+
+    if (!buy) arr.reverse();
+
+    for (let i = 0; i < dept; i++) {
+        const order = arr[i];
+        if (order && order.price && order.size) {
+            result[i] = `<tr>
+                <td class="price-${buy ? 'buy' : 'sell'}">${Number(order.price)}</td>
+                    <td>${Number(order.size)}</td>
+                    <td>${Number(order.price) * Number(order.size)}</td>
+                </tr>`
+            ;
+        }
+    }
+
+    if (!buy) result.reverse();
+
+    return result;
+};
