@@ -1,35 +1,64 @@
 {{ form_start(form, {'attr': {'class': 'px-0', 'data-controller': 'trading', 'data-trading-target': 'form'}}) }}
-<div class="col p-3 mb-3">
+<div class="col p-3 mb-3 position-relative">
     <h2 class="text-primary text-center mb-3">Trading</h2>
-    <div class="row">
-        <div class="col-12 col-md-6 mb-md-0 mb-3">
-            <div class="card border-primary border-rounder-full bg-light h-100">
-                <div class="card-header-rounder-2">
-                    <p class="bg-success text-white text-center h5 pt-1 pb-2 mb-0">Achat</p>
-                </div>
-                <div class="card-body">
-                    {{ form_row(form.buyMarket) }}
-                    {{ form_row(form.buyTicker) }}
-                    <div id="buyMarket-orderbook"
-                         data-buy-market="{{ form.buyMarket.vars.value }}"
-                         data-buy-ticker="{{ form.buyTicker.vars.value }}">
-                        {{ include('trading/_orderbook.html.twig') }}
+    <div {{ stimulus_controller('fullscreen') }} data-fullscreen-target="container">
+        <button class="btn btn-sm btn-light btn-fullscreen opacity-25" type="button" data-action="fullscreen#toggle"><i class="bi bi-arrows-fullscreen fs-5"></i></button>
+        <div class="row mb-3">
+            <div class="col-12 mb-md-0 mb-3">
+                <div class="card border-primary border-rounder-full bg-light h-100">
+                    <div class="card-header-rounder-2">
+                        <p class="bg-success text-white text-center h5 pt-1 pb-2 mb-0">Achat</p>
+                    </div>
+                    <div class="row card-body">
+                        <div class="col-12 col-md-6">
+                            <div class="d-flex flex-column justify-content-between h-100">
+                                <div>
+                                    {{ form_row(form.buyMarket) }}
+                                    {{ form_row(form.buyTicker) }}
+                                </div>
+                                <div class="d-grid gap-2 mt-3">
+                                    <button class="btn btn-success btn-lg d-none">Achat <span id="buyMarket-currency"></span></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 trading-data">
+                            <div id="buyMarket-orderbook"
+                                 data-buy-market="{{ form.buyMarket.vars.value }}"
+                                 data-buy-ticker="{{ form.buyTicker.vars.value }}">
+                                {{ include('trading/_orderbook.html.twig') }}
+                            </div>
+                            <div id="buyMarket-orders"></div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-12 col-md-6">
-            <div class="card border-primary border-rounder-full bg-light h-100">
-                <div class="card-header-rounder-2">
-                    <p class="bg-danger text-white text-center h5 pt-1 pb-2 mb-0">Vente</p>
-                </div>
-                <div class="card-body">
-                    {{ form_row(form.sellMarket) }}
-                    {{ form_row(form.sellTicker) }}
-                    <div id="sellMarket-orderbook"
-                         data-sell-market="{{ form.sellMarket.vars.value }}"
-                         data-sell-ticker="{{ form.sellTicker.vars.value }}">
-                        {{ include('trading/_orderbook.html.twig') }}
+        <div class="row my-3">
+            <div class="col-12 mb-md-0 mb-3">
+                <div class="card border-primary border-rounder-full bg-light h-100">
+                    <div class="card-header-rounder-2">
+                        <p class="bg-danger text-white text-center h5 pt-1 pb-2 mb-0">Vente</p>
+                    </div>
+                    <div class="row card-body">
+                        <div class="col-12 col-md-6">
+                            <div class="d-flex flex-column justify-content-between h-100">
+                                <div>
+                                    {{ form_row(form.sellMarket) }}
+                                    {{ form_row(form.sellTicker) }}
+                                </div>
+                                <div class="d-grid gap-2 mt-3">
+                                    <button class="btn btn-danger btn-lg d-none">Vente <span id="sellMarket-currency"></span></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 trading-data">
+                            <div id="sellMarket-orderbook"
+                                 data-sell-market="{{ form.sellMarket.vars.value }}"
+                                 data-sell-ticker="{{ form.sellTicker.vars.value }}">
+                                {{ include('trading/_orderbook.html.twig') }}
+                            </div>
+                            <div id="sellMarket-orders"></div>
+                        </div>
                     </div>
                 </div>
             </div>

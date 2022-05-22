@@ -6,9 +6,9 @@ use App\Entity\Market;
 use App\Entity\Ticker;
 use App\Form\TradingType;
 use App\Repository\MarketRepository;
+use App\Repository\OrderRepository;
 use App\Repository\TickerRepository;
 use App\Service\SessionService;
-use DateTime;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
@@ -79,14 +79,22 @@ class TradingController extends AbstractController
             if ($market instanceof Market && $ticker instanceof Ticker && $market->getApiUrl()) {
                 switch ($market->getName()) {
                     case 'kucoin':
+                        $timestamp = time() * 1000;
                         try {
-                            $response = $client->request('POST', $market->getApiUrl() . '/api/v1/bullet-public');
+                            $response = $client->request('POST', $market->getApiUrl() . '/api/v1/bullet-private', [
+                                'headers' => [
+                                    'KC-API-KEY' => $market->getApiKey(),
+                                    'KC-API-SIGN' => base64_encode(hash_hmac('sha256', $timestamp . 'POST/api/v1/bullet-private', $market->getApiSecret(), true)),
+                                    'KC-API-TIMESTAMP'  => $timestamp,
+                                    'KC-API-PASSPHRASE' => base64_encode(hash_hmac('sha256', $market->getApiPassword(), $market->getApiSecret(), true)),
+                                    'KC-API-KEY-VERSION' => '2'
+                                ],
+                            ]);
                             if (200 === $response->getStatusCode()) {
                                 $rsp = $response->toArray();
-                                $date = new DateTime();
                                 $rtn = [
                                     'exchange' => $market->getName(),
-                                    'endpoint' => $rsp['data']['instanceServers'][0]['endpoint'] . '?token=' . $rsp['data']['token'] . '&[connectId=' . $date->getTimestamp() . ']',
+                                    'endpoint' => $rsp['data']['instanceServers'][0]['endpoint'] . '?token=' . $rsp['data']['token'] . '&[connectId=' . $timestamp . ']',
                                     'symbol' => str_replace('/', '-', $ticker->getName())
                                 ];
                             }
@@ -98,5 +106,28 @@ class TradingController extends AbstractController
         }
 
         return $this->json($rtn);
+    }
+
+
+    /**
+     * @Route("/orders", name="trading_orders", methods={"POST"})
+     */
+    public function orders(Request $request, MarketRepository $marketRepository, TickerRepository $tickerRepository, OrderRepository $orderRepository): Response
+    {
+        $data = $request->toArray();
+        $response = [];
+
+        if ($data['market'] && $data['ticker']) {
+            $market = $marketRepository->find($data['market']);
+            $ticker = $tickerRepository->find($data['ticker']);
+            if ($market instanceof Market && $ticker instanceof Ticker) {
+                $response['html'] = $this->renderView('trading/_order.html.twig', [
+                    'orders' => $orderRepository->findLastByMarketTicker($market, $ticker, 3),
+                    'limit' => 3
+                ]);
+            }
+        }
+
+        return $this->json($response);
     }
 }

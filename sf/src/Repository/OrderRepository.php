@@ -2,7 +2,9 @@
 
 namespace App\Repository;
 
+use App\Entity\Market;
 use App\Entity\Order;
+use App\Entity\Ticker;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\Query;
 use Doctrine\Persistence\ManagerRegistry;
@@ -43,6 +45,20 @@ class OrderRepository extends ServiceEntityRepository
         $qb->addOrderBy('o.updated', 'ASC');
 
         return $qb->getQuery();
+    }
+
+    public function findLastByMarketTicker(Market $market, Ticker $ticker, int $limit)
+    {
+        return $this->createQueryBuilder('o')
+            ->andWhere('o.market = :market')
+            ->andWhere('o.ticker = :ticker')
+            ->setParameter('market', $market)
+            ->setParameter('ticker', $ticker->getName())
+            ->orderBy('o.updated', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult()
+            ;
     }
 
     // /**

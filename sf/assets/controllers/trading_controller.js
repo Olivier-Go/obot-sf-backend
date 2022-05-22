@@ -10,6 +10,34 @@ export default class extends Controller {
         this.init();
     }
 
+    init() {
+        this.closeExchangeWs();
+        this.templateOB = document.getElementById('orderbook-template');
+        this.buyMarketOB = document.getElementById('buyMarket-orderbook');
+        this.sellMarketOB = document.getElementById('sellMarket-orderbook');
+        this.buyMarketOrders = document.getElementById('buyMarket-orders');
+        this.sellMarketOrders = document.getElementById('sellMarket-orders');
+        this.buyMarketCurrency = document.getElementById('buyMarket-currency');
+        this.sellMarketCurrency = document.getElementById('sellMarket-currency');
+        this.buyMarket = this.buyMarketOB.dataset.buyMarket;
+        this.sellMarket = this.sellMarketOB.dataset.sellMarket;
+        this.buyTicker = this.buyMarketOB.dataset.buyTicker;
+        this.sellTicker = this.sellMarketOB.dataset.sellTicker;
+
+        if (this.buyMarket) {
+            getExchangeWsData(this.buyMarket, this.buyTicker).then(response => {
+                this.loadBuyExchangeWs(response.exchange, response.endpoint, response.symbol);
+                this.setBtnCurrency(this.buyMarketCurrency, response.symbol);
+            });
+        }
+        if (this.sellMarket) {
+            getExchangeWsData(this.sellMarket, this.sellTicker).then(response => {
+                this.loadSellExchangeWs(response.exchange, response.endpoint, response.symbol);
+                this.setBtnCurrency(this.sellMarketCurrency, response.symbol);
+            });
+        }
+    }
+
     change() {
         jsonSubmitFormData(this.formTarget)
             .then(response => {
@@ -20,25 +48,10 @@ export default class extends Controller {
             });
     }
 
-    init() {
-        this.closeExchangeWs();
-        this.templateOB = document.getElementById('orderbook-template');
-        this.buyMarketOB = document.getElementById('buyMarket-orderbook');
-        this.sellMarketOB = document.getElementById('sellMarket-orderbook');
-        this.buyMarket = this.buyMarketOB.dataset.buyMarket;
-        this.sellMarket = this.sellMarketOB.dataset.sellMarket;
-        this.buyTicker = this.buyMarketOB.dataset.buyTicker;
-        this.sellTicker = this.sellMarketOB.dataset.sellTicker;
-
-        if (this.buyMarket) {
-            getExchangeWsData(this.buyMarket, this.buyTicker).then(response => {
-                this.loadBuyExchangeWs(response.exchange, response.endpoint, response.symbol);
-            });
-        }
-        if (this.sellMarket) {
-            getExchangeWsData(this.sellMarket, this.sellTicker).then(response => {
-                this.loadSellExchangeWs(response.exchange, response.endpoint, response.symbol);
-            });
+    setBtnCurrency(marketCurrency, symbol) {
+        if (symbol) {
+            marketCurrency.innerHTML = symbol.split('-')[0];
+            marketCurrency.closest('button').classList.remove('d-none');
         }
     }
 
@@ -50,6 +63,7 @@ export default class extends Controller {
                     symbol,
                     (w) => {
                         this.buyExchangeWs = w;
+                        this.fetchOrders(this.buyMarket, this.buyTicker, this.buyMarketOrders);
                     },
                     (price) => {
                         this.buyMarketPrice = price;
@@ -70,6 +84,7 @@ export default class extends Controller {
                     symbol,
                     (w) => {
                         this.sellExchangeWs = w;
+                        this.fetchOrders(this.sellMarket, this.sellTicker, this.sellMarketOrders);
                     },
                     (price) => {
                         this.sellMarketPrice = price;
@@ -115,6 +130,23 @@ export default class extends Controller {
         }
         htmlOB.appendChild(Node.clone);
         delete Node.clone;
+    }
+
+    fetchOrders(market, ticker, htmlOrders) {
+        fetch('/trading/orders', {
+            method: 'post',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ market, ticker })
+        })
+            .then(response => response.json())
+            .then(responseJson => {
+                if (responseJson.html) {
+                    htmlOrders.innerHTML = responseJson.html;
+                }
+            });
     }
 
     closeExchangeWs() {

@@ -1,0 +1,41 @@
+<div class="orders card border-primary border-rounder-full">
+    <table class="table table-sm table-dark mb-0">
+        <thead class="orders-title">
+        <tr>
+            <th class="orders-header" scope="col" colspan="100%">ORDERS</th>
+        </tr>
+        <tr>
+            <th class="orders-header" scope="col" colspan="2">Updated</th>
+            <th class="orders-header d-none d-md-table-cell" scope="col">Ticker</th>
+            <th class="orders-header d-none d-md-table-cell" scope="col">Type</th>
+            <th class="orders-header" scope="col">Side</th>
+            <th class="orders-header" scope="col">Status</th>
+            <th class="orders-header" scope="col">Price</th>
+            <th class="orders-header" scope="col">Amount</th>
+            <th class="orders-header" scope="col">Filled</th>
+        </tr>
+        </thead>
+        <tbody class="orders-rows">
+        {% if orders|length > 0 %}
+            {% for order in orders %}
+                <tr>
+                    <td colspan="2">{{ order.updated|date('d/m/Y H:i:s') }}</td>
+                    <td class="text-nowrap d-none d-md-table-cell">{{ order.ticker }}</td>
+                    <td class="d-none d-md-table-cell">{{ order.type }}</td>
+                    <td><span class="{{ order.side == 'buy' ? 'order-buy ' : 'order-sell' }}">{{ order.side|upper }}</span></td>
+                    <td>{{ order.status }}</td>
+                    <td>{{ order.price }}</td>
+                    <td>{{ order.amount }}</td>
+                    <td>{{ order.filled }}</td>
+                </tr>
+            {% endfor %}
+        {% else %}
+            {% for i in range(1, limit) %}
+                <tr>
+                    <td colspan="9"></td>
+                </tr>
+            {% endfor %}
+        {% endif %}
+        </tbody>
+    </table>
+</div>
