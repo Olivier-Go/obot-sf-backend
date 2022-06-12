@@ -6,6 +6,7 @@
 ![screenshot](screenshot.png)
 ### Modules
 - [obot-arbitrage-server](https://github.com/Olivier-Go/obot-arbitrage-server)
+- [obot-datafeed-server](https://github.com/Olivier-Go/obot-datafeed-server)
 
 ### Install Project dependencies :
 ```
