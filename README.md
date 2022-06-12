@@ -4,6 +4,8 @@
 ![made-with-symfony](https://img.shields.io/badge/Made_with-Symfony-orange?style=flat) ![](https://img.shields.io/badge/Symfony_UX-red?style=flat) ![](https://img.shields.io/badge/Mercure-blue?style=flat) ![](https://img.shields.io/badge/Stimulus-green?style=flat)  ![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/olivier-go/obot-sf-backend)
 
 ![screenshot](screenshot.png)
+### Modules
+- [obot-arbitrage-server](https://github.com/Olivier-Go/obot-arbitrage-server)
 
 ### Install Project dependencies :
 ```
