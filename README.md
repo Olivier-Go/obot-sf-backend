@@ -40,8 +40,11 @@ bin/console d:m:m
 docker-compose up
 ```
 
-### Restart NodeWs command & cron (every 6 hours) :
+### Restart node arbitrage server (every 6 hours) :
 ```sh
+# create symbolic link to symfony command (root)
+ln -s /<...>/obot-sf-backend/bin/console /usr/local/bin/obot-sf-backend
+
 # crontab -e
 0 */6 * * * obot-sf-backend app:node-ws --cmd=restart
 ```
